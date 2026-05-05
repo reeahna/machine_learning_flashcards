@@ -112,9 +112,38 @@
   <div class="divider"></div>
   <p class="section-title">Post-Midterm Content — 65% of Final</p>
   <div class="deck-grid">
-    <div class="deck-card" style="opacity:0.45;cursor:not-allowed"><div class="deck-left"><div class="deck-num">—</div><div><div class="deck-name">Decision Trees</div><div class="deck-meta">Coming soon</div></div></div><div class="deck-right"><span class="deck-badge" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border);">Coming soon</span></div></div>
-    <div class="deck-card" style="opacity:0.45;cursor:not-allowed"><div class="deck-left"><div class="deck-num">—</div><div><div class="deck-name">Dimensionality Reduction</div><div class="deck-meta">Coming soon</div></div></div><div class="deck-right"><span class="deck-badge" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border);">Coming soon</span></div></div>
-    <div class="deck-card" style="opacity:0.45;cursor:not-allowed"><div class="deck-left"><div class="deck-num">—</div><div><div class="deck-name">Neural Networks &amp; Deep Learning</div><div class="deck-meta">Coming soon</div></div></div><div class="deck-right"><span class="deck-badge" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border);">Coming soon</span></div></div>
+    <a href="lecture_flashcards/lecture_10.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">10</div><div><div class="deck-name">Decision Trees</div><div class="deck-meta">15 questions · CART, Gini, entropy, regularization, regression trees</div></div></div>
+      <div class="deck-right"><span class="deck-badge">15 cards</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_11.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">11</div><div><div class="deck-name">Random Forests &amp; Ensemble Methods</div><div class="deck-meta">15 questions · Bagging, Random Forests, AdaBoost, Gradient Boosting, Stacking</div></div></div>
+      <div class="deck-right"><span class="deck-badge">15 cards</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_12.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">12</div><div><div class="deck-name">Dimensionality Reduction</div><div class="deck-meta">12 questions · PCA, explained variance, LLE, manifold learning</div></div></div>
+      <div class="deck-right"><span class="deck-badge">12 cards</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_13.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">13</div><div><div class="deck-name">Unsupervised Learning — K-Means</div><div class="deck-meta">11 questions · K-Means, inertia, silhouette, K-Means++, applications</div></div></div>
+      <div class="deck-right"><span class="deck-badge">11 cards</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_14.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">14</div><div><div class="deck-name">Unsupervised Learning — EM</div><div class="deck-meta">10 questions · GMMs, EM algorithm, BIC, AIC, anomaly detection</div></div></div>
+      <div class="deck-right"><span class="deck-badge">10 cards</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_15.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">15</div><div><div class="deck-name">Intro to Deep Neural Networks</div><div class="deck-meta">12 questions · Perceptron, activation functions, backpropagation, MLP architecture</div></div></div>
+      <div class="deck-right"><span class="deck-badge">12 cards</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_16.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">16</div><div><div class="deck-name">Building Simple Deep Neural Networks</div><div class="deck-meta">12 questions · Keras APIs, Sequential, Functional, Subclassing, Wide &amp; Deep</div></div></div>
+      <div class="deck-right"><span class="deck-badge">12 cards</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_19.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">19</div><div><div class="deck-name">Convolutional Neural Networks</div><div class="deck-meta">15 questions · Conv layers, pooling, LeNet, AlexNet, ResNet, transfer learning</div></div></div>
+      <div class="deck-right"><span class="deck-badge">15 cards</span></div>
+    </a>
   </div>
   <div class="info-box">
     <strong>How it works:</strong> Work through each lecture deck. Any question you miss is automatically added to your <strong>Missed Questions Deck</strong>. In that deck you need to get each question right <strong>3 times in a row</strong> to retire it. Your progress saves in your browser across sessions.
@@ -130,10 +159,10 @@
   else{document.getElementById('missedHeroSub').textContent=count+' question'+(count!==1?'s':'')+' to drill. Get each right 3 times in a row to retire it.';}
   try{
     const seen=JSON.parse(localStorage.getItem('ml_review_seen')||'[]').length;
-    const total=220;
+    const total=320;
     document.getElementById('reviewHeroCount').childNodes[0].textContent=Math.min(seen,total);
     document.getElementById('reviewSeenCount').textContent='of '+total+' seen';
-  }catch(e){document.getElementById('reviewHeroCount').childNodes[0].textContent='0';document.getElementById('reviewSeenCount').textContent='of 220 seen';}
+  }catch(e){document.getElementById('reviewHeroCount').childNodes[0].textContent='0';document.getElementById('reviewSeenCount').textContent='of 320 seen';}
 </script>
 </body>
 </html>

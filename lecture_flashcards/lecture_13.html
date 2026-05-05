@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 13 — Unsupervised Learning — K-Means</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#f5f4f0;--surface:#ffffff;--surface2:#f0eeea;--border:#e2dfd8;--text:#1a1916;--muted:#8a8680;--accent:#5046e4;--accent-dim:rgba(80,70,228,0.08);--accent-border:rgba(80,70,228,0.2);--green:#16a05a;--green-bg:#edf7f2;--green-border:#b6e4cf;--red:#d63a3a;--red-bg:#fdf0f0;--red-border:#f5c0c0;--reveal-bg:#f7f6f2;--yellow-bg:#fffbea;--yellow-border:#f5e49a;--orange:#d97706;--orange-bg:#fff7ed;--orange-border:#fed7aa;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  header{padding:1.25rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);gap:1rem;flex-wrap:wrap;}
+  .header-left{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+  .back-link{font-size:13px;color:var(--muted);text-decoration:none;}.back-link:hover{color:var(--text);}
+  .header-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);}
+  .header-badge{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);padding:3px 10px;border-radius:99px;}
+  .score-display{font-size:14px;color:var(--muted);white-space:nowrap;}.score-display span{color:var(--text);font-weight:600;}
+  .progress-wrap{height:3px;background:var(--border);}
+  .progress-fill{height:3px;background:var(--accent);transition:width 0.4s ease;width:0%;}
+  .tab-nav{display:flex;border-bottom:1px solid var(--border);background:var(--surface);padding:0 2rem;}
+  .tab-btn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:12px 18px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--muted);cursor:pointer;transition:color 0.15s,border-color 0.15s;margin-bottom:-1px;}
+  .tab-btn:hover{color:var(--text);}.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .pane{display:none;}.pane.active{display:block;}
+  .notes-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;}
+  .notes-intro{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;}
+  .note-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .note-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.12s;}
+  .note-header:hover{background:var(--surface2);}
+  .note-header-left{display:flex;align-items:center;gap:10px;}
+  .note-icon{width:28px;height:28px;border-radius:6px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .note-title{font-size:14px;font-weight:500;color:var(--text);}
+  .note-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s;}
+  .note-block.open .note-chevron{transform:rotate(180deg);}
+  .note-body{display:none;padding:0 1.25rem 1.25rem;border-top:1px solid var(--border);}
+  .note-block.open .note-body{display:block;}
+  .note-body ul{margin-top:0.75rem;padding-left:1.25rem;}
+  .note-body li{font-size:14px;color:var(--text);line-height:1.75;margin-bottom:4px;}
+  .note-body li strong{font-weight:600;}
+  .equation-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'DM Sans',sans-serif;margin-top:1rem;}
+  .equation-box{background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:12px 16px;font-size:14px;font-family:'Georgia',serif;color:var(--text);text-align:center;line-height:1.8;}
+  .equation-note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6;}
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.75rem;}
+  .tag{font-size:11px;padding:2px 9px;border-radius:99px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  .tag.important{background:var(--accent-dim);color:var(--accent);border-color:var(--accent-border);}
+  .quiz-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;display:flex;flex-direction:column;align-items:center;}
+  .shuffle-bar{align-self:stretch;display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;}
+  .shuffle-label{font-size:12px;color:var(--muted);font-weight:500;}
+  .toggle-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;user-select:none;}
+  .toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .toggle-btn.on{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+  .toggle-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background 0.15s;flex-shrink:0;}
+  .toggle-btn.on .toggle-dot{background:var(--accent);}
+  .q-counter{font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5rem;align-self:flex-start;}
+  .question-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;margin-bottom:1.25rem;}
+  .missed-badge{display:none;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);padding:3px 10px;border-radius:99px;margin-bottom:0.75rem;}
+  .missed-badge.show{display:inline-block;}
+  .q-type-badge{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
+  .q-hint{font-size:12px;color:var(--accent);margin-bottom:1rem;font-style:italic;display:none;}
+  .q-text{font-family:'DM Serif Display',serif;font-size:20px;line-height:1.5;color:var(--text);margin-bottom:1.75rem;}
+  .q-equation{font-family:'Georgia',serif;font-size:15px;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;text-align:center;display:none;line-height:1.8;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.15s,background 0.15s;background:var(--surface);}
+  .opt:hover:not(.disabled){border-color:var(--accent);background:var(--accent-dim);}
+  .opt-indicator{width:22px;height:22px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:12px;font-weight:600;color:var(--muted);transition:all 0.15s;}
+  .opt.selected .opt-indicator{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .opt-text{font-size:15px;color:var(--text);line-height:1.5;}
+  .opt.correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.wrong{border-color:var(--red-border);background:var(--red-bg);}
+  .opt.wrong .opt-indicator{background:var(--red);color:#fff;border-color:var(--red);}
+  .opt.reveal-correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.reveal-correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.disabled{cursor:default;}
+  .btn-submit{display:none;margin-top:1rem;background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-submit:hover{opacity:0.88;}.btn-submit.show{display:block;}
+  .explanation{display:none;margin-top:1.25rem;padding:14px 16px;border-radius:10px;background:var(--reveal-bg);border-left:3px solid var(--accent);font-size:14px;color:var(--muted);line-height:1.7;}
+  .explanation.show{display:block;}
+  .missed-notice{display:none;margin-top:10px;padding:10px 14px;border-radius:8px;background:var(--orange-bg);border:1px solid var(--orange-border);font-size:13px;color:var(--orange);font-weight:500;}
+  .missed-notice.show{display:block;}
+  .btn-next{display:none;margin-top:1.5rem;align-self:flex-end;background:var(--accent);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-next:hover{opacity:0.88;}.btn-next.show{display:block;}
+  .summary{display:none;flex-direction:column;align-items:center;text-align:center;padding:3rem 2rem;width:100%;}
+  .summary.show{display:flex;}
+  .summary-score{font-family:'DM Serif Display',serif;font-size:72px;color:var(--accent);line-height:1;margin-bottom:0.5rem;}
+  .summary-label{font-size:14px;color:var(--muted);margin-bottom:0.25rem;}
+  .summary-msg{font-size:17px;color:var(--text);margin:1.25rem 0 1.5rem;line-height:1.6;max-width:400px;}
+  .summary-missed-box{font-size:14px;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:10px;padding:10px 18px;margin-bottom:1.5rem;display:none;}
+  .btn-group{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .btn-restart{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-restart:hover{background:var(--accent-dim);}
+  .link-missed{font-size:14px;color:var(--orange);text-decoration:none;padding:10px 24px;border:1px solid var(--orange-border);border-radius:10px;background:var(--orange-bg);display:none;}
+  .link-home{font-size:14px;color:var(--muted);text-decoration:none;margin-top:0.25rem;}
+  .link-home:hover{color:var(--text);}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <a href="../index.html" class="back-link">← Back</a>
+    <span class="header-title">Lecture 13</span>
+    <span class="header-badge">K-Means</span>
+  </div>
+  <div class="score-display" id="scoreWrap" style="display:none">Score: <span id="scoreDisplay">0 / 0</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+<div class="tab-nav">
+  <button class="tab-btn active" id="tabNotes" onclick="showTab('notes')">📋 Notes</button>
+  <button class="tab-btn" id="tabQuiz" onclick="showTab('quiz')">⚡ Practice Questions</button>
+</div>
+
+<!-- NOTES -->
+<div class="pane active" id="paneNotes">
+  <div class="notes-section">
+    <p class="notes-intro">Key concepts from Lecture 13. Tap each section to expand.</p>
+    <div class="note-block open" id="nb1">
+      <div class="note-header" onclick="toggleNote('nb1')">
+        <div class="note-header-left"><div class="note-icon">🎯</div><span class="note-title">K-Means Algorithm</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>K-Means</strong> assigns each instance to the nearest centroid (cluster center) iteratively.</li>
+          <li>Algorithm: (1) Initialize k centroids randomly. (2) Label each instance with its nearest centroid. (3) Update centroids to be the mean of their assigned instances. (4) Repeat until centroids stop moving.</li>
+          <li>Guaranteed to <strong>converge in a finite number of steps</strong>, but may not find the optimal solution.</li>
+          <li><strong>Hard clustering</strong>: each instance is assigned to exactly one cluster.</li>
+          <li><strong>Soft clustering</strong>: each instance gets a score per cluster (e.g., distance to centroid). Use the transform() method in KMeans.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note-block" id="nb2">
+      <div class="note-header" onclick="toggleNote('nb2')">
+        <div class="note-header-left"><div class="note-icon">🎲</div><span class="note-title">Centroid Initialization</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li>Random initialization can lead to bad solutions (local minima).</li>
+          <li>Mitigation strategies: run the algorithm multiple times with different random seeds and keep the best (lowest inertia) solution.</li>
+          <li><strong>K-Means++</strong>: smarter initialization — pick first centroid randomly, then each subsequent centroid is chosen with probability proportional to its squared distance from the nearest already-chosen centroid.</li>
+          <li>K-Means++ greatly reduces the chance of bad initialization and is the default in Scikit-Learn.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note-block" id="nb3">
+      <div class="note-header" onclick="toggleNote('nb3')">
+        <div class="note-header-left"><div class="note-icon">📏</div><span class="note-title">Finding Optimal k: Elbow & Silhouette</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Inertia</strong>: mean squared distance from each instance to its closest centroid. NOT a good metric for choosing k — keeps decreasing as k increases.</li>
+          <li><strong>Elbow method</strong>: plot inertia vs. k; look for the elbow where inertia stops decreasing sharply.</li>
+          <li><strong>Silhouette coefficient</strong> for an instance: (b − a) / max(a, b), where a = mean intra-cluster distance, b = mean nearest-cluster distance.</li>
+          <li>Silhouette ranges from −1 to +1. Close to +1: well-placed. Close to 0: near boundary. Close to −1: likely in wrong cluster.</li>
+          <li><strong>Silhouette score</strong>: mean silhouette coefficient over all instances. Better metric than inertia for choosing k.</li>
+        </ul>        <div class="equation-label">Silhouette coefficient</div>
+        <div class="equation-box">(b − a) / max(a, b)</div>
+        <div class="equation-note">a = mean distance to same-cluster instances, b = mean distance to nearest-cluster instances</div>
+      </div>
+    </div>
+    <div class="note-block" id="nb4">
+      <div class="note-header" onclick="toggleNote('nb4')">
+        <div class="note-header-left"><div class="note-icon">🔧</div><span class="note-title">K-Means Applications</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Image segmentation</strong>: cluster pixels by color, then replace each pixel with its centroid color.</li>
+          <li><strong>Preprocessing</strong>: use K-Means to reduce a high-dimensional input into k distance features. Can improve classification performance.</li>
+          <li><strong>Semi-supervised learning</strong>: label a small set of representative instances (one per cluster centroid) and propagate labels to nearby instances.</li>
+          <li>Limitations: K-Means assumes roughly <strong>spherical, equal-size clusters</strong>. Struggles with elongated or different-density clusters.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="pane" id="paneQuiz">
+  <div class="quiz-section">
+    <div class="shuffle-bar">
+      <span class="shuffle-label">Shuffle:</span>
+      <button class="toggle-btn on" id="toggleQ" onclick="toggleShuffle('q')"><span class="toggle-dot"></span> Questions</button>
+      <button class="toggle-btn on" id="toggleA" onclick="toggleShuffle('a')"><span class="toggle-dot"></span> Answer choices</button>
+    </div>
+    <div class="q-counter" id="qCounter">Question 1 of 11</div>
+    <div class="question-card" id="questionCard">
+      <div class="missed-badge" id="missedBadge">⚠ Previously missed</div>
+      <div class="q-type-badge" id="qTypeBadge"></div>
+      <div class="q-hint" id="qHint">Select all that apply, then click Submit.</div>
+      <p class="q-text" id="qText"></p>
+      <div class="q-equation" id="qEquation"></div>
+      <div class="options" id="optionsDiv"></div>
+      <button class="btn-submit" id="btnSubmit" onclick="submitMulti()">Submit answer</button>
+      <div class="explanation" id="explanation"></div>
+      <div class="missed-notice" id="missedNotice">⚠ Added to your missed questions deck.</div>
+    </div>
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Next question →</button>
+    <div class="summary" id="summary">
+      <div class="summary-label">Final score</div>
+      <div class="summary-score" id="summaryScore"></div>
+      <div class="summary-label" id="summaryFrac"></div>
+      <p class="summary-msg" id="summaryMsg"></p>
+      <div class="summary-missed-box" id="summaryMissedBox"></div>
+      <div class="btn-group">
+        <button class="btn-restart" onclick="restart()">↺ Restart deck</button>
+        <a href="../missed.html" class="link-missed" id="linkMissed">Review missed questions →</a>
+        <a href="../index.html" class="link-home">← Back to all lectures</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MISSED_KEY='ml_missed_questions';
+function getMissed(){try{return JSON.parse(localStorage.getItem(MISSED_KEY)||'{}');}catch{return{};}}
+function saveMissed(d){localStorage.setItem(MISSED_KEY,JSON.stringify(d));}
+function getMissedCount(){return Object.keys(getMissed()).length;}
+function recordMiss(q){const m=getMissed(),s=JSON.parse(localStorage.getItem('ml_streak_data')||'{}');m[q.id]={id:q.id,lecture:q.lecture,topic:q.topic};s[q.id]=0;saveMissed(m);localStorage.setItem('ml_streak_data',JSON.stringify(s));}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function shuffleOpts(q){if(q.type==='tf')return{opts:q.opts,ans:q.ans};const idxs=shuffle(q.opts.map((_,i)=>i));const map={};idxs.forEach((old,n)=>{map[old]=n;});return{opts:idxs.map(i=>q.opts[i]),ans:Array.isArray(q.ans)?q.ans.map(i=>map[i]):map[q.ans]};}
+
+const QUESTIONS = [
+  {id:"lec13_01",lecture:"Lecture 13",topic:"K-Means",type:"mc",label:"Multiple Choice",q:"What is the stopping condition for the K-Means algorithm?",opts:["When all instances are correctly classified","When the centroids stop moving","When inertia reaches zero","After a fixed number of iterations always"],ans:1,exp:"K-Means iterates until the centroids stop moving (converge). The algorithm is guaranteed to converge in a finite number of steps."},
+  {id:"lec13_02",lecture:"Lecture 13",topic:"K-Means",type:"mc",label:"Multiple Choice",q:"What is the difference between hard clustering and soft clustering in K-Means?",opts:["Hard uses Euclidean distance; soft uses cosine distance","Hard assigns each instance to exactly one cluster; soft gives each instance a score per cluster","Hard clustering uses more iterations","Soft clustering is always preferred"],ans:1,exp:"Hard clustering assigns one label per instance. Soft clustering provides a score (like distance to centroid) for every cluster, giving richer information about cluster membership."},
+  {id:"lec13_03",lecture:"Lecture 13",topic:"Inertia",type:"tf",label:"True / False",q:"Inertia (mean squared distance to nearest centroid) is a reliable metric for choosing the optimal number of clusters k.",opts:["True","False"],ans:1,exp:"False. Inertia always decreases as k increases, so it cannot be used alone to find the optimal k. Use the elbow method or silhouette score instead."},
+  {id:"lec13_04",lecture:"Lecture 13",topic:"K-Means++",type:"mc",label:"Multiple Choice",q:"How does K-Means++ improve on random centroid initialization?",opts:["It runs the algorithm multiple times and keeps the best","It selects initial centroids with probability proportional to squared distance from already-chosen centroids","It uses silhouette scores to pick initial centroids","It starts with k=1 and adds centroids one at a time"],ans:1,exp:"K-Means++ selects each new centroid with probability proportional to its squared distance from the nearest already-chosen centroid. This spreads centroids apart and reduces bad initializations."},
+  {id:"lec13_05",lecture:"Lecture 13",topic:"Silhouette",type:"mc",label:"Multiple Choice",q:"In the silhouette coefficient formula (b − a) / max(a, b), what does 'a' represent?",opts:["Mean distance to the nearest other cluster","Mean distance to the assigned cluster centroid","Mean distance to the farthest cluster","Number of instances in the cluster"],ans:1,exp:"a = mean intra-cluster distance (mean distance to other instances in the same cluster). b = mean nearest-cluster distance (mean distance to instances of the closest other cluster)."},
+  {id:"lec13_06",lecture:"Lecture 13",topic:"Silhouette",type:"mc",label:"Multiple Choice",q:"What does a silhouette coefficient close to −1 indicate?",opts:["The instance is well inside its own cluster","The instance is near a cluster boundary","The instance was likely assigned to the wrong cluster","The cluster has too many instances"],ans:2,exp:"A coefficient near −1 means the instance is far from its assigned cluster and close to another cluster — it was likely assigned to the wrong cluster."},
+  {id:"lec13_07",lecture:"Lecture 13",topic:"Silhouette",type:"mc",label:"Multiple Choice",q:"A silhouette coefficient close to 0 means:",opts:["Perfect cluster assignment","The instance is near a cluster boundary","The instance is in the wrong cluster","The cluster is too large"],ans:1,exp:"A coefficient near 0 means the instance is close to the boundary between clusters — it could plausibly belong to either one."},
+  {id:"lec13_08",lecture:"Lecture 13",topic:"K-Means Limitations",type:"mc",label:"Multiple Choice",q:"Which type of cluster shapes does K-Means struggle with?",opts:["Spherical, equal-sized clusters","Elongated or clusters of different sizes/densities","Clusters with exactly k instances","Clusters in high-dimensional space"],ans:1,exp:"K-Means assumes roughly spherical, equal-sized clusters because it uses Euclidean distance. It performs poorly on elongated, non-spherical, or differently sized clusters."},
+  {id:"lec13_09",lecture:"Lecture 13",topic:"K-Means",type:"tf",label:"True / False",q:"K-Means is guaranteed to find the globally optimal clustering solution.",opts:["True","False"],ans:1,exp:"False. K-Means converges but may find a local minimum, not the global optimum. Running multiple times with different initializations (or using K-Means++) helps."},
+  {id:"lec13_10",lecture:"Lecture 13",topic:"Applications",type:"mc",label:"Multiple Choice",q:"How can K-Means be used as a preprocessing step for classification?",opts:["Replace each feature with its cluster assignment","Use cluster distances as new features; the best k is found via cross-validation performance","Use inertia as a feature","Replace labels with cluster IDs"],ans:1,exp:"After K-Means clustering, the k distances to each centroid become new features. The optimal k is the one that gives best classification performance in cross-validation."},
+  {id:"lec13_11",lecture:"Lecture 13",topic:"K-Means Algorithm",type:"mc",label:"Multiple Choice",q:"What is the correct order of steps in the K-Means algorithm?",opts:["Label instances → update centroids → initialize → repeat","Initialize centroids → label instances → update centroids → repeat","Update centroids → initialize → label instances → repeat","Initialize centroids → update centroids → label instances → repeat"],ans:1,exp:"K-Means: (1) Initialize centroids randomly, (2) label each instance with the nearest centroid, (3) update centroids to the mean of their group, (4) repeat steps 2-3 until convergence."}
+];
+
+const LETTERS=['A','B','C','D','E'];
+let deck=[],idx=0,score=0,answered=0,shuffleQ=true,shuffleA=true,selectedMulti=new Set(),currentAns=null;
+function showTab(tab){document.getElementById('paneNotes').classList.toggle('active',tab==='notes');document.getElementById('paneQuiz').classList.toggle('active',tab==='quiz');document.getElementById('tabNotes').classList.toggle('active',tab==='notes');document.getElementById('tabQuiz').classList.toggle('active',tab==='quiz');document.getElementById('scoreWrap').style.display=tab==='quiz'?'block':'none';}
+function toggleNote(id){document.getElementById(id).classList.toggle('open');}
+function toggleShuffle(w){if(w==='q'){shuffleQ=!shuffleQ;document.getElementById('toggleQ').classList.toggle('on',shuffleQ);}else{shuffleA=!shuffleA;document.getElementById('toggleA').classList.toggle('on',shuffleA);}}
+function buildDeck(){deck=shuffleQ?shuffle([...QUESTIONS]):[...QUESTIONS];}
+function renderQ(){
+  const q=deck[idx];selectedMulti=new Set();
+  document.getElementById('missedBadge').classList.toggle('show',!!getMissed()[q.id]);
+  document.getElementById('missedNotice').classList.remove('show');
+  document.getElementById('qTypeBadge').textContent=q.label;
+  document.getElementById('qHint').style.display=q.type==='ms'?'block':'none';
+  document.getElementById('qText').textContent=q.q;
+  const eqEl=document.getElementById('qEquation');if(q.equation){eqEl.textContent=q.equation;eqEl.style.display='block';}else{eqEl.style.display='none';}
+  document.getElementById('explanation').classList.remove('show');document.getElementById('explanation').textContent='';
+  document.getElementById('btnNext').classList.remove('show');document.getElementById('btnSubmit').classList.remove('show');
+  const{opts,ans}=shuffleA?shuffleOpts(q):{opts:q.opts,ans:q.ans};currentAns=ans;
+  const div=document.getElementById('optionsDiv');div.innerHTML='';
+  opts.forEach((o,i)=>{
+    const el=document.createElement('div');el.className='opt';
+    const ind=document.createElement('span');ind.className='opt-indicator';ind.textContent=q.type==='ms'?'☐':LETTERS[i];
+    const txt=document.createElement('span');txt.className='opt-text';txt.textContent=o;
+    el.appendChild(ind);el.appendChild(txt);
+    if(q.type==='ms'){el.onclick=()=>{if(el.classList.contains('disabled'))return;if(selectedMulti.has(i)){selectedMulti.delete(i);el.classList.remove('selected');ind.textContent='☐';}else{selectedMulti.add(i);el.classList.add('selected');ind.textContent='☑';}document.getElementById('btnSubmit').classList.toggle('show',selectedMulti.size>0);};}
+    else{el.onclick=()=>resolveSingle(i);}
+    div.appendChild(el);
+  });
+  document.getElementById('qCounter').textContent='Question '+(idx+1)+' of '+deck.length;
+  document.getElementById('progressFill').style.width=Math.round((idx/deck.length)*100)+'%';
+  document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+}
+function resolveSingle(chosen){const correct=chosen===currentAns;const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(i===currentAns){opts[i].classList.add(correct&&i===chosen?'correct':'reveal-correct');ind.textContent='✓';}else if(i===chosen){opts[i].classList.add('wrong');ind.textContent='✗';}}finalize(correct);}
+function submitMulti(){const correctSet=new Set(Array.isArray(currentAns)?currentAns:[currentAns]);const correct=selectedMulti.size===correctSet.size&&[...selectedMulti].every(i=>correctSet.has(i));const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('correct');ind.textContent='✓';}else if(!correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('wrong');ind.textContent='✗';}else if(correctSet.has(i)&&!selectedMulti.has(i)){opts[i].classList.add('reveal-correct');ind.textContent='✓';}}document.getElementById('btnSubmit').classList.remove('show');finalize(correct);}
+function finalize(correct){if(correct){score++;}else{recordMiss(deck[idx]);document.getElementById('missedNotice').classList.add('show');}answered++;document.getElementById('scoreDisplay').textContent=score+' / '+answered;const exp=document.getElementById('explanation');exp.textContent=(correct?'✓ Correct. ':'✗ Incorrect. ')+deck[idx].exp;exp.classList.add('show');document.getElementById('btnNext').classList.add('show');}
+function nextQ(){idx++;if(idx>=deck.length)showSummary();else renderQ();}
+function showSummary(){document.getElementById('questionCard').style.display='none';document.getElementById('btnNext').style.display='none';document.getElementById('qCounter').style.display='none';document.getElementById('progressFill').style.width='100%';const pct=Math.round((score/deck.length)*100);document.getElementById('summaryScore').textContent=pct+'%';document.getElementById('summaryFrac').textContent=score+' out of '+deck.length+' correct';document.getElementById('summaryMsg').textContent=pct>=85?'Excellent — you have this lecture locked in.':pct>=65?'Solid effort. Review the ones you missed, then try again.':'Keep at it — go back through the notes tab and restart the deck.';const mc=getMissedCount();if(mc>0){document.getElementById('summaryMissedBox').style.display='block';document.getElementById('summaryMissedBox').textContent=mc+' question'+(mc!==1?'s':'')+' in your missed deck across all lectures.';document.getElementById('linkMissed').style.display='inline-block';}document.getElementById('summary').classList.add('show');}
+function restart(){idx=0;score=0;answered=0;buildDeck();document.getElementById('questionCard').style.display='block';document.getElementById('btnNext').style.display='';document.getElementById('btnNext').classList.remove('show');document.getElementById('qCounter').style.display='block';document.getElementById('summary').classList.remove('show');renderQ();}
+buildDeck();renderQ();
+</script>
+</body>
+</html>
+
+</script>
+</body>
+</html>

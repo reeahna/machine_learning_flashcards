@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 11 — Random Forests & Ensemble Methods</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#f5f4f0;--surface:#ffffff;--surface2:#f0eeea;--border:#e2dfd8;--text:#1a1916;--muted:#8a8680;--accent:#5046e4;--accent-dim:rgba(80,70,228,0.08);--accent-border:rgba(80,70,228,0.2);--green:#16a05a;--green-bg:#edf7f2;--green-border:#b6e4cf;--red:#d63a3a;--red-bg:#fdf0f0;--red-border:#f5c0c0;--reveal-bg:#f7f6f2;--yellow-bg:#fffbea;--yellow-border:#f5e49a;--orange:#d97706;--orange-bg:#fff7ed;--orange-border:#fed7aa;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  header{padding:1.25rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);gap:1rem;flex-wrap:wrap;}
+  .header-left{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+  .back-link{font-size:13px;color:var(--muted);text-decoration:none;}.back-link:hover{color:var(--text);}
+  .header-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);}
+  .header-badge{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);padding:3px 10px;border-radius:99px;}
+  .score-display{font-size:14px;color:var(--muted);white-space:nowrap;}.score-display span{color:var(--text);font-weight:600;}
+  .progress-wrap{height:3px;background:var(--border);}
+  .progress-fill{height:3px;background:var(--accent);transition:width 0.4s ease;width:0%;}
+  .tab-nav{display:flex;border-bottom:1px solid var(--border);background:var(--surface);padding:0 2rem;}
+  .tab-btn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:12px 18px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--muted);cursor:pointer;transition:color 0.15s,border-color 0.15s;margin-bottom:-1px;}
+  .tab-btn:hover{color:var(--text);}.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .pane{display:none;}.pane.active{display:block;}
+  .notes-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;}
+  .notes-intro{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;}
+  .note-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .note-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.12s;}
+  .note-header:hover{background:var(--surface2);}
+  .note-header-left{display:flex;align-items:center;gap:10px;}
+  .note-icon{width:28px;height:28px;border-radius:6px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .note-title{font-size:14px;font-weight:500;color:var(--text);}
+  .note-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s;}
+  .note-block.open .note-chevron{transform:rotate(180deg);}
+  .note-body{display:none;padding:0 1.25rem 1.25rem;border-top:1px solid var(--border);}
+  .note-block.open .note-body{display:block;}
+  .note-body ul{margin-top:0.75rem;padding-left:1.25rem;}
+  .note-body li{font-size:14px;color:var(--text);line-height:1.75;margin-bottom:4px;}
+  .note-body li strong{font-weight:600;}
+  .equation-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'DM Sans',sans-serif;margin-top:1rem;}
+  .equation-box{background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:12px 16px;font-size:14px;font-family:'Georgia',serif;color:var(--text);text-align:center;line-height:1.8;}
+  .equation-note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6;}
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.75rem;}
+  .tag{font-size:11px;padding:2px 9px;border-radius:99px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  .tag.important{background:var(--accent-dim);color:var(--accent);border-color:var(--accent-border);}
+  .quiz-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;display:flex;flex-direction:column;align-items:center;}
+  .shuffle-bar{align-self:stretch;display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;}
+  .shuffle-label{font-size:12px;color:var(--muted);font-weight:500;}
+  .toggle-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;user-select:none;}
+  .toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .toggle-btn.on{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+  .toggle-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background 0.15s;flex-shrink:0;}
+  .toggle-btn.on .toggle-dot{background:var(--accent);}
+  .q-counter{font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5rem;align-self:flex-start;}
+  .question-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;margin-bottom:1.25rem;}
+  .missed-badge{display:none;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);padding:3px 10px;border-radius:99px;margin-bottom:0.75rem;}
+  .missed-badge.show{display:inline-block;}
+  .q-type-badge{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
+  .q-hint{font-size:12px;color:var(--accent);margin-bottom:1rem;font-style:italic;display:none;}
+  .q-text{font-family:'DM Serif Display',serif;font-size:20px;line-height:1.5;color:var(--text);margin-bottom:1.75rem;}
+  .q-equation{font-family:'Georgia',serif;font-size:15px;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;text-align:center;display:none;line-height:1.8;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.15s,background 0.15s;background:var(--surface);}
+  .opt:hover:not(.disabled){border-color:var(--accent);background:var(--accent-dim);}
+  .opt-indicator{width:22px;height:22px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:12px;font-weight:600;color:var(--muted);transition:all 0.15s;}
+  .opt.selected .opt-indicator{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .opt-text{font-size:15px;color:var(--text);line-height:1.5;}
+  .opt.correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.wrong{border-color:var(--red-border);background:var(--red-bg);}
+  .opt.wrong .opt-indicator{background:var(--red);color:#fff;border-color:var(--red);}
+  .opt.reveal-correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.reveal-correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.disabled{cursor:default;}
+  .btn-submit{display:none;margin-top:1rem;background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-submit:hover{opacity:0.88;}.btn-submit.show{display:block;}
+  .explanation{display:none;margin-top:1.25rem;padding:14px 16px;border-radius:10px;background:var(--reveal-bg);border-left:3px solid var(--accent);font-size:14px;color:var(--muted);line-height:1.7;}
+  .explanation.show{display:block;}
+  .missed-notice{display:none;margin-top:10px;padding:10px 14px;border-radius:8px;background:var(--orange-bg);border:1px solid var(--orange-border);font-size:13px;color:var(--orange);font-weight:500;}
+  .missed-notice.show{display:block;}
+  .btn-next{display:none;margin-top:1.5rem;align-self:flex-end;background:var(--accent);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-next:hover{opacity:0.88;}.btn-next.show{display:block;}
+  .summary{display:none;flex-direction:column;align-items:center;text-align:center;padding:3rem 2rem;width:100%;}
+  .summary.show{display:flex;}
+  .summary-score{font-family:'DM Serif Display',serif;font-size:72px;color:var(--accent);line-height:1;margin-bottom:0.5rem;}
+  .summary-label{font-size:14px;color:var(--muted);margin-bottom:0.25rem;}
+  .summary-msg{font-size:17px;color:var(--text);margin:1.25rem 0 1.5rem;line-height:1.6;max-width:400px;}
+  .summary-missed-box{font-size:14px;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:10px;padding:10px 18px;margin-bottom:1.5rem;display:none;}
+  .btn-group{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .btn-restart{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-restart:hover{background:var(--accent-dim);}
+  .link-missed{font-size:14px;color:var(--orange);text-decoration:none;padding:10px 24px;border:1px solid var(--orange-border);border-radius:10px;background:var(--orange-bg);display:none;}
+  .link-home{font-size:14px;color:var(--muted);text-decoration:none;margin-top:0.25rem;}
+  .link-home:hover{color:var(--text);}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <a href="../index.html" class="back-link">← Back</a>
+    <span class="header-title">Lecture 11</span>
+    <span class="header-badge">Random Forests</span>
+  </div>
+  <div class="score-display" id="scoreWrap" style="display:none">Score: <span id="scoreDisplay">0 / 0</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+<div class="tab-nav">
+  <button class="tab-btn active" id="tabNotes" onclick="showTab('notes')">📋 Notes</button>
+  <button class="tab-btn" id="tabQuiz" onclick="showTab('quiz')">⚡ Practice Questions</button>
+</div>
+
+<!-- NOTES -->
+<div class="pane active" id="paneNotes">
+  <div class="notes-section">
+    <p class="notes-intro">Key concepts from Lecture 11. Tap each section to expand.</p>
+    <div class="note-block open" id="nb1">
+      <div class="note-header" onclick="toggleNote('nb1')">
+        <div class="note-header-left"><div class="note-icon">🌲</div><span class="note-title">Ensemble Learning & Voting</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Ensemble Learning</strong>: aggregating predictions from a group of predictors (classifiers or regressors) typically gives better results than any single predictor.</li>
+          <li><strong>Hard voting</strong>: predict the class that gets the most votes across predictors.</li>
+          <li><strong>Soft voting</strong>: average the predicted class probabilities (requires predict_proba). Often outperforms hard voting.</li>
+          <li>Ensembles work best when predictors are <strong>diverse and independent</strong>.</li>
+          <li>People often use ensembles near the end of a project to combine several good predictors.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note-block" id="nb2">
+      <div class="note-header" onclick="toggleNote('nb2')">
+        <div class="note-header-left"><div class="note-icon">🎒</div><span class="note-title">Bagging & Pasting</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Bagging</strong> (bootstrap aggregating): train each predictor on a random subset of training data sampled <em>with replacement</em>.</li>
+          <li><strong>Pasting</strong>: same but sampled <em>without replacement</em>.</li>
+          <li>Each predictor sees a different subset, so they make different errors — aggregation reduces variance.</li>
+          <li>Net effect: ensemble has <strong>similar bias but lower variance</strong> than a single predictor trained on the full set.</li>
+          <li><strong>Out-of-bag (OOB) evaluation</strong>: with bagging, ~37% of instances are never sampled. These can be used for evaluation without a separate validation set. Set oob_score=True in Scikit-Learn.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note-block" id="nb3">
+      <div class="note-header" onclick="toggleNote('nb3')">
+        <div class="note-header-left"><div class="note-icon">🌳</div><span class="note-title">Random Forests</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Random Forest</strong>: an ensemble of Decision Trees trained via bagging, typically with max_samples set to training set size.</li>
+          <li>Extra randomness: at each node, only a <strong>random subset of features</strong> is considered for splitting (max_features hyperparameter). This decorrelates the trees.</li>
+          <li><strong>Feature importance</strong>: Random Forests measure importance by how much tree nodes using that feature reduce impurity on average (across all trees). Very handy for feature selection.</li>
+          <li><strong>Extra-Trees (Extremely Randomized Trees)</strong>: uses random thresholds for each feature instead of searching for the best one. Even more random — lower variance but higher bias. Much faster to train.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note-block" id="nb4">
+      <div class="note-header" onclick="toggleNote('nb4')">
+        <div class="note-header-left"><div class="note-icon">⚡</div><span class="note-title">Boosting</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Boosting</strong>: combines weak learners into a strong learner by training predictors <em>sequentially</em>, each correcting its predecessor.</li>
+          <li><strong>AdaBoost</strong>: increases the weight of misclassified instances after each predictor, so the next predictor focuses on the hard cases. Predictors are combined using weighted voting.</li>
+          <li><strong>Gradient Boosting</strong>: fits each new predictor to the <em>residual errors</em> of the previous predictor. Can use any differentiable loss function.</li>
+          <li>Gradient Boosting with too few trees: underfitting. Too many trees: overfitting the training set.</li>
+          <li>Use learning_rate to scale each tree&#39;s contribution. Small learning_rate + many trees = better but slower.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note-block" id="nb5">
+      <div class="note-header" onclick="toggleNote('nb5')">
+        <div class="note-header-left"><div class="note-icon">🔀</div><span class="note-title">Stacking</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Stacking</strong> (stacked generalization): instead of using a voting function to aggregate predictions, train a <strong>blender</strong> (meta-learner) to perform the aggregation.</li>
+          <li>Hold-out set is used to train the blender on predictions of base predictors.</li>
+          <li>Can train multiple layers of blenders.</li>
+          <li>More flexible than voting but more complex to implement.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="pane" id="paneQuiz">
+  <div class="quiz-section">
+    <div class="shuffle-bar">
+      <span class="shuffle-label">Shuffle:</span>
+      <button class="toggle-btn on" id="toggleQ" onclick="toggleShuffle('q')"><span class="toggle-dot"></span> Questions</button>
+      <button class="toggle-btn on" id="toggleA" onclick="toggleShuffle('a')"><span class="toggle-dot"></span> Answer choices</button>
+    </div>
+    <div class="q-counter" id="qCounter">Question 1 of 15</div>
+    <div class="question-card" id="questionCard">
+      <div class="missed-badge" id="missedBadge">⚠ Previously missed</div>
+      <div class="q-type-badge" id="qTypeBadge"></div>
+      <div class="q-hint" id="qHint">Select all that apply, then click Submit.</div>
+      <p class="q-text" id="qText"></p>
+      <div class="q-equation" id="qEquation"></div>
+      <div class="options" id="optionsDiv"></div>
+      <button class="btn-submit" id="btnSubmit" onclick="submitMulti()">Submit answer</button>
+      <div class="explanation" id="explanation"></div>
+      <div class="missed-notice" id="missedNotice">⚠ Added to your missed questions deck.</div>
+    </div>
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Next question →</button>
+    <div class="summary" id="summary">
+      <div class="summary-label">Final score</div>
+      <div class="summary-score" id="summaryScore"></div>
+      <div class="summary-label" id="summaryFrac"></div>
+      <p class="summary-msg" id="summaryMsg"></p>
+      <div class="summary-missed-box" id="summaryMissedBox"></div>
+      <div class="btn-group">
+        <button class="btn-restart" onclick="restart()">↺ Restart deck</button>
+        <a href="../missed.html" class="link-missed" id="linkMissed">Review missed questions →</a>
+        <a href="../index.html" class="link-home">← Back to all lectures</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MISSED_KEY='ml_missed_questions';
+function getMissed(){try{return JSON.parse(localStorage.getItem(MISSED_KEY)||'{}');}catch{return{};}}
+function saveMissed(d){localStorage.setItem(MISSED_KEY,JSON.stringify(d));}
+function getMissedCount(){return Object.keys(getMissed()).length;}
+function recordMiss(q){const m=getMissed(),s=JSON.parse(localStorage.getItem('ml_streak_data')||'{}');m[q.id]={id:q.id,lecture:q.lecture,topic:q.topic};s[q.id]=0;saveMissed(m);localStorage.setItem('ml_streak_data',JSON.stringify(s));}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function shuffleOpts(q){if(q.type==='tf')return{opts:q.opts,ans:q.ans};const idxs=shuffle(q.opts.map((_,i)=>i));const map={};idxs.forEach((old,n)=>{map[old]=n;});return{opts:idxs.map(i=>q.opts[i]),ans:Array.isArray(q.ans)?q.ans.map(i=>map[i]):map[q.ans]};}
+
+const QUESTIONS = [
+  {id:"lec11_01",lecture:"Lecture 11",topic:"Ensemble Learning",type:"mc",label:"Multiple Choice",q:"What is the key advantage of ensemble methods over single predictors?",opts:["They always require less data","Aggregating diverse predictors typically produces better predictions","They train faster","They require no hyperparameter tuning"],ans:1,exp:"An ensemble aggregates predictions from multiple predictors. When predictors are diverse and make independent errors, aggregation reduces variance and improves overall performance."},
+  {id:"lec11_02",lecture:"Lecture 11",topic:"Voting",type:"mc",label:"Multiple Choice",q:"What is the difference between hard voting and soft voting in ensemble classifiers?",opts:["Hard voting uses more predictors","Soft voting averages predicted class probabilities; hard voting takes the majority class vote","Hard voting requires more memory","Soft voting only works with decision trees"],ans:1,exp:"Hard voting predicts the most common class. Soft voting averages probabilities across predictors and predicts the class with the highest average probability — often better."},
+  {id:"lec11_03",lecture:"Lecture 11",topic:"Bagging",type:"mc",label:"Multiple Choice",q:"What is the key difference between bagging and pasting?",opts:["Bagging uses different algorithms; pasting uses the same","Bagging samples with replacement; pasting samples without replacement","Bagging uses all features; pasting samples features too","Pasting is only for regression"],ans:1,exp:"Bagging = bootstrap aggregating (with replacement). Pasting = without replacement. Both create diverse subsets for each predictor."},
+  {id:"lec11_04",lecture:"Lecture 11",topic:"Bagging",type:"mc",label:"Multiple Choice",q:"What effect does bagging have on bias and variance compared to a single predictor trained on the full set?",opts:["Higher bias, lower variance","Similar bias, lower variance","Lower bias, higher variance","Both bias and variance decrease"],ans:1,exp:"Each individual bagged predictor has slightly higher bias than one trained on the full set, but aggregation reduces variance. Net result: similar bias, lower variance."},
+  {id:"lec11_05",lecture:"Lecture 11",topic:"Out-of-Bag",type:"tf",label:"True / False",q:"With bagging, approximately 37% of training instances are never sampled for any given predictor, and these can be used for out-of-bag evaluation.",opts:["True","False"],ans:0,exp:"True. With bootstrap sampling, each predictor sees about 63% of instances. The remaining ~37% out-of-bag instances can serve as a free validation set."},
+  {id:"lec11_06",lecture:"Lecture 11",topic:"Random Forests",type:"mc",label:"Multiple Choice",q:"How does a Random Forest introduce extra randomness beyond bagging?",opts:["It uses a different activation function","At each node, only a random subset of features is considered for splitting","It samples the target variable randomly","It uses soft voting with random weights"],ans:1,exp:"Random Forests add feature randomness: at each split, only max_features (a random subset) are evaluated, decorrelating the trees and reducing variance."},
+  {id:"lec11_07",lecture:"Lecture 11",topic:"Feature Importance",type:"mc",label:"Multiple Choice",q:"How does Scikit-Learn compute feature importance in a Random Forest?",opts:["By the correlation of each feature with the target","By how much tree nodes using that feature reduce impurity on average across all trees","By counting how many times a feature is selected as root","By the coefficient magnitude after training a linear model"],ans:1,exp:"Feature importance = average impurity reduction weighted by the number of samples reaching each node using that feature, averaged across all trees."},
+  {id:"lec11_08",lecture:"Lecture 11",topic:"Extra-Trees",type:"mc",label:"Multiple Choice",q:"What makes Extra-Trees (Extremely Randomized Trees) different from a standard Random Forest?",opts:["Extra-Trees use soft voting","Extra-Trees also use random thresholds for each feature rather than searching for the best threshold","Extra-Trees only work for regression","Extra-Trees sample fewer training instances"],ans:1,exp:"Extra-Trees add even more randomness by using random thresholds for splitting, not just random feature subsets. This makes them faster to train but introduces higher bias."},
+  {id:"lec11_09",lecture:"Lecture 11",topic:"Boosting",type:"mc",label:"Multiple Choice",q:"What is the core idea of boosting?",opts:["Train predictors in parallel on different subsets","Train predictors sequentially, each correcting its predecessor","Average predictions of identical predictors","Use a single strong predictor with high complexity"],ans:1,exp:"Boosting chains predictors sequentially. Each new predictor focuses on the errors of the previous ensemble, gradually improving overall performance."},
+  {id:"lec11_10",lecture:"Lecture 11",topic:"AdaBoost",type:"mc",label:"Multiple Choice",q:"How does AdaBoost handle misclassified instances during training?",opts:["It removes them from the training set","It increases their weight so the next predictor focuses on them","It duplicates them in the training set","It assigns them to a separate validation set"],ans:1,exp:"AdaBoost increases the relative weight of misclassified training instances after each predictor, so subsequent predictors focus more on those hard cases."},
+  {id:"lec11_11",lecture:"Lecture 11",topic:"Gradient Boosting",type:"mc",label:"Multiple Choice",q:"What does each new tree in Gradient Boosting fit?",opts:["The original target values","The residual errors of the previous predictor","A random subset of the target values","The weighted version of the original targets"],ans:1,exp:"Gradient Boosting fits each new predictor to the residual errors made by the previous predictor. The final prediction is the sum of all trees."},
+  {id:"lec11_12",lecture:"Lecture 11",topic:"Gradient Boosting",type:"mc",label:"Multiple Choice",q:"In Gradient Boosting, what effect does using a very small learning_rate with many estimators have?",opts:["Underfitting due to too many corrections","Better generalization but slower training","Overfitting due to too many trees","No effect on performance"],ans:1,exp:"Shrinking each tree contribution with a small learning_rate (shrinkage) requires more trees but generally produces better generalization. This is the bias-variance trade-off in boosting."},
+  {id:"lec11_13",lecture:"Lecture 11",topic:"Stacking",type:"mc",label:"Multiple Choice",q:"What is the key difference between stacking and voting ensembles?",opts:["Stacking uses more trees","Stacking trains a blender model to aggregate predictions rather than using a fixed aggregation rule","Stacking only works for classification","Voting requires more memory than stacking"],ans:1,exp:"Stacking uses a trained meta-learner (blender) to combine base predictor outputs, instead of a fixed rule like majority voting or averaging."},
+  {id:"lec11_14",lecture:"Lecture 11",topic:"Random Forests",type:"tf",label:"True / False",q:"Random Forests are considered one of the most powerful Machine Learning algorithms despite their simplicity.",opts:["True","False"],ans:0,exp:"True. Random Forests are highly effective, versatile, and require relatively little hyperparameter tuning, making them one of the go-to algorithms in practice."},
+  {id:"lec11_15",lecture:"Lecture 11",topic:"Ensemble Methods",type:"mc",label:"Multiple Choice",q:"When is the best time to apply ensemble methods in a project?",opts:["At the very beginning, before exploring individual models","Near the end of the project, to combine several good predictors","Only when using deep learning","Only on very large datasets"],ans:1,exp:"People typically use ensemble methods near the end of a project, once they have already built a few good individual predictors to combine."}
+];
+
+const LETTERS=['A','B','C','D','E'];
+let deck=[],idx=0,score=0,answered=0,shuffleQ=true,shuffleA=true,selectedMulti=new Set(),currentAns=null;
+function showTab(tab){document.getElementById('paneNotes').classList.toggle('active',tab==='notes');document.getElementById('paneQuiz').classList.toggle('active',tab==='quiz');document.getElementById('tabNotes').classList.toggle('active',tab==='notes');document.getElementById('tabQuiz').classList.toggle('active',tab==='quiz');document.getElementById('scoreWrap').style.display=tab==='quiz'?'block':'none';}
+function toggleNote(id){document.getElementById(id).classList.toggle('open');}
+function toggleShuffle(w){if(w==='q'){shuffleQ=!shuffleQ;document.getElementById('toggleQ').classList.toggle('on',shuffleQ);}else{shuffleA=!shuffleA;document.getElementById('toggleA').classList.toggle('on',shuffleA);}}
+function buildDeck(){deck=shuffleQ?shuffle([...QUESTIONS]):[...QUESTIONS];}
+function renderQ(){
+  const q=deck[idx];selectedMulti=new Set();
+  document.getElementById('missedBadge').classList.toggle('show',!!getMissed()[q.id]);
+  document.getElementById('missedNotice').classList.remove('show');
+  document.getElementById('qTypeBadge').textContent=q.label;
+  document.getElementById('qHint').style.display=q.type==='ms'?'block':'none';
+  document.getElementById('qText').textContent=q.q;
+  const eqEl=document.getElementById('qEquation');if(q.equation){eqEl.textContent=q.equation;eqEl.style.display='block';}else{eqEl.style.display='none';}
+  document.getElementById('explanation').classList.remove('show');document.getElementById('explanation').textContent='';
+  document.getElementById('btnNext').classList.remove('show');document.getElementById('btnSubmit').classList.remove('show');
+  const{opts,ans}=shuffleA?shuffleOpts(q):{opts:q.opts,ans:q.ans};currentAns=ans;
+  const div=document.getElementById('optionsDiv');div.innerHTML='';
+  opts.forEach((o,i)=>{
+    const el=document.createElement('div');el.className='opt';
+    const ind=document.createElement('span');ind.className='opt-indicator';ind.textContent=q.type==='ms'?'☐':LETTERS[i];
+    const txt=document.createElement('span');txt.className='opt-text';txt.textContent=o;
+    el.appendChild(ind);el.appendChild(txt);
+    if(q.type==='ms'){el.onclick=()=>{if(el.classList.contains('disabled'))return;if(selectedMulti.has(i)){selectedMulti.delete(i);el.classList.remove('selected');ind.textContent='☐';}else{selectedMulti.add(i);el.classList.add('selected');ind.textContent='☑';}document.getElementById('btnSubmit').classList.toggle('show',selectedMulti.size>0);};}
+    else{el.onclick=()=>resolveSingle(i);}
+    div.appendChild(el);
+  });
+  document.getElementById('qCounter').textContent='Question '+(idx+1)+' of '+deck.length;
+  document.getElementById('progressFill').style.width=Math.round((idx/deck.length)*100)+'%';
+  document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+}
+function resolveSingle(chosen){const correct=chosen===currentAns;const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(i===currentAns){opts[i].classList.add(correct&&i===chosen?'correct':'reveal-correct');ind.textContent='✓';}else if(i===chosen){opts[i].classList.add('wrong');ind.textContent='✗';}}finalize(correct);}
+function submitMulti(){const correctSet=new Set(Array.isArray(currentAns)?currentAns:[currentAns]);const correct=selectedMulti.size===correctSet.size&&[...selectedMulti].every(i=>correctSet.has(i));const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('correct');ind.textContent='✓';}else if(!correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('wrong');ind.textContent='✗';}else if(correctSet.has(i)&&!selectedMulti.has(i)){opts[i].classList.add('reveal-correct');ind.textContent='✓';}}document.getElementById('btnSubmit').classList.remove('show');finalize(correct);}
+function finalize(correct){if(correct){score++;}else{recordMiss(deck[idx]);document.getElementById('missedNotice').classList.add('show');}answered++;document.getElementById('scoreDisplay').textContent=score+' / '+answered;const exp=document.getElementById('explanation');exp.textContent=(correct?'✓ Correct. ':'✗ Incorrect. ')+deck[idx].exp;exp.classList.add('show');document.getElementById('btnNext').classList.add('show');}
+function nextQ(){idx++;if(idx>=deck.length)showSummary();else renderQ();}
+function showSummary(){document.getElementById('questionCard').style.display='none';document.getElementById('btnNext').style.display='none';document.getElementById('qCounter').style.display='none';document.getElementById('progressFill').style.width='100%';const pct=Math.round((score/deck.length)*100);document.getElementById('summaryScore').textContent=pct+'%';document.getElementById('summaryFrac').textContent=score+' out of '+deck.length+' correct';document.getElementById('summaryMsg').textContent=pct>=85?'Excellent — you have this lecture locked in.':pct>=65?'Solid effort. Review the ones you missed, then try again.':'Keep at it — go back through the notes tab and restart the deck.';const mc=getMissedCount();if(mc>0){document.getElementById('summaryMissedBox').style.display='block';document.getElementById('summaryMissedBox').textContent=mc+' question'+(mc!==1?'s':'')+' in your missed deck across all lectures.';document.getElementById('linkMissed').style.display='inline-block';}document.getElementById('summary').classList.add('show');}
+function restart(){idx=0;score=0;answered=0;buildDeck();document.getElementById('questionCard').style.display='block';document.getElementById('btnNext').style.display='';document.getElementById('btnNext').classList.remove('show');document.getElementById('qCounter').style.display='block';document.getElementById('summary').classList.remove('show');renderQ();}
+buildDeck();renderQ();
+</script>
+</body>
+</html>
+
+</script>
+</body>
+</html>

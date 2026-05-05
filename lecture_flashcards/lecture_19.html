@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 19 — CNNs</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#f5f4f0;--surface:#ffffff;--surface2:#f0eeea;--border:#e2dfd8;--text:#1a1916;--muted:#8a8680;--accent:#5046e4;--accent-dim:rgba(80,70,228,0.08);--accent-border:rgba(80,70,228,0.2);--green:#16a05a;--green-bg:#edf7f2;--green-border:#b6e4cf;--red:#d63a3a;--red-bg:#fdf0f0;--red-border:#f5c0c0;--reveal-bg:#f7f6f2;--yellow-bg:#fffbea;--yellow-border:#f5e49a;--orange:#d97706;--orange-bg:#fff7ed;--orange-border:#fed7aa;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  header{padding:1.25rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);gap:1rem;flex-wrap:wrap;}
+  .header-left{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+  .back-link{font-size:13px;color:var(--muted);text-decoration:none;}.back-link:hover{color:var(--text);}
+  .header-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);}
+  .header-badge{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);padding:3px 10px;border-radius:99px;}
+  .score-display{font-size:14px;color:var(--muted);white-space:nowrap;}.score-display span{color:var(--text);font-weight:600;}
+  .progress-wrap{height:3px;background:var(--border);}
+  .progress-fill{height:3px;background:var(--accent);transition:width 0.4s ease;width:0%;}
+  .tab-nav{display:flex;border-bottom:1px solid var(--border);background:var(--surface);padding:0 2rem;}
+  .tab-btn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:12px 18px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--muted);cursor:pointer;transition:color 0.15s,border-color 0.15s;margin-bottom:-1px;}
+  .tab-btn:hover{color:var(--text);}.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .pane{display:none;}.pane.active{display:block;}
+  .notes-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;}
+  .notes-intro{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;}
+  .note-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .note-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.12s;}
+  .note-header:hover{background:var(--surface2);}
+  .note-header-left{display:flex;align-items:center;gap:10px;}
+  .note-icon{width:28px;height:28px;border-radius:6px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .note-title{font-size:14px;font-weight:500;color:var(--text);}
+  .note-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s;}
+  .note-block.open .note-chevron{transform:rotate(180deg);}
+  .note-body{display:none;padding:0 1.25rem 1.25rem;border-top:1px solid var(--border);}
+  .note-block.open .note-body{display:block;}
+  .note-body ul{margin-top:0.75rem;padding-left:1.25rem;}
+  .note-body li{font-size:14px;color:var(--text);line-height:1.75;margin-bottom:4px;}
+  .note-body li strong{font-weight:600;}
+  .equation-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'DM Sans',sans-serif;margin-top:1rem;}
+  .equation-box{background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:12px 16px;font-size:14px;font-family:'Georgia',serif;color:var(--text);text-align:center;line-height:1.8;}
+  .equation-note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6;}
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.75rem;}
+  .tag{font-size:11px;padding:2px 9px;border-radius:99px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  .tag.important{background:var(--accent-dim);color:var(--accent);border-color:var(--accent-border);}
+  .quiz-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;display:flex;flex-direction:column;align-items:center;}
+  .shuffle-bar{align-self:stretch;display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;}
+  .shuffle-label{font-size:12px;color:var(--muted);font-weight:500;}
+  .toggle-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;user-select:none;}
+  .toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .toggle-btn.on{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+  .toggle-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background 0.15s;flex-shrink:0;}
+  .toggle-btn.on .toggle-dot{background:var(--accent);}
+  .q-counter{font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5rem;align-self:flex-start;}
+  .question-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;margin-bottom:1.25rem;}
+  .missed-badge{display:none;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);padding:3px 10px;border-radius:99px;margin-bottom:0.75rem;}
+  .missed-badge.show{display:inline-block;}
+  .q-type-badge{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
+  .q-hint{font-size:12px;color:var(--accent);margin-bottom:1rem;font-style:italic;display:none;}
+  .q-text{font-family:'DM Serif Display',serif;font-size:20px;line-height:1.5;color:var(--text);margin-bottom:1.75rem;}
+  .q-equation{font-family:'Georgia',serif;font-size:15px;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;text-align:center;display:none;line-height:1.8;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.15s,background 0.15s;background:var(--surface);}
+  .opt:hover:not(.disabled){border-color:var(--accent);background:var(--accent-dim);}
+  .opt-indicator{width:22px;height:22px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:12px;font-weight:600;color:var(--muted);transition:all 0.15s;}
+  .opt.selected .opt-indicator{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .opt-text{font-size:15px;color:var(--text);line-height:1.5;}
+  .opt.correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.wrong{border-color:var(--red-border);background:var(--red-bg);}
+  .opt.wrong .opt-indicator{background:var(--red);color:#fff;border-color:var(--red);}
+  .opt.reveal-correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.reveal-correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.disabled{cursor:default;}
+  .btn-submit{display:none;margin-top:1rem;background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-submit:hover{opacity:0.88;}.btn-submit.show{display:block;}
+  .explanation{display:none;margin-top:1.25rem;padding:14px 16px;border-radius:10px;background:var(--reveal-bg);border-left:3px solid var(--accent);font-size:14px;color:var(--muted);line-height:1.7;}
+  .explanation.show{display:block;}
+  .missed-notice{display:none;margin-top:10px;padding:10px 14px;border-radius:8px;background:var(--orange-bg);border:1px solid var(--orange-border);font-size:13px;color:var(--orange);font-weight:500;}
+  .missed-notice.show{display:block;}
+  .btn-next{display:none;margin-top:1.5rem;align-self:flex-end;background:var(--accent);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-next:hover{opacity:0.88;}.btn-next.show{display:block;}
+  .summary{display:none;flex-direction:column;align-items:center;text-align:center;padding:3rem 2rem;width:100%;}
+  .summary.show{display:flex;}
+  .summary-score{font-family:'DM Serif Display',serif;font-size:72px;color:var(--accent);line-height:1;margin-bottom:0.5rem;}
+  .summary-label{font-size:14px;color:var(--muted);margin-bottom:0.25rem;}
+  .summary-msg{font-size:17px;color:var(--text);margin:1.25rem 0 1.5rem;line-height:1.6;max-width:400px;}
+  .summary-missed-box{font-size:14px;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:10px;padding:10px 18px;margin-bottom:1.5rem;display:none;}
+  .btn-group{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .btn-restart{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-restart:hover{background:var(--accent-dim);}
+  .link-missed{font-size:14px;color:var(--orange);text-decoration:none;padding:10px 24px;border:1px solid var(--orange-border);border-radius:10px;background:var(--orange-bg);display:none;}
+  .link-home{font-size:14px;color:var(--muted);text-decoration:none;margin-top:0.25rem;}
+  .link-home:hover{color:var(--text);}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <a href="../index.html" class="back-link">← Back</a>
+    <span class="header-title">Lecture 19</span>
+    <span class="header-badge">Convolutional Neural Networks</span>
+  </div>
+  <div class="score-display" id="scoreWrap" style="display:none">Score: <span id="scoreDisplay">0 / 0</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+<div class="tab-nav">
+  <button class="tab-btn active" id="tabNotes" onclick="showTab('notes')">📋 Notes</button>
+  <button class="tab-btn" id="tabQuiz" onclick="showTab('quiz')">⚡ Practice Questions</button>
+</div>
+
+<!-- NOTES -->
+<div class="pane active" id="paneNotes">
+  <div class="notes-section">
+    <p class="notes-intro">Key concepts from Lecture 19. Tap each section to expand.</p>
+    <div class="note-block open" id="nb1">
+      <div class="note-header" onclick="toggleNote('nb1')">
+        <div class="note-header-left"><div class="note-icon">🔲</div><span class="note-title">Convolutional Layers</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Convolutional layer</strong>: the most important building block of a CNN. Neurons are connected only to a small region of the previous layer called the <strong>receptive field</strong> — not every pixel.</li>
+          <li>This allows early layers to detect low-level features (edges), and later layers to combine them into high-level features (faces, objects) — <strong>hierarchical feature detection</strong>.</li>
+          <li>A <strong>filter (kernel)</strong> slides across the input and produces one <strong>feature map</strong>.</li>
+          <li><strong>Parameter sharing</strong>: all neurons in a given feature map share the same weights and bias. Neurons in different feature maps have different parameters.</li>
+          <li><strong>Stride</strong>: the shift between adjacent receptive fields. Stride > 1 reduces the spatial dimensions of the output.</li>
+          <li><strong>Zero padding</strong>: adding zeros around the input so a layer can have the same height and width as the previous layer (&#39;same&#39; padding).</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note-block" id="nb2">
+      <div class="note-header" onclick="toggleNote('nb2')">
+        <div class="note-header-left"><div class="note-icon">📦</div><span class="note-title">Feature Maps & Stacking</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li>A single convolutional layer outputs <strong>one feature map per filter</strong>. The number of filters is a hyperparameter.</li>
+          <li>All neurons in a feature map share weights → the filter detects the same feature regardless of location (<strong>translation invariance</strong>).</li>
+          <li>Multiple stacked convolutional layers allow progressively more abstract feature detection.</li>
+          <li>Memory: a 5×5 filter, 200 feature maps, 150×100 RGB input → 15,200 parameters but 225 million multiplications per instance.</li>
+          <li>If training crashes due to OOM: reduce mini-batch size, stride, or use fewer filters.</li>
+        </ul>        <div class="equation-label">Parameter count for conv layer</div>
+        <div class="equation-box">(f_h × f_w × channels + 1) × n_filters</div>
+        <div class="equation-note">The +1 is for the bias term</div>
+      </div>
+    </div>
+    <div class="note-block" id="nb3">
+      <div class="note-header" onclick="toggleNote('nb3')">
+        <div class="note-header-left"><div class="note-icon">🔽</div><span class="note-title">Pooling Layers</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Pooling layers</strong>: reduce spatial dimensionality of feature maps — reducing computation and providing a form of translation invariance.</li>
+          <li><strong>Max pooling</strong>: takes the maximum value in each pooling window. Most common.</li>
+          <li><strong>Average pooling</strong>: takes the mean. Used in some architectures (e.g., global average pooling in ResNet).</li>
+          <li>Pooling slides a window over the feature map with a given stride.</li>
+          <li>Pooling is applied <strong>independently to each feature map</strong>.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note-block" id="nb4">
+      <div class="note-header" onclick="toggleNote('nb4')">
+        <div class="note-header-left"><div class="note-icon">🏛️</div><span class="note-title">Famous CNN Architectures</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>LeNet-5 (1998)</strong>: pioneer architecture for handwritten digit recognition. Uses 5×5 filters, avg pooling, tanh activations.</li>
+          <li><strong>AlexNet (2012)</strong>: won ILSVRC with 17% top-5 error (2nd place: 26%). Introduced ReLU activations, dropout, data augmentation at scale.</li>
+          <li><strong>GoogLeNet (2014)</strong>: below 7% top-5 error. Key innovation: <strong>Inception modules</strong> — parallel filters of different sizes processed simultaneously.</li>
+          <li><strong>ResNet (2015)</strong>: 152 layers, under 3.6% top-5 error. Key innovation: <strong>skip connections (shortcut connections)</strong> — input is added to output of a layer stack.</li>
+          <li>ResNet skip connections allow the network to learn residual functions. Network can make progress even if some layers have not learned yet.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note-block" id="nb5">
+      <div class="note-header" onclick="toggleNote('nb5')">
+        <div class="note-header-left"><div class="note-icon">🔁</div><span class="note-title">Transfer Learning & Localization</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Transfer learning</strong>: reuse lower layers of a pretrained model (e.g., Xception, ResNet-50) trained on ImageNet for a new task.</li>
+          <li>Freeze pretrained weights first, train top layers. Then unfreeze with a lower learning rate.</li>
+          <li>ResNet-50 expects 224×224 pixel images. Use preprocess_input() for each architecture.</li>
+          <li><strong>Object localization</strong>: regression task — predict bounding box (x, y, height, width) = 4 numbers. Use MSE loss.</li>
+          <li>Typical CNN architecture: Conv+ReLU → Pool → Conv+ReLU → Pool → Fully Connected → Softmax.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="pane" id="paneQuiz">
+  <div class="quiz-section">
+    <div class="shuffle-bar">
+      <span class="shuffle-label">Shuffle:</span>
+      <button class="toggle-btn on" id="toggleQ" onclick="toggleShuffle('q')"><span class="toggle-dot"></span> Questions</button>
+      <button class="toggle-btn on" id="toggleA" onclick="toggleShuffle('a')"><span class="toggle-dot"></span> Answer choices</button>
+    </div>
+    <div class="q-counter" id="qCounter">Question 1 of 15</div>
+    <div class="question-card" id="questionCard">
+      <div class="missed-badge" id="missedBadge">⚠ Previously missed</div>
+      <div class="q-type-badge" id="qTypeBadge"></div>
+      <div class="q-hint" id="qHint">Select all that apply, then click Submit.</div>
+      <p class="q-text" id="qText"></p>
+      <div class="q-equation" id="qEquation"></div>
+      <div class="options" id="optionsDiv"></div>
+      <button class="btn-submit" id="btnSubmit" onclick="submitMulti()">Submit answer</button>
+      <div class="explanation" id="explanation"></div>
+      <div class="missed-notice" id="missedNotice">⚠ Added to your missed questions deck.</div>
+    </div>
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Next question →</button>
+    <div class="summary" id="summary">
+      <div class="summary-label">Final score</div>
+      <div class="summary-score" id="summaryScore"></div>
+      <div class="summary-label" id="summaryFrac"></div>
+      <p class="summary-msg" id="summaryMsg"></p>
+      <div class="summary-missed-box" id="summaryMissedBox"></div>
+      <div class="btn-group">
+        <button class="btn-restart" onclick="restart()">↺ Restart deck</button>
+        <a href="../missed.html" class="link-missed" id="linkMissed">Review missed questions →</a>
+        <a href="../index.html" class="link-home">← Back to all lectures</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MISSED_KEY='ml_missed_questions';
+function getMissed(){try{return JSON.parse(localStorage.getItem(MISSED_KEY)||'{}');}catch{return{};}}
+function saveMissed(d){localStorage.setItem(MISSED_KEY,JSON.stringify(d));}
+function getMissedCount(){return Object.keys(getMissed()).length;}
+function recordMiss(q){const m=getMissed(),s=JSON.parse(localStorage.getItem('ml_streak_data')||'{}');m[q.id]={id:q.id,lecture:q.lecture,topic:q.topic};s[q.id]=0;saveMissed(m);localStorage.setItem('ml_streak_data',JSON.stringify(s));}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function shuffleOpts(q){if(q.type==='tf')return{opts:q.opts,ans:q.ans};const idxs=shuffle(q.opts.map((_,i)=>i));const map={};idxs.forEach((old,n)=>{map[old]=n;});return{opts:idxs.map(i=>q.opts[i]),ans:Array.isArray(q.ans)?q.ans.map(i=>map[i]):map[q.ans]};}
+
+const QUESTIONS = [
+  {id:"lec19_01",lecture:"Lecture 19",topic:"Convolutional Layers",type:"mc",label:"Multiple Choice",q:"What makes convolutional layers different from fully connected layers in terms of connectivity?",opts:["Convolutional layers connect every neuron to every pixel","Convolutional layer neurons are connected only to a small receptive field, not every pixel","Convolutional layers have no weights","Convolutional layers only work on 1D data"],ans:1,exp:"In convolutional layers, each neuron is connected only to a small region of the previous layer (the receptive field). This allows hierarchical feature detection and reduces the number of parameters."},
+  {id:"lec19_02",lecture:"Lecture 19",topic:"Parameter Sharing",type:"mc",label:"Multiple Choice",q:"What is parameter sharing in convolutional layers?",opts:["All layers share the same weights","All neurons in a given feature map share the same weights and bias","Parameters are shared between different architectures","Weights are shared between the wide and deep path"],ans:1,exp:"Within a feature map, all neurons share the same filter weights and bias. This means the filter detects the same feature regardless of its location in the input (translation invariance). Different feature maps have different parameters."},
+  {id:"lec19_03",lecture:"Lecture 19",topic:"Stride & Padding",type:"mc",label:"Multiple Choice",q:"What is the stride in a convolutional layer?",opts:["The size of the filter","The shift between adjacent receptive fields","The number of feature maps","The padding added around the input"],ans:1,exp:"Stride is how much the receptive field shifts between adjacent neurons. Stride > 1 reduces the spatial size of the output and reduces computational complexity."},
+  {id:"lec19_04",lecture:"Lecture 19",topic:"Stride & Padding",type:"mc",label:"Multiple Choice",q:"What is zero padding used for in CNNs?",opts:["To reduce the number of parameters","To allow a layer to have the same spatial dimensions as its input","To increase stride","To add more feature maps"],ans:1,exp:"Zero padding adds zeros around the input so that a convolutional layer can produce an output with the same height and width as the input ('same' padding). Without it, spatial size decreases with each layer."},
+  {id:"lec19_05",lecture:"Lecture 19",topic:"Pooling",type:"mc",label:"Multiple Choice",q:"What is the purpose of pooling layers in a CNN?",opts:["To add more parameters","To reduce the spatial dimensionality of feature maps and computational complexity","To increase the number of feature maps","To apply the activation function"],ans:1,exp:"Pooling reduces the spatial dimensions (height and width) of feature maps, which reduces computation and the number of parameters, while also providing a degree of translation invariance."},
+  {id:"lec19_06",lecture:"Lecture 19",topic:"Pooling",type:"mc",label:"Multiple Choice",q:"What does max pooling do?",opts:["Computes the mean value in each window","Takes the maximum value in each pooling window","Applies a learned filter to the input","Sums all values in the window"],ans:1,exp:"Max pooling slides a window over the feature map and outputs the maximum value within each window. It is the most common pooling operation in CNNs."},
+  {id:"lec19_07",lecture:"Lecture 19",topic:"CNN Architecture",type:"mc",label:"Multiple Choice",q:"What is the typical structure of a CNN architecture?",opts:["Fully connected → pooling → convolution","Conv+ReLU → Pool → Conv+ReLU → Pool → Fully Connected → Softmax","Pool → Conv → Pool → Softmax","Conv → Softmax → Fully Connected → Pool"],ans:1,exp:"Typical CNN: stack (Conv+ReLU → Pool) several times to extract features, then flatten and pass through fully connected layers, with a softmax output for classification."},
+  {id:"lec19_08",lecture:"Lecture 19",topic:"Famous Architectures",type:"mc",label:"Multiple Choice",q:"What was AlexNet's top-5 error rate on the 2012 ILSVRC challenge, and how did it compare to the runner-up?",opts:["17% vs 26% for runner-up","5% vs 10% for runner-up","26% vs 17% for runner-up","7% vs 17% for runner-up"],ans:0,exp:"AlexNet achieved 17% top-5 error — dramatically better than the runner-up at 26%. This win marked the beginning of the deep learning era in computer vision."},
+  {id:"lec19_09",lecture:"Lecture 19",topic:"Famous Architectures",type:"mc",label:"Multiple Choice",q:"What was the key innovation of GoogLeNet (2014)?",opts:["Skip connections","Inception modules — parallel filters of different sizes","Depthwise separable convolutions","Residual units"],ans:1,exp:"GoogLeNet introduced Inception modules, which apply multiple filter sizes (e.g., 1×1, 3×3, 5×5) in parallel and concatenate the results. This pushed top-5 error below 7%."},
+  {id:"lec19_10",lecture:"Lecture 19",topic:"ResNet",type:"mc",label:"Multiple Choice",q:"What is a skip connection (shortcut connection) in ResNet?",opts:["A connection from the output layer back to the input","The input signal is also added directly to the output of a later layer","A connection between every pair of layers","A dropout applied to skip certain neurons"],ans:1,exp:"A skip connection adds the input of a block directly to the output, allowing the network to learn residual functions f(x) = h(x) - x instead of h(x). This enables training of very deep networks (152 layers)."},
+  {id:"lec19_11",lecture:"Lecture 19",topic:"Transfer Learning",type:"mc",label:"Multiple Choice",q:"When using transfer learning with a pretrained CNN, what is the recommended training strategy?",opts:["Unfreeze all layers and train with a high learning rate","Freeze pretrained layers first and train top layers, then unfreeze and train with a lower learning rate","Only train the last layer, never unfreeze others","Randomly reinitialize pretrained weights before training"],ans:1,exp:"First freeze pretrained weights and train only the new top layers. Once they are well-trained, unfreeze the pretrained layers and continue with a much lower learning rate to avoid damaging the learned representations."},
+  {id:"lec19_12",lecture:"Lecture 19",topic:"Object Localization",type:"mc",label:"Multiple Choice",q:"How is object localization framed as a machine learning problem?",opts:["As a classification problem with bounding box classes","As a regression problem predicting 4 numbers (x, y, height, width) using MSE loss","As a clustering problem","As a segmentation problem with pixel-wise labels"],ans:1,exp:"Localization = regression: predict the bounding box center coordinates (x, y), height, and width. A second output layer with 4 units is added, trained using MSE loss."},
+  {id:"lec19_13",lecture:"Lecture 19",topic:"Parameter Count",type:"mc",label:"Multiple Choice",q:"For a conv layer with 5×5 filters, 200 feature maps, and 3-channel (RGB) input, how many parameters are there?",opts:["5×5×200 = 5000","5×5×3×200 = 15000","(5×5×3+1)×200 = 15200","5×5+1 = 26"],ans:2,exp:"Parameters = (filter_height × filter_width × input_channels + 1_bias) × n_filters = (5×5×3+1)×200 = 76×200 = 15,200. The +1 is for the bias term per feature map."},
+  {id:"lec19_14",lecture:"Lecture 19",topic:"CNNs",type:"tf",label:"True / False",q:"In a convolutional layer, neurons in different feature maps use different weights and biases.",opts:["True","False"],ans:0,exp:"True. Each feature map has its own unique filter (weights and bias). Neurons within the same feature map share weights; neurons across different feature maps use different parameters."},
+  {id:"lec19_15",lecture:"Lecture 19",topic:"Famous Architectures",type:"mc",label:"Multiple Choice",q:"ResNet won the ILSVRC 2015 challenge with approximately what top-5 error rate?",opts:["17%","7%","Under 3.6%","Under 1%"],ans:2,exp:"ResNet (Kaiming He et al.) achieved under 3.6% top-5 error using a 152-layer network with skip connections — a remarkable result that demonstrated the power of very deep architectures."}
+];
+
+const LETTERS=['A','B','C','D','E'];
+let deck=[],idx=0,score=0,answered=0,shuffleQ=true,shuffleA=true,selectedMulti=new Set(),currentAns=null;
+function showTab(tab){document.getElementById('paneNotes').classList.toggle('active',tab==='notes');document.getElementById('paneQuiz').classList.toggle('active',tab==='quiz');document.getElementById('tabNotes').classList.toggle('active',tab==='notes');document.getElementById('tabQuiz').classList.toggle('active',tab==='quiz');document.getElementById('scoreWrap').style.display=tab==='quiz'?'block':'none';}
+function toggleNote(id){document.getElementById(id).classList.toggle('open');}
+function toggleShuffle(w){if(w==='q'){shuffleQ=!shuffleQ;document.getElementById('toggleQ').classList.toggle('on',shuffleQ);}else{shuffleA=!shuffleA;document.getElementById('toggleA').classList.toggle('on',shuffleA);}}
+function buildDeck(){deck=shuffleQ?shuffle([...QUESTIONS]):[...QUESTIONS];}
+function renderQ(){
+  const q=deck[idx];selectedMulti=new Set();
+  document.getElementById('missedBadge').classList.toggle('show',!!getMissed()[q.id]);
+  document.getElementById('missedNotice').classList.remove('show');
+  document.getElementById('qTypeBadge').textContent=q.label;
+  document.getElementById('qHint').style.display=q.type==='ms'?'block':'none';
+  document.getElementById('qText').textContent=q.q;
+  const eqEl=document.getElementById('qEquation');if(q.equation){eqEl.textContent=q.equation;eqEl.style.display='block';}else{eqEl.style.display='none';}
+  document.getElementById('explanation').classList.remove('show');document.getElementById('explanation').textContent='';
+  document.getElementById('btnNext').classList.remove('show');document.getElementById('btnSubmit').classList.remove('show');
+  const{opts,ans}=shuffleA?shuffleOpts(q):{opts:q.opts,ans:q.ans};currentAns=ans;
+  const div=document.getElementById('optionsDiv');div.innerHTML='';
+  opts.forEach((o,i)=>{
+    const el=document.createElement('div');el.className='opt';
+    const ind=document.createElement('span');ind.className='opt-indicator';ind.textContent=q.type==='ms'?'☐':LETTERS[i];
+    const txt=document.createElement('span');txt.className='opt-text';txt.textContent=o;
+    el.appendChild(ind);el.appendChild(txt);
+    if(q.type==='ms'){el.onclick=()=>{if(el.classList.contains('disabled'))return;if(selectedMulti.has(i)){selectedMulti.delete(i);el.classList.remove('selected');ind.textContent='☐';}else{selectedMulti.add(i);el.classList.add('selected');ind.textContent='☑';}document.getElementById('btnSubmit').classList.toggle('show',selectedMulti.size>0);};}
+    else{el.onclick=()=>resolveSingle(i);}
+    div.appendChild(el);
+  });
+  document.getElementById('qCounter').textContent='Question '+(idx+1)+' of '+deck.length;
+  document.getElementById('progressFill').style.width=Math.round((idx/deck.length)*100)+'%';
+  document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+}
+function resolveSingle(chosen){const correct=chosen===currentAns;const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(i===currentAns){opts[i].classList.add(correct&&i===chosen?'correct':'reveal-correct');ind.textContent='✓';}else if(i===chosen){opts[i].classList.add('wrong');ind.textContent='✗';}}finalize(correct);}
+function submitMulti(){const correctSet=new Set(Array.isArray(currentAns)?currentAns:[currentAns]);const correct=selectedMulti.size===correctSet.size&&[...selectedMulti].every(i=>correctSet.has(i));const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('correct');ind.textContent='✓';}else if(!correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('wrong');ind.textContent='✗';}else if(correctSet.has(i)&&!selectedMulti.has(i)){opts[i].classList.add('reveal-correct');ind.textContent='✓';}}document.getElementById('btnSubmit').classList.remove('show');finalize(correct);}
+function finalize(correct){if(correct){score++;}else{recordMiss(deck[idx]);document.getElementById('missedNotice').classList.add('show');}answered++;document.getElementById('scoreDisplay').textContent=score+' / '+answered;const exp=document.getElementById('explanation');exp.textContent=(correct?'✓ Correct. ':'✗ Incorrect. ')+deck[idx].exp;exp.classList.add('show');document.getElementById('btnNext').classList.add('show');}
+function nextQ(){idx++;if(idx>=deck.length)showSummary();else renderQ();}
+function showSummary(){document.getElementById('questionCard').style.display='none';document.getElementById('btnNext').style.display='none';document.getElementById('qCounter').style.display='none';document.getElementById('progressFill').style.width='100%';const pct=Math.round((score/deck.length)*100);document.getElementById('summaryScore').textContent=pct+'%';document.getElementById('summaryFrac').textContent=score+' out of '+deck.length+' correct';document.getElementById('summaryMsg').textContent=pct>=85?'Excellent — you have this lecture locked in.':pct>=65?'Solid effort. Review the ones you missed, then try again.':'Keep at it — go back through the notes tab and restart the deck.';const mc=getMissedCount();if(mc>0){document.getElementById('summaryMissedBox').style.display='block';document.getElementById('summaryMissedBox').textContent=mc+' question'+(mc!==1?'s':'')+' in your missed deck across all lectures.';document.getElementById('linkMissed').style.display='inline-block';}document.getElementById('summary').classList.add('show');}
+function restart(){idx=0;score=0;answered=0;buildDeck();document.getElementById('questionCard').style.display='block';document.getElementById('btnNext').style.display='';document.getElementById('btnNext').classList.remove('show');document.getElementById('qCounter').style.display='block';document.getElementById('summary').classList.remove('show');renderQ();}
+buildDeck();renderQ();
+</script>
+</body>
+</html>
+
+</script>
+</body>
+</html>
