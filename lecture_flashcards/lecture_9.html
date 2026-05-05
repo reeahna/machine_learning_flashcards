@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 9 — Support Vector Machines</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#f5f4f0;--surface:#ffffff;--surface2:#f0eeea;--border:#e2dfd8;--text:#1a1916;--muted:#8a8680;--accent:#5046e4;--accent-dim:rgba(80,70,228,0.08);--accent-border:rgba(80,70,228,0.2);--green:#16a05a;--green-bg:#edf7f2;--green-border:#b6e4cf;--red:#d63a3a;--red-bg:#fdf0f0;--red-border:#f5c0c0;--reveal-bg:#f7f6f2;--yellow-bg:#fffbea;--yellow-border:#f5e49a;--orange:#d97706;--orange-bg:#fff7ed;--orange-border:#fed7aa;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  header{padding:1.25rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);gap:1rem;flex-wrap:wrap;}
+  .header-left{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+  .back-link{font-size:13px;color:var(--muted);text-decoration:none;}.back-link:hover{color:var(--text);}
+  .header-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);}
+  .header-badge{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);padding:3px 10px;border-radius:99px;}
+  .score-display{font-size:14px;color:var(--muted);white-space:nowrap;}.score-display span{color:var(--text);font-weight:600;}
+  .progress-wrap{height:3px;background:var(--border);}
+  .progress-fill{height:3px;background:var(--accent);transition:width 0.4s ease;width:0%;}
+  .tab-nav{display:flex;border-bottom:1px solid var(--border);background:var(--surface);padding:0 2rem;}
+  .tab-btn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:12px 18px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--muted);cursor:pointer;transition:color 0.15s,border-color 0.15s;margin-bottom:-1px;}
+  .tab-btn:hover{color:var(--text);}.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .pane{display:none;}.pane.active{display:block;}
+  .notes-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;}
+  .notes-intro{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;}
+  .note-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .note-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.12s;}
+  .note-header:hover{background:var(--surface2);}
+  .note-header-left{display:flex;align-items:center;gap:10px;}
+  .note-icon{width:28px;height:28px;border-radius:6px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .note-title{font-size:14px;font-weight:500;color:var(--text);}
+  .note-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s;}
+  .note-block.open .note-chevron{transform:rotate(180deg);}
+  .note-body{display:none;padding:0 1.25rem 1.25rem;border-top:1px solid var(--border);}
+  .note-block.open .note-body{display:block;}
+  .note-body ul{margin-top:0.75rem;padding-left:1.25rem;}
+  .note-body li{font-size:14px;color:var(--text);line-height:1.75;margin-bottom:4px;}
+  .note-body li strong{font-weight:600;}
+  .equation-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'DM Sans',sans-serif;margin-top:1rem;}
+  .equation-box{background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:12px 16px;font-size:14px;font-family:'Georgia',serif;color:var(--text);text-align:center;line-height:1.8;}
+  .equation-note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6;}
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.75rem;}
+  .tag{font-size:11px;padding:2px 9px;border-radius:99px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  .tag.important{background:var(--accent-dim);color:var(--accent);border-color:var(--accent-border);}
+  .quiz-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;display:flex;flex-direction:column;align-items:center;}
+  .shuffle-bar{align-self:stretch;display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;}
+  .shuffle-label{font-size:12px;color:var(--muted);font-weight:500;}
+  .toggle-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;user-select:none;}
+  .toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .toggle-btn.on{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+  .toggle-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background 0.15s;flex-shrink:0;}
+  .toggle-btn.on .toggle-dot{background:var(--accent);}
+  .q-counter{font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5rem;align-self:flex-start;}
+  .question-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;margin-bottom:1.25rem;}
+  .missed-badge{display:none;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);padding:3px 10px;border-radius:99px;margin-bottom:0.75rem;}
+  .missed-badge.show{display:inline-block;}
+  .q-type-badge{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
+  .q-hint{font-size:12px;color:var(--accent);margin-bottom:1rem;font-style:italic;display:none;}
+  .q-text{font-family:'DM Serif Display',serif;font-size:20px;line-height:1.5;color:var(--text);margin-bottom:1.75rem;}
+  .q-equation{font-family:'Georgia',serif;font-size:15px;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;text-align:center;display:none;line-height:1.8;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.15s,background 0.15s;background:var(--surface);}
+  .opt:hover:not(.disabled){border-color:var(--accent);background:var(--accent-dim);}
+  .opt-indicator{width:22px;height:22px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:12px;font-weight:600;color:var(--muted);transition:all 0.15s;}
+  .opt.selected .opt-indicator{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .opt-text{font-size:15px;color:var(--text);line-height:1.5;}
+  .opt.correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.wrong{border-color:var(--red-border);background:var(--red-bg);}
+  .opt.wrong .opt-indicator{background:var(--red);color:#fff;border-color:var(--red);}
+  .opt.reveal-correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.reveal-correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.disabled{cursor:default;}
+  .btn-submit{display:none;margin-top:1rem;background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-submit:hover{opacity:0.88;}.btn-submit.show{display:block;}
+  .explanation{display:none;margin-top:1.25rem;padding:14px 16px;border-radius:10px;background:var(--reveal-bg);border-left:3px solid var(--accent);font-size:14px;color:var(--muted);line-height:1.7;}
+  .explanation.show{display:block;}
+  .missed-notice{display:none;margin-top:10px;padding:10px 14px;border-radius:8px;background:var(--orange-bg);border:1px solid var(--orange-border);font-size:13px;color:var(--orange);font-weight:500;}
+  .missed-notice.show{display:block;}
+  .btn-next{display:none;margin-top:1.5rem;align-self:flex-end;background:var(--accent);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-next:hover{opacity:0.88;}.btn-next.show{display:block;}
+  .summary{display:none;flex-direction:column;align-items:center;text-align:center;padding:3rem 2rem;width:100%;}
+  .summary.show{display:flex;}
+  .summary-score{font-family:'DM Serif Display',serif;font-size:72px;color:var(--accent);line-height:1;margin-bottom:0.5rem;}
+  .summary-label{font-size:14px;color:var(--muted);margin-bottom:0.25rem;}
+  .summary-msg{font-size:17px;color:var(--text);margin:1.25rem 0 1.5rem;line-height:1.6;max-width:400px;}
+  .summary-missed-box{font-size:14px;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:10px;padding:10px 18px;margin-bottom:1.5rem;display:none;}
+  .btn-group{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .btn-restart{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-restart:hover{background:var(--accent-dim);}
+  .link-missed{font-size:14px;color:var(--orange);text-decoration:none;padding:10px 24px;border:1px solid var(--orange-border);border-radius:10px;background:var(--orange-bg);display:none;}
+  .link-home{font-size:14px;color:var(--muted);text-decoration:none;margin-top:0.25rem;}
+  .link-home:hover{color:var(--text);}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <a href="../index.html" class="back-link">← Back</a>
+    <span class="header-title">Lecture 9</span>
+    <span class="header-badge">Support Vector Machines</span>
+  </div>
+  <div class="score-display" id="scoreWrap" style="display:none">Score: <span id="scoreDisplay">0 / 0</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+<div class="tab-nav">
+  <button class="tab-btn active" id="tabNotes" onclick="showTab('notes')">📋 Notes</button>
+  <button class="tab-btn" id="tabQuiz" onclick="showTab('quiz')">⚡ Practice Questions</button>
+</div>
+
+<!-- NOTES -->
+<div class="pane active" id="paneNotes">
+  <div class="notes-section">
+    <p class="notes-intro">Key concepts from Lecture 9. Tap each section to expand.</p>
+
+    <div class="note-block open" id="nb1">
+      <div class="note-header" onclick="toggleNote('nb1')">
+        <div class="note-header-left"><div class="note-icon">🛣️</div><span class="note-title">Large Margin Classification &amp; Support Vectors</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>SVM</strong> fits the widest possible "street" between classes — this is called <strong>large margin classification</strong>.</li>
+          <li>Decision boundary: <strong>wᵀx + b = 0</strong>. Margins (support vector boundaries): wᵀx + b = ±1.</li>
+          <li><strong>Support vectors:</strong> The instances that sit exactly on the edge of the margin. The decision boundary is entirely determined by them — adding more instances off the street doesn't change it.</li>
+          <li>To maximize the margin, we minimize ‖w‖ (the norm of the weight vector). Distance between each margin and the decision boundary = 1/‖w‖.</li>
+          <li><strong>SVMs are sensitive to feature scaling.</strong> Always scale features before using an SVM.</li>
+        </ul>
+        <div class="equation-label">Decision boundary and margins</div>
+        <div class="equation-box">Decision boundary: wᵀx + b = 0&nbsp;&nbsp;&nbsp;&nbsp;Margins: wᵀx + b = ±1</div>
+        <div class="tag-row"><span class="tag important">Minimize ‖w‖ to get large margin</span><span class="tag">Feature scaling required</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb2">
+      <div class="note-header" onclick="toggleNote('nb2')">
+        <div class="note-header-left"><div class="note-icon">⚖️</div><span class="note-title">Hard Margin vs. Soft Margin</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Hard margin:</strong> All instances must be off the street and on the right side. Two problems: (1) only works if data is linearly separable, (2) very sensitive to outliers.</li>
+          <li><strong>Soft margin:</strong> Balances keeping the street as wide as possible while allowing some margin violations. Controlled by hyperparameter <strong>C</strong>.</li>
+          <li><strong>C hyperparameter:</strong> Small C = wider margin, more violations allowed (more regularization). Large C = narrower margin, fewer violations (less regularization, risk of overfitting).</li>
+          <li>If overfitting, reduce C. If underfitting, increase C.</li>
+          <li>Slack variable <strong>ζ (zeta) ≥ 0</strong>: measures how much each instance is allowed to violate the margin.</li>
+          <li>The primal objective balances minimizing ‖w‖ (large margin) and reducing margin violations (via C and ζ).</li>
+        </ul>
+        <div class="tag-row"><span class="tag important">C controls trade-off — know the direction</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb3">
+      <div class="note-header" onclick="toggleNote('nb3')">
+        <div class="note-header-left"><div class="note-icon">🔮</div><span class="note-title">Kernel Trick &amp; Kernels</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Nonlinear SVM:</strong> Adding polynomial features can make non-linearly separable data linearly separable — but can cause feature explosion.</li>
+          <li><strong>Kernel trick:</strong> Computes dot products in a transformed feature space without actually transforming the data. Mathematically equivalent but computationally efficient.</li>
+          <li>A kernel is a function capable of computing φ(a)ᵀφ(b) based only on original vectors a and b, without computing or knowing the transformation φ.</li>
+          <li><strong>Polynomial kernel:</strong> K(a,b) = (γaᵀb + r)^d</li>
+          <li><strong>Gaussian RBF kernel:</strong> K(a,b) = exp(−γ‖a−b‖²). γ acts like regularization: high γ = more complex boundary (overfitting risk), low γ = smoother boundary.</li>
+          <li><strong>The dual problem</strong> makes the kernel trick possible. The primal problem does not.</li>
+        </ul>
+        <div class="equation-label">Polynomial kernel</div>
+        <div class="equation-box">K(a,b) = (γaᵀb + r)^d</div>
+        <div class="equation-label" style="margin-top:0.75rem">Gaussian RBF kernel</div>
+        <div class="equation-box">K(a,b) = exp(−γ‖a−b‖²)</div>
+        <div class="tag-row"><span class="tag important">Both kernel equations</span><span class="tag">Dual problem enables kernel trick</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb4">
+      <div class="note-header" onclick="toggleNote('nb4')">
+        <div class="note-header-left"><div class="note-icon">📋</div><span class="note-title">Kernel Selection &amp; LinearSVC vs. SVC</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Which kernel to use?</strong> Always try the linear kernel first — especially if training set is very large or has many features. Then try Gaussian RBF, which works well in most cases.</li>
+          <li><strong>LinearSVC</strong> (liblinear library): No kernel trick. Scales almost linearly with instances and features. Fast for large datasets.</li>
+          <li><strong>SVC</strong> (libsvm library): Supports kernel trick. Gets very slow when instances are numerous (hundreds of thousands). Best for complex small/medium datasets.</li>
+          <li><strong>SVM Regression:</strong> Reversed objective — instead of fitting the widest street between classes, it tries to fit as many instances as possible ON the street while limiting margin violations. Street width controlled by hyperparameter ε (epsilon).</li>
+        </ul>
+        <div class="tag-row"><span class="tag important">LinearSVC = no kernel, fast; SVC = kernel, slow on large sets</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="pane" id="paneQuiz">
+  <div class="quiz-section">
+    <div class="shuffle-bar">
+      <span class="shuffle-label">Shuffle:</span>
+      <button class="toggle-btn on" id="toggleQ" onclick="toggleShuffle('q')"><span class="toggle-dot"></span> Questions</button>
+      <button class="toggle-btn on" id="toggleA" onclick="toggleShuffle('a')"><span class="toggle-dot"></span> Answer choices</button>
+    </div>
+    <div class="q-counter" id="qCounter">Question 1 of 30</div>
+    <div class="question-card" id="questionCard">
+      <div class="missed-badge" id="missedBadge">⚠ Previously missed</div>
+      <div class="q-type-badge" id="qTypeBadge"></div>
+      <div class="q-hint" id="qHint">Select all that apply, then click Submit.</div>
+      <p class="q-text" id="qText"></p>
+      <div class="q-equation" id="qEquation"></div>
+      <div class="options" id="optionsDiv"></div>
+      <button class="btn-submit" id="btnSubmit" onclick="submitMulti()">Submit answer</button>
+      <div class="explanation" id="explanation"></div>
+      <div class="missed-notice" id="missedNotice">⚠ Added to your missed questions deck.</div>
+    </div>
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Next question →</button>
+    <div class="summary" id="summary">
+      <div class="summary-label">Final score</div>
+      <div class="summary-score" id="summaryScore"></div>
+      <div class="summary-label" id="summaryFrac"></div>
+      <p class="summary-msg" id="summaryMsg"></p>
+      <div class="summary-missed-box" id="summaryMissedBox"></div>
+      <div class="btn-group">
+        <button class="btn-restart" onclick="restart()">↺ Restart deck</button>
+        <a href="../missed.html" class="link-missed" id="linkMissed">Review missed questions →</a>
+        <a href="../index.html" class="link-home">← Back to all lectures</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MISSED_KEY='ml_missed_questions';
+function getMissed(){try{return JSON.parse(localStorage.getItem(MISSED_KEY)||'{}');}catch{return{};}}
+function saveMissed(d){localStorage.setItem(MISSED_KEY,JSON.stringify(d));}
+function getMissedCount(){return Object.keys(getMissed()).length;}
+function recordMiss(q){const m=getMissed(),s=JSON.parse(localStorage.getItem('ml_streak_data')||'{}');m[q.id]={id:q.id,lecture:q.lecture,topic:q.topic};s[q.id]=0;saveMissed(m);localStorage.setItem('ml_streak_data',JSON.stringify(s));}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function shuffleOpts(q){if(q.type==='tf')return{opts:q.opts,ans:q.ans};const idxs=shuffle(q.opts.map((_,i)=>i));const map={};idxs.forEach((old,n)=>{map[old]=n;});return{opts:idxs.map(i=>q.opts[i]),ans:Array.isArray(q.ans)?q.ans.map(i=>map[i]):map[q.ans]};}
+
+const QUESTIONS = [
+  {id:"lec9_01",lecture:"Lecture 9",topic:"Large Margin Classification",type:"mc",label:"Multiple Choice",
+   q:"What is the key idea behind large margin classification in SVMs?",
+   opts:["Minimizing the number of features used","Fitting the widest possible 'street' between classes, keeping the decision boundary as far as possible from the closest training instances","Maximizing the number of support vectors","Minimizing the training error to zero"],
+   ans:1,exp:"An SVM finds the widest possible 'street' (margin) between classes. The decision boundary is not just any separating line — it stays as far away from the closest training instances as possible, maximizing the margin width."},
+
+  {id:"lec9_02",lecture:"Lecture 9",topic:"Large Margin Classification",type:"mc",label:"Multiple Choice",
+   q:"What are support vectors?",
+   opts:["All training instances used to train the SVM","The instances located on the edge of the margin (street) — the decision boundary is fully determined by them","The feature vectors after applying the kernel transformation","The weights w and bias b that define the decision boundary"],
+   ans:1,exp:"Support vectors are the training instances that sit on the edge of the margin. The decision boundary is entirely determined by these instances — adding more instances 'off the street' has no effect on it. This is why the method is called Support Vector Machines."},
+
+  {id:"lec9_03",lecture:"Lecture 9",topic:"Large Margin Classification",type:"mc",label:"Multiple Choice",
+   q:"What is the decision boundary equation for a linear SVM?",
+   opts:["wᵀx + b = 1","wᵀx + b = 0","‖w‖ = 0","xᵀθ = 0.5"],
+   ans:1,exp:"The decision boundary is wᵀx + b = 0. The margins (where support vectors lie) are at wᵀx + b = +1 and wᵀx + b = −1. The distance from each margin to the decision boundary is 1/‖w‖."},
+
+  {id:"lec9_04",lecture:"Lecture 9",topic:"Large Margin Classification",type:"mc",label:"Multiple Choice",
+   q:"To maximize the SVM margin, what must be minimized?",
+   opts:["The bias term b","The norm of the weight vector ‖w‖","The number of training instances","The learning rate η"],
+   ans:1,exp:"The distance from the decision boundary to each margin is 1/‖w‖. To make this distance large (wide margin), we minimize ‖w‖. Your slides show: 'So we want to minimize ‖w‖ to get a large margin.'"},
+
+  {id:"lec9_05",lecture:"Lecture 9",topic:"Large Margin Classification",type:"tf",label:"True / False",
+   q:"True or False: SVMs are sensitive to feature scaling — features should be scaled before training an SVM.",
+   opts:["True","False"],
+   ans:0,exp:"True. SVMs are sensitive to feature scales. If features have very different scales, the widest possible street tends to be nearly parallel to the feature with the largest scale, ignoring other features. Feature scaling (e.g. using StandardScaler) fixes this."},
+
+  {id:"lec9_06",lecture:"Lecture 9",topic:"Hard vs Soft Margin",type:"mc",label:"Multiple Choice",
+   q:"What is hard margin classification?",
+   opts:["A soft margin with a very large C value","Strictly imposing that all instances must be on the correct side of the margin with no violations allowed","Using no regularization in the SVM objective","Training the SVM on only the support vectors"],
+   ans:1,exp:"Hard margin classification strictly requires that ALL instances be off the street and on the right side — no margin violations are allowed. This only works if the data is linearly separable and is very sensitive to outliers."},
+
+  {id:"lec9_07",lecture:"Lecture 9",topic:"Hard vs Soft Margin",type:"ms",label:"Multi-Select",
+   q:"What are the two main problems with hard margin classification? Select all that apply.",
+   opts:["It only works if the data is linearly separable","It is computationally too expensive","It is very sensitive to outliers","It requires too many support vectors","It cannot handle high-dimensional data"],
+   ans:[0,2],exp:"Your slides state exactly two issues with hard margin: (1) it only works if the data is linearly separable, and (2) it is very sensitive to outliers. These are the reasons soft margin was developed."},
+
+  {id:"lec9_08",lecture:"Lecture 9",topic:"Hard vs Soft Margin",type:"mc",label:"Multiple Choice",
+   q:"What is soft margin classification?",
+   opts:["An SVM that always misclassifies some training instances","A flexible model that balances keeping the margin as wide as possible while limiting margin violations","An SVM trained without a bias term","An SVM that uses the kernel trick instead of a margin"],
+   ans:1,exp:"Soft margin classification finds a good balance between keeping the street (margin) as wide as possible and limiting margin violations (instances on the wrong side or inside the margin). The hyperparameter C controls this trade-off."},
+
+  {id:"lec9_09",lecture:"Lecture 9",topic:"Hard vs Soft Margin",type:"mc",label:"Multiple Choice",
+   q:"In a soft margin SVM, what does a SMALL value of C produce?",
+   opts:["A narrower margin with fewer violations","A wider margin with more violations allowed — more regularization","A model that always classifies perfectly","A model that converges faster"],
+   ans:1,exp:"Small C = wider margin + more margin violations allowed = more regularization (constrains the model more). Large C = narrower margin + fewer violations = less regularization (allows a more complex boundary, higher overfitting risk). If overfitting, reduce C."},
+
+  {id:"lec9_10",lecture:"Lecture 9",topic:"Hard vs Soft Margin",type:"mc",label:"Multiple Choice",
+   q:"What is the slack variable ζ (zeta) in the soft margin SVM objective?",
+   opts:["The learning rate for gradient descent","A variable that measures how much each instance is allowed to violate the margin","The regularization strength (equivalent to α in Ridge Regression)","The width of the margin"],
+   ans:1,exp:"The slack variable ζ ≥ 0 is introduced for each instance in the soft margin formulation. It measures how much that particular instance is allowed to violate the margin. C controls the trade-off between minimizing ‖w‖ and reducing margin violations (via ζ)."},
+
+  {id:"lec9_11",lecture:"Lecture 9",topic:"Hard vs Soft Margin",type:"tf",label:"True / False",
+   q:"True or False: If your SVM model is overfitting, you should try increasing the C hyperparameter.",
+   opts:["True","False"],
+   ans:1,exp:"False. Your slides explicitly say: 'If your SVM model is overfitting, you can try regularizing it by reducing C.' Smaller C allows more margin violations but produces a wider, simpler boundary that generalizes better."},
+
+  {id:"lec9_12",lecture:"Lecture 9",topic:"Kernel Trick",type:"mc",label:"Multiple Choice",
+   q:"What is the kernel trick?",
+   opts:["A method to reduce the number of support vectors","A mathematical technique that allows computing dot products in a transformed feature space without actually performing the transformation","A way to convert a multiclass problem into binary problems","A technique to speed up Gradient Descent in SVMs"],
+   ans:1,exp:"The kernel trick allows you to get the same result as if you had transformed training data into a higher-dimensional space, without actually doing the transformation. A kernel function K(a,b) computes φ(a)ᵀφ(b) directly from original vectors a and b."},
+
+  {id:"lec9_13",lecture:"Lecture 9",topic:"Kernel Trick",type:"mc",label:"Multiple Choice",
+   q:"What is a kernel function?",
+   opts:["A function that maps classes to decision boundaries","A function capable of computing the dot product of transformed vectors φ(a)ᵀφ(b) based only on the original vectors a and b, without computing the transformation φ","A function that measures the distance between support vectors","A function that initializes the SVM weights"],
+   ans:1,exp:"A kernel function K(a,b) = φ(a)ᵀφ(b) computes the dot product of transformed vectors based only on the original vectors a and b — without ever computing (or needing to know) the transformation φ. This is the mathematical magic that makes the kernel trick possible."},
+
+  {id:"lec9_14",lecture:"Lecture 9",topic:"Kernel Trick",type:"eq",label:"Equation",
+   q:"What is the polynomial kernel?",
+   opts:["K(a,b) = (γaᵀb + r)^d","K(a,b) = exp(−γ‖a−b‖²)","K(a,b) = aᵀb","K(a,b) = tanh(γaᵀb + r)"],
+   ans:0,exp:"The polynomial kernel is K(a,b) = (γaᵀb + r)^d. The hyperparameter d is the degree. The hyperparameter coef0 (r) controls how much the model is influenced by high-degree vs. low-degree polynomials. Option B is the Gaussian RBF kernel."},
+
+  {id:"lec9_15",lecture:"Lecture 9",topic:"Kernel Trick",type:"eq",label:"Equation",
+   q:"What is the Gaussian RBF kernel?",
+   opts:["K(a,b) = (γaᵀb + r)^d","K(a,b) = exp(−γ‖a−b‖²)","K(a,b) = aᵀb","K(a,b) = 1 / (1 + ‖a−b‖²)"],
+   ans:1,exp:"The Gaussian RBF (Radial Basis Function) kernel is K(a,b) = exp(−γ‖a−b‖²). γ (gamma) acts like a regularization hyperparameter: high γ = narrow bell curve = each instance has a smaller range of influence = more complex, potentially overfitting boundary. Low γ = smoother boundary."},
+
+  {id:"lec9_16",lecture:"Lecture 9",topic:"Kernel Trick",type:"mc",label:"Multiple Choice",
+   q:"In the Gaussian RBF kernel, what does a HIGH value of γ produce?",
+   opts:["A smoother, wider decision boundary — lower risk of overfitting","A more irregular, complex decision boundary that wiggles around individual instances — higher risk of overfitting","A faster convergence during training","A linear decision boundary"],
+   ans:1,exp:"High γ makes the bell-shaped curve narrower, so each instance's range of influence is smaller. The decision boundary ends up more irregular, wiggling around individual instances. This is like high complexity — higher overfitting risk. If overfitting, reduce γ. If underfitting, increase γ."},
+
+  {id:"lec9_17",lecture:"Lecture 9",topic:"Kernel Trick",type:"ms",label:"Multi-Select",
+   q:"Which of the following kernel formulas are listed in your slides? Select all that apply.",
+   opts:["Linear: K(a,b) = aᵀb","Polynomial: K(a,b) = (γaᵀb + r)^d","Gaussian RBF: K(a,b) = exp(−γ‖a−b‖²)","Sigmoid: K(a,b) = tanh(γaᵀb + r)","Hinge: K(a,b) = max(0, 1 − aᵀb)"],
+   ans:[0,1,2,3],exp:"Your slides list four kernels: Linear K(a,b) = aᵀb (A), Polynomial K(a,b) = (γaᵀb + r)^d (B), Gaussian RBF K(a,b) = exp(−γ‖a−b‖²) (C), and Sigmoid K(a,b) = tanh(γaᵀb + r) (D). Hinge (E) is a loss function, not a kernel."},
+
+  {id:"lec9_18",lecture:"Lecture 9",topic:"Kernel Selection",type:"mc",label:"Multiple Choice",
+   q:"According to your slides, what kernel should you always try first?",
+   opts:["The Gaussian RBF kernel, because it works well in most cases","The polynomial kernel, because it handles the most cases","The linear kernel, especially if the training set is very large or has many features","The sigmoid kernel, because it is the most flexible"],
+   ans:2,exp:"Your slides say: 'As a rule of thumb, you should always try the linear kernel first, especially if the training set is very large or if it has plenty of features.' After that, try the Gaussian RBF kernel, which works well in most cases."},
+
+  {id:"lec9_19",lecture:"Lecture 9",topic:"Dual Problem",type:"mc",label:"Multiple Choice",
+   q:"Why is the dual problem important for SVMs?",
+   opts:["It is easier to implement than the primal problem","The dual problem makes the kernel trick possible — the primal problem does not","It always produces a better solution than the primal problem","It requires fewer hyperparameters to tune"],
+   ans:1,exp:"Your slides state: 'Dual problem makes the kernel trick possible, while primal does not.' The dual formulation expresses the optimization in terms of dot products of training instances, which can then be replaced by kernel function evaluations — enabling the kernel trick."},
+
+  {id:"lec9_20",lecture:"Lecture 9",topic:"Dual Problem",type:"tf",label:"True / False",
+   q:"True or False: The primal problem formulation of SVMs supports the kernel trick.",
+   opts:["True","False"],
+   ans:1,exp:"False. The primal problem does NOT support the kernel trick. Only the dual problem formulation allows the kernel trick. This is because the dual problem expresses the solution in terms of dot products of training instances, which can be replaced by kernel evaluations."},
+
+  {id:"lec9_21",lecture:"Lecture 9",topic:"SVM Complexity",type:"mc",label:"Multiple Choice",
+   q:"What is the main difference between LinearSVC and SVC in Scikit-Learn?",
+   opts:["LinearSVC uses the polynomial kernel; SVC uses the RBF kernel","LinearSVC does not support the kernel trick and scales almost linearly with instances/features; SVC supports the kernel trick but gets very slow on large datasets","LinearSVC is only for regression; SVC is only for classification","They are identical but LinearSVC is faster to initialize"],
+   ans:1,exp:"LinearSVC (liblinear): no kernel trick, scales almost linearly with instances and features — good for large datasets. SVC (libsvm): supports the kernel trick but gets very slow when there are many instances (e.g. hundreds of thousands). SVC is best for complex small/medium datasets."},
+
+  {id:"lec9_22",lecture:"Lecture 9",topic:"SVM Complexity",type:"ms",label:"Multi-Select",
+   q:"Which of the following are true about LinearSVC? Select all that apply.",
+   opts:["It is based on the liblinear library","It does not support the kernel trick","It scales almost linearly with the number of training instances and features","It is ideal for complex small or medium-sized training sets","It is faster than SVC on very large datasets"],
+   ans:[0,1,2,4],exp:"LinearSVC is based on liblinear (A), does not support kernel trick (B), scales almost linearly with instances and features (C), and is faster on large datasets (E). It is NOT ideal for complex small/medium sets — that's SVC with kernel trick (D is false — that describes SVC)."},
+
+  {id:"lec9_23",lecture:"Lecture 9",topic:"SVM Regression",type:"mc",label:"Multiple Choice",
+   q:"How does SVM Regression differ from SVM Classification in its objective?",
+   opts:["SVM Regression tries to fit the widest street between classes; Classification tries to fit as many instances on the street as possible","SVM Regression tries to fit as many instances as possible ON the street while limiting violations; Classification fits the widest street between classes","They are identical in objective but use different kernels","SVM Regression uses C as the margin hyperparameter; Classification uses ε"],
+   ans:1,exp:"SVM Regression reverses the classification objective. Instead of fitting the widest street between classes (classification), it tries to fit as many instances as possible ON the street while limiting instances off the street (violations). Street width is controlled by ε (epsilon)."},
+
+  {id:"lec9_24",lecture:"Lecture 9",topic:"SVM Regression",type:"mc",label:"Multiple Choice",
+   q:"What hyperparameter controls the street width in SVM Regression?",
+   opts:["C","γ (gamma)","ε (epsilon)","d (degree)"],
+   ans:2,exp:"In SVM Regression, the street width is controlled by the hyperparameter ε (epsilon). Larger ε = wider street = more instances allowed on the street. This is different from SVM Classification, where C controls the margin trade-off."},
+
+  {id:"lec9_25",lecture:"Lecture 9",topic:"Hard vs Soft Margin",type:"ms",label:"Multi-Select",
+   q:"Which of the following correctly describe the relationship between C and the SVM margin? Select all that apply.",
+   opts:["Large C = narrower margin with fewer violations","Small C = wider margin with more violations allowed","Large C = more regularization","Small C = more regularization","Reducing C is a way to address overfitting"],
+   ans:[0,1,3,4],exp:"Large C = narrower margin + fewer violations (A). Small C = wider margin + more violations (B). Small C = MORE regularization (D — it constrains the model more). Reducing C addresses overfitting (E). Large C = LESS regularization, not more (C is false)."},
+
+  {id:"lec9_26",lecture:"Lecture 9",topic:"Large Margin Classification",type:"ms",label:"Multi-Select",
+   q:"Which of the following are true about support vectors? Select all that apply.",
+   opts:["They are the instances on the edge of the margin","The decision boundary is fully determined by them","Adding instances far from the margin does not change the decision boundary","They are the instances that were misclassified","All training instances are support vectors"],
+   ans:[0,1,2],exp:"Support vectors are on the edge of the margin (A), fully determine the decision boundary (B), and adding off-street instances doesn't change anything (C). They are NOT necessarily misclassified — they are correctly classified but on the margin boundary (D false). Only the support vectors matter, not all instances (E false)."},
+
+  {id:"lec9_27",lecture:"Lecture 9",topic:"Kernel Trick",type:"mc",label:"Multiple Choice",
+   q:"Why is adding polynomial features directly less desirable than using the polynomial kernel trick for SVMs?",
+   opts:["Polynomial features always reduce accuracy","At high polynomial degrees, adding features directly creates a huge number of features (combinatorial explosion), making the model very slow. The kernel trick gets the same result without actually adding features.","The kernel trick is more accurate than polynomial features","Polynomial features are not compatible with the SVM objective"],
+   ans:1,exp:"Adding polynomial features directly at a high degree causes a combinatorial explosion of features, making the model very slow. The kernel trick gets the same mathematical result as if you had added all those polynomial features, but without actually computing or adding them. No feature explosion occurs."},
+
+  {id:"lec9_28",lecture:"Lecture 9",topic:"Nonlinear SVM",type:"mc",label:"Multiple Choice",
+   q:"According to your slides, what is one approach to handling non-linearly separable datasets with SVMs?",
+   opts:["Use a larger C hyperparameter","Add more features such as polynomial features — in some cases this can result in a linearly separable dataset in the higher-dimensional space","Increase the number of training instances","Use OvR strategy to convert to binary classification"],
+   ans:1,exp:"Your slides show: one approach to non-linear datasets is to add polynomial features. In the example, a 1D dataset that is not linearly separable becomes perfectly linearly separable after adding x₂ = (x₁)² as a second feature. The kernel trick achieves this implicitly."},
+
+  {id:"lec9_29",lecture:"Lecture 9",topic:"Kernel Trick",type:"mc",label:"Multiple Choice",
+   q:"In the Gaussian RBF kernel, what does γ act like?",
+   opts:["A learning rate","A regularization hyperparameter — high γ can lead to overfitting, low γ can lead to underfitting","The number of support vectors","The degree of the polynomial transformation"],
+   ans:1,exp:"Your slides explicitly state: 'So γ acts like a regularization hyperparameter: if your model is overfitting, you should reduce it; if it is underfitting, you should increase it (similar to the C hyperparameter).' High γ = complex boundary, low γ = smooth boundary."},
+
+  {id:"lec9_30",lecture:"Lecture 9",topic:"SVM Overview",type:"ms",label:"Multi-Select",
+   q:"According to your slides, what tasks can SVMs perform? Select all that apply.",
+   opts:["Linear classification","Nonlinear classification","Linear regression","Nonlinear regression","Unsupervised clustering"],
+   ans:[0,1,2,3],exp:"Your slides state: 'A Support Vector Machine (SVM) is a powerful and versatile Machine Learning model. It is capable of performing linear or nonlinear classification, regression.' SVMs are supervised learning models — they do not perform unsupervised clustering (E is false)."}
+];
+
+const LETTERS=['A','B','C','D','E'];
+let deck=[],idx=0,score=0,answered=0,shuffleQ=true,shuffleA=true,selectedMulti=new Set(),currentAns=null;
+function showTab(tab){document.getElementById('paneNotes').classList.toggle('active',tab==='notes');document.getElementById('paneQuiz').classList.toggle('active',tab==='quiz');document.getElementById('tabNotes').classList.toggle('active',tab==='notes');document.getElementById('tabQuiz').classList.toggle('active',tab==='quiz');document.getElementById('scoreWrap').style.display=tab==='quiz'?'block':'none';}
+function toggleNote(id){document.getElementById(id).classList.toggle('open');}
+function toggleShuffle(w){if(w==='q'){shuffleQ=!shuffleQ;document.getElementById('toggleQ').classList.toggle('on',shuffleQ);}else{shuffleA=!shuffleA;document.getElementById('toggleA').classList.toggle('on',shuffleA);}}
+function buildDeck(){deck=shuffleQ?shuffle([...QUESTIONS]):[...QUESTIONS];}
+function renderQ(){
+  const q=deck[idx];selectedMulti=new Set();
+  document.getElementById('missedBadge').classList.toggle('show',!!getMissed()[q.id]);
+  document.getElementById('missedNotice').classList.remove('show');
+  document.getElementById('qTypeBadge').textContent=q.label;
+  document.getElementById('qHint').style.display=q.type==='ms'?'block':'none';
+  document.getElementById('qText').textContent=q.q;
+  const eqEl=document.getElementById('qEquation');if(q.equation){eqEl.textContent=q.equation;eqEl.style.display='block';}else{eqEl.style.display='none';}
+  document.getElementById('explanation').classList.remove('show');document.getElementById('explanation').textContent='';
+  document.getElementById('btnNext').classList.remove('show');document.getElementById('btnSubmit').classList.remove('show');
+  const{opts,ans}=shuffleA?shuffleOpts(q):{opts:q.opts,ans:q.ans};currentAns=ans;
+  const div=document.getElementById('optionsDiv');div.innerHTML='';
+  opts.forEach((o,i)=>{
+    const el=document.createElement('div');el.className='opt';
+    const ind=document.createElement('span');ind.className='opt-indicator';ind.textContent=q.type==='ms'?'☐':LETTERS[i];
+    const txt=document.createElement('span');txt.className='opt-text';txt.textContent=o;
+    el.appendChild(ind);el.appendChild(txt);
+    if(q.type==='ms'){el.onclick=()=>{if(el.classList.contains('disabled'))return;if(selectedMulti.has(i)){selectedMulti.delete(i);el.classList.remove('selected');ind.textContent='☐';}else{selectedMulti.add(i);el.classList.add('selected');ind.textContent='☑';}document.getElementById('btnSubmit').classList.toggle('show',selectedMulti.size>0);};}
+    else{el.onclick=()=>resolveSingle(i);}
+    div.appendChild(el);
+  });
+  document.getElementById('qCounter').textContent='Question '+(idx+1)+' of '+deck.length;
+  document.getElementById('progressFill').style.width=Math.round((idx/deck.length)*100)+'%';
+  document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+}
+function resolveSingle(chosen){const correct=chosen===currentAns;const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(i===currentAns){opts[i].classList.add(correct&&i===chosen?'correct':'reveal-correct');ind.textContent='✓';}else if(i===chosen){opts[i].classList.add('wrong');ind.textContent='✗';}}finalize(correct);}
+function submitMulti(){const correctSet=new Set(Array.isArray(currentAns)?currentAns:[currentAns]);const correct=selectedMulti.size===correctSet.size&&[...selectedMulti].every(i=>correctSet.has(i));const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('correct');ind.textContent='✓';}else if(!correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('wrong');ind.textContent='✗';}else if(correctSet.has(i)&&!selectedMulti.has(i)){opts[i].classList.add('reveal-correct');ind.textContent='✓';}}document.getElementById('btnSubmit').classList.remove('show');finalize(correct);}
+function finalize(correct){if(correct){score++;}else{recordMiss(deck[idx]);document.getElementById('missedNotice').classList.add('show');}answered++;document.getElementById('scoreDisplay').textContent=score+' / '+answered;const exp=document.getElementById('explanation');exp.textContent=(correct?'✓ Correct. ':'✗ Incorrect. ')+deck[idx].exp;exp.classList.add('show');document.getElementById('btnNext').classList.add('show');}
+function nextQ(){idx++;if(idx>=deck.length)showSummary();else renderQ();}
+function showSummary(){document.getElementById('questionCard').style.display='none';document.getElementById('btnNext').style.display='none';document.getElementById('qCounter').style.display='none';document.getElementById('progressFill').style.width='100%';const pct=Math.round((score/deck.length)*100);document.getElementById('summaryScore').textContent=pct+'%';document.getElementById('summaryFrac').textContent=score+' out of '+deck.length+' correct';document.getElementById('summaryMsg').textContent=pct>=85?'Excellent — you have this lecture locked in.':pct>=65?'Solid effort. Review the ones you missed, then try again.':'Keep at it — go back through the notes tab and restart the deck.';const mc=getMissedCount();if(mc>0){document.getElementById('summaryMissedBox').style.display='block';document.getElementById('summaryMissedBox').textContent=mc+' question'+(mc!==1?'s':'')+' in your missed deck across all lectures.';document.getElementById('linkMissed').style.display='inline-block';}document.getElementById('summary').classList.add('show');}
+function restart(){idx=0;score=0;answered=0;buildDeck();document.getElementById('questionCard').style.display='block';document.getElementById('btnNext').style.display='';document.getElementById('btnNext').classList.remove('show');document.getElementById('qCounter').style.display='block';document.getElementById('summary').classList.remove('show');renderQ();}
+buildDeck();renderQ();
+</script>
+</body>
+</html>

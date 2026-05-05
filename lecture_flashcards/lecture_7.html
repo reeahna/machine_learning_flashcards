@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 7 — Logistic Regression</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#f5f4f0;--surface:#ffffff;--surface2:#f0eeea;--border:#e2dfd8;--text:#1a1916;--muted:#8a8680;--accent:#5046e4;--accent-dim:rgba(80,70,228,0.08);--accent-border:rgba(80,70,228,0.2);--green:#16a05a;--green-bg:#edf7f2;--green-border:#b6e4cf;--red:#d63a3a;--red-bg:#fdf0f0;--red-border:#f5c0c0;--reveal-bg:#f7f6f2;--yellow-bg:#fffbea;--yellow-border:#f5e49a;--orange:#d97706;--orange-bg:#fff7ed;--orange-border:#fed7aa;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  header{padding:1.25rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);gap:1rem;flex-wrap:wrap;}
+  .header-left{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+  .back-link{font-size:13px;color:var(--muted);text-decoration:none;}.back-link:hover{color:var(--text);}
+  .header-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);}
+  .header-badge{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);padding:3px 10px;border-radius:99px;}
+  .score-display{font-size:14px;color:var(--muted);white-space:nowrap;}.score-display span{color:var(--text);font-weight:600;}
+  .progress-wrap{height:3px;background:var(--border);}
+  .progress-fill{height:3px;background:var(--accent);transition:width 0.4s ease;width:0%;}
+  .tab-nav{display:flex;border-bottom:1px solid var(--border);background:var(--surface);padding:0 2rem;}
+  .tab-btn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:12px 18px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--muted);cursor:pointer;transition:color 0.15s,border-color 0.15s;margin-bottom:-1px;}
+  .tab-btn:hover{color:var(--text);}.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .pane{display:none;}.pane.active{display:block;}
+  .notes-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;}
+  .notes-intro{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;}
+  .note-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .note-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.12s;}
+  .note-header:hover{background:var(--surface2);}
+  .note-header-left{display:flex;align-items:center;gap:10px;}
+  .note-icon{width:28px;height:28px;border-radius:6px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .note-title{font-size:14px;font-weight:500;color:var(--text);}
+  .note-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s;}
+  .note-block.open .note-chevron{transform:rotate(180deg);}
+  .note-body{display:none;padding:0 1.25rem 1.25rem;border-top:1px solid var(--border);}
+  .note-block.open .note-body{display:block;}
+  .note-body ul{margin-top:0.75rem;padding-left:1.25rem;}
+  .note-body li{font-size:14px;color:var(--text);line-height:1.75;margin-bottom:4px;}
+  .note-body li strong{font-weight:600;}
+  .equation-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'DM Sans',sans-serif;margin-top:1rem;}
+  .equation-box{background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:12px 16px;font-size:14px;font-family:'Georgia',serif;color:var(--text);text-align:center;line-height:1.8;}
+  .equation-note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6;}
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.75rem;}
+  .tag{font-size:11px;padding:2px 9px;border-radius:99px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  .tag.important{background:var(--accent-dim);color:var(--accent);border-color:var(--accent-border);}
+  .quiz-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;display:flex;flex-direction:column;align-items:center;}
+  .shuffle-bar{align-self:stretch;display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;}
+  .shuffle-label{font-size:12px;color:var(--muted);font-weight:500;}
+  .toggle-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;user-select:none;}
+  .toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .toggle-btn.on{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+  .toggle-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background 0.15s;flex-shrink:0;}
+  .toggle-btn.on .toggle-dot{background:var(--accent);}
+  .q-counter{font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5rem;align-self:flex-start;}
+  .question-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;margin-bottom:1.25rem;}
+  .missed-badge{display:none;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);padding:3px 10px;border-radius:99px;margin-bottom:0.75rem;}
+  .missed-badge.show{display:inline-block;}
+  .q-type-badge{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
+  .q-hint{font-size:12px;color:var(--accent);margin-bottom:1rem;font-style:italic;display:none;}
+  .q-text{font-family:'DM Serif Display',serif;font-size:20px;line-height:1.5;color:var(--text);margin-bottom:1.75rem;}
+  .q-equation{font-family:'Georgia',serif;font-size:15px;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;text-align:center;display:none;line-height:1.8;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.15s,background 0.15s;background:var(--surface);}
+  .opt:hover:not(.disabled){border-color:var(--accent);background:var(--accent-dim);}
+  .opt-indicator{width:22px;height:22px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:12px;font-weight:600;color:var(--muted);transition:all 0.15s;}
+  .opt.selected .opt-indicator{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .opt-text{font-size:15px;color:var(--text);line-height:1.5;}
+  .opt.correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.wrong{border-color:var(--red-border);background:var(--red-bg);}
+  .opt.wrong .opt-indicator{background:var(--red);color:#fff;border-color:var(--red);}
+  .opt.reveal-correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.reveal-correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.disabled{cursor:default;}
+  .btn-submit{display:none;margin-top:1rem;background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-submit:hover{opacity:0.88;}.btn-submit.show{display:block;}
+  .explanation{display:none;margin-top:1.25rem;padding:14px 16px;border-radius:10px;background:var(--reveal-bg);border-left:3px solid var(--accent);font-size:14px;color:var(--muted);line-height:1.7;}
+  .explanation.show{display:block;}
+  .missed-notice{display:none;margin-top:10px;padding:10px 14px;border-radius:8px;background:var(--orange-bg);border:1px solid var(--orange-border);font-size:13px;color:var(--orange);font-weight:500;}
+  .missed-notice.show{display:block;}
+  .btn-next{display:none;margin-top:1.5rem;align-self:flex-end;background:var(--accent);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-next:hover{opacity:0.88;}.btn-next.show{display:block;}
+  .summary{display:none;flex-direction:column;align-items:center;text-align:center;padding:3rem 2rem;width:100%;}
+  .summary.show{display:flex;}
+  .summary-score{font-family:'DM Serif Display',serif;font-size:72px;color:var(--accent);line-height:1;margin-bottom:0.5rem;}
+  .summary-label{font-size:14px;color:var(--muted);margin-bottom:0.25rem;}
+  .summary-msg{font-size:17px;color:var(--text);margin:1.25rem 0 1.5rem;line-height:1.6;max-width:400px;}
+  .summary-missed-box{font-size:14px;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:10px;padding:10px 18px;margin-bottom:1.5rem;display:none;}
+  .btn-group{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .btn-restart{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-restart:hover{background:var(--accent-dim);}
+  .link-missed{font-size:14px;color:var(--orange);text-decoration:none;padding:10px 24px;border:1px solid var(--orange-border);border-radius:10px;background:var(--orange-bg);display:none;}
+  .link-home{font-size:14px;color:var(--muted);text-decoration:none;margin-top:0.25rem;}
+  .link-home:hover{color:var(--text);}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <a href="../index.html" class="back-link">← Back</a>
+    <span class="header-title">Lecture 7</span>
+    <span class="header-badge">Logistic Regression</span>
+  </div>
+  <div class="score-display" id="scoreWrap" style="display:none">Score: <span id="scoreDisplay">0 / 0</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+<div class="tab-nav">
+  <button class="tab-btn active" id="tabNotes" onclick="showTab('notes')">📋 Notes</button>
+  <button class="tab-btn" id="tabQuiz" onclick="showTab('quiz')">⚡ Practice Questions</button>
+</div>
+
+<!-- NOTES -->
+<div class="pane active" id="paneNotes">
+  <div class="notes-section">
+    <p class="notes-intro">Key concepts from Lecture 7. Tap each section to expand.</p>
+
+    <div class="note-block open" id="nb1">
+      <div class="note-header" onclick="toggleNote('nb1')">
+        <div class="note-header-left"><div class="note-icon">📊</div><span class="note-title">What is Logistic Regression?</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Logistic Regression</strong> (also called Logit Regression): commonly used to estimate the probability that an instance belongs to a particular class.</li>
+          <li>It is a <strong>binary classifier</strong>: predicts 1 if estimated probability ≥ 50%, otherwise predicts 0.</li>
+          <li>Just like Linear Regression, it computes a weighted sum of input features plus a bias, but then runs the result through the <strong>logistic (sigmoid) function</strong> instead of outputting it directly.</li>
+          <li>The output is always between 0 and 1 — it is a probability.</li>
+        </ul>
+        <div class="tag-row"><span class="tag important">Binary classifier outputting probabilities</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb2">
+      <div class="note-header" onclick="toggleNote('nb2')">
+        <div class="note-header-left"><div class="note-icon">📐</div><span class="note-title">Sigmoid Function &amp; Prediction Rule</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li>The <strong>logistic/sigmoid function</strong> σ(t) = 1 / (1 + e⁻ᵗ) outputs a value between 0 and 1. It is S-shaped.</li>
+          <li>t = xᵀθ is called the <strong>logit</strong> (also called log-odds).</li>
+          <li>The logit function logit(p) = log(p / (1−p)) is the inverse of the sigmoid.</li>
+          <li><strong>Prediction rule:</strong> ŷ = 0 if p̂ &lt; 0.5; ŷ = 1 if p̂ ≥ 0.5. The decision boundary is where p̂ = 0.5 (i.e. t = 0).</li>
+        </ul>
+        <div class="equation-label">Sigmoid (logistic) function</div>
+        <div class="equation-box">σ(t) = 1 / (1 + e⁻ᵗ)</div>
+        <div class="equation-label" style="margin-top:0.75rem">Logistic regression probability estimate</div>
+        <div class="equation-box">p̂ = σ(xᵀθ) = 1 / (1 + exp(−xᵀθ))</div>
+        <div class="tag-row"><span class="tag important">Equations — know both</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb3">
+      <div class="note-header" onclick="toggleNote('nb3')">
+        <div class="note-header-left"><div class="note-icon">💰</div><span class="note-title">Cost Function — Log Loss &amp; Convexity</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li>The cost function for Logistic Regression is called <strong>log loss</strong> (negative log-likelihood / cross-entropy for binary classification).</li>
+          <li>Training objective: set θ so the model estimates high probabilities for positive instances and low probabilities for negative instances.</li>
+          <li><strong>No closed-form solution</strong> (unlike Linear Regression) — there is no equivalent of the Normal Equation for Logistic Regression.</li>
+          <li><strong>Good news:</strong> The cost function IS convex, so Gradient Descent is guaranteed to find the global minimum (given appropriate learning rate and enough time).</li>
+          <li><strong>Maximum likelihood perspective:</strong> The log loss is equivalent to minimizing the negative log-likelihood, which is the cross-entropy loss for binary classification.</li>
+        </ul>
+        <div class="equation-label">Log loss (binary cross-entropy)</div>
+        <div class="equation-box">J(θ) = −(1/m) Σ [y⁽ⁱ⁾ log(p̂⁽ⁱ⁾) + (1−y⁽ⁱ⁾) log(1−p̂⁽ⁱ⁾)]</div>
+        <p class="equation-note">y⁽ⁱ⁾ = true label (0 or 1). p̂⁽ⁱ⁾ = estimated probability. When y=1, cost = −log(p̂); when y=0, cost = −log(1−p̂).</p>
+        <div class="tag-row"><span class="tag important">No Normal Equation — must use GD</span><span class="tag">Convex — one global minimum</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb4">
+      <div class="note-header" onclick="toggleNote('nb4')">
+        <div class="note-header-left"><div class="note-icon">🎯</div><span class="note-title">Decision Boundaries &amp; Maximum Likelihood</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li>The decision boundary is the set of points where p̂ = 0.5 (t = xᵀθ = 0). It is <strong>linear</strong> — Logistic Regression creates a linear decision boundary.</li>
+          <li>With two features, the decision boundary is a line; with more features, it's a hyperplane.</li>
+          <li><strong>Maximum likelihood perspective:</strong> The likelihood of observing the data given the model parameters is L = p̂ʸ(1−p̂)^(1−y). Maximizing this (or minimizing negative log-likelihood) gives the same result as minimizing cross-entropy loss.</li>
+          <li>For N data points, minimizing the negative log-likelihood is exactly the cross-entropy loss function for binary classification.</li>
+        </ul>
+        <div class="tag-row"><span class="tag important">Linear decision boundary</span><span class="tag">MLE = cross-entropy</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="pane" id="paneQuiz">
+  <div class="quiz-section">
+    <div class="shuffle-bar">
+      <span class="shuffle-label">Shuffle:</span>
+      <button class="toggle-btn on" id="toggleQ" onclick="toggleShuffle('q')"><span class="toggle-dot"></span> Questions</button>
+      <button class="toggle-btn on" id="toggleA" onclick="toggleShuffle('a')"><span class="toggle-dot"></span> Answer choices</button>
+    </div>
+    <div class="q-counter" id="qCounter">Question 1 of 26</div>
+    <div class="question-card" id="questionCard">
+      <div class="missed-badge" id="missedBadge">⚠ Previously missed</div>
+      <div class="q-type-badge" id="qTypeBadge"></div>
+      <div class="q-hint" id="qHint">Select all that apply, then click Submit.</div>
+      <p class="q-text" id="qText"></p>
+      <div class="q-equation" id="qEquation"></div>
+      <div class="options" id="optionsDiv"></div>
+      <button class="btn-submit" id="btnSubmit" onclick="submitMulti()">Submit answer</button>
+      <div class="explanation" id="explanation"></div>
+      <div class="missed-notice" id="missedNotice">⚠ Added to your missed questions deck.</div>
+    </div>
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Next question →</button>
+    <div class="summary" id="summary">
+      <div class="summary-label">Final score</div>
+      <div class="summary-score" id="summaryScore"></div>
+      <div class="summary-label" id="summaryFrac"></div>
+      <p class="summary-msg" id="summaryMsg"></p>
+      <div class="summary-missed-box" id="summaryMissedBox"></div>
+      <div class="btn-group">
+        <button class="btn-restart" onclick="restart()">↺ Restart deck</button>
+        <a href="../missed.html" class="link-missed" id="linkMissed">Review missed questions →</a>
+        <a href="../index.html" class="link-home">← Back to all lectures</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MISSED_KEY='ml_missed_questions';
+function getMissed(){try{return JSON.parse(localStorage.getItem(MISSED_KEY)||'{}');}catch{return{};}}
+function saveMissed(d){localStorage.setItem(MISSED_KEY,JSON.stringify(d));}
+function getMissedCount(){return Object.keys(getMissed()).length;}
+function recordMiss(q){const m=getMissed(),s=JSON.parse(localStorage.getItem('ml_streak_data')||'{}');m[q.id]={id:q.id,lecture:q.lecture,topic:q.topic};s[q.id]=0;saveMissed(m);localStorage.setItem('ml_streak_data',JSON.stringify(s));}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function shuffleOpts(q){if(q.type==='tf')return{opts:q.opts,ans:q.ans};const idxs=shuffle(q.opts.map((_,i)=>i));const map={};idxs.forEach((old,n)=>{map[old]=n;});return{opts:idxs.map(i=>q.opts[i]),ans:Array.isArray(q.ans)?q.ans.map(i=>map[i]):map[q.ans]};}
+
+const QUESTIONS = [
+  {id:"lec7_01",lecture:"Lecture 7",topic:"Logistic Regression Basics",type:"mc",label:"Multiple Choice",
+   q:"What is Logistic Regression commonly used for?",
+   opts:["Predicting a continuous output value","Estimating the probability that an instance belongs to a particular class (binary classification)","Clustering unlabeled data into groups","Reducing the dimensionality of a dataset"],
+   ans:1,exp:"Logistic Regression is commonly used to estimate the probability that an instance belongs to a particular class — e.g., what is the probability this email is spam? If the estimated probability ≥ 50%, the model predicts positive class (1); otherwise negative class (0)."},
+
+  {id:"lec7_02",lecture:"Lecture 7",topic:"Logistic Regression Basics",type:"tf",label:"True / False",
+   q:"True or False: Logistic Regression is a binary classifier.",
+   opts:["True","False"],
+   ans:0,exp:"True. Logistic Regression outputs a probability estimate and then predicts class 1 if p̂ ≥ 0.5 and class 0 if p̂ < 0.5. This makes it a binary classifier."},
+
+  {id:"lec7_03",lecture:"Lecture 7",topic:"Logistic Regression Basics",type:"mc",label:"Multiple Choice",
+   q:"How does Logistic Regression differ from Linear Regression in its computation?",
+   opts:["Logistic Regression uses a different cost function but outputs the weighted sum directly","Logistic Regression computes the same weighted sum of features but then passes it through the logistic (sigmoid) function instead of outputting it directly","Logistic Regression uses matrix decomposition while Linear Regression uses Gradient Descent","They are identical except Logistic Regression minimizes cross-entropy instead of MSE"],
+   ans:1,exp:"Like Linear Regression, Logistic Regression computes a weighted sum (xᵀθ). But instead of outputting this directly, it passes it through the sigmoid/logistic function σ(xᵀθ), which squashes the output to a value between 0 and 1 (a probability)."},
+
+  {id:"lec7_04",lecture:"Lecture 7",topic:"Sigmoid Function",type:"eq",label:"Equation",
+   q:"What is the sigmoid (logistic) function?",
+   opts:["σ(t) = 1 / (1 + e⁻ᵗ)","σ(t) = eᵗ / (Σ eˢ)","σ(t) = max(0, t)","σ(t) = t / (1 + |t|)"],
+   ans:0,exp:"The sigmoid function is σ(t) = 1 / (1 + e⁻ᵗ). It produces an S-shaped curve that outputs values between 0 and 1. When t = 0, σ(0) = 0.5. As t → +∞, σ → 1. As t → −∞, σ → 0."},
+
+  {id:"lec7_05",lecture:"Lecture 7",topic:"Sigmoid Function",type:"mc",label:"Multiple Choice",
+   q:"What is the output range of the sigmoid function?",
+   opts:["−∞ to +∞","0 to ∞","0 to 1 (exclusive)","−1 to 1"],
+   ans:2,exp:"The sigmoid function always outputs a value strictly between 0 and 1. This is what makes it suitable for representing a probability — every output can be interpreted as the probability of belonging to the positive class."},
+
+  {id:"lec7_06",lecture:"Lecture 7",topic:"Sigmoid Function",type:"mc",label:"Multiple Choice",
+   q:"What is the logit (log-odds) in Logistic Regression?",
+   opts:["The final predicted class label (0 or 1)","The score t = xᵀθ that is passed through the sigmoid function; also the log of the odds ratio","The logarithm of the cost function","The gradient of the cost function with respect to θ"],
+   ans:1,exp:"The logit (also called log-odds) is the score t = xᵀθ. The term 'logit' comes from the logit function logit(p) = log(p/(1−p)), which is the inverse of the logistic/sigmoid function. The logit represents the log of the ratio of the probability of positive vs. negative class."},
+
+  {id:"lec7_07",lecture:"Lecture 7",topic:"Sigmoid Function",type:"eq",label:"Equation",
+   q:"What is the complete probability estimate formula for Logistic Regression?",
+   opts:["p̂ = σ(xᵀθ) = 1 / (1 + exp(−xᵀθ))","p̂ = xᵀθ","p̂ = exp(xᵀθ) / Σ exp(xᵀθ)","p̂ = max(0, xᵀθ)"],
+   ans:0,exp:"The probability estimate is p̂ = σ(xᵀθ) = 1 / (1 + exp(−xᵀθ)). This combines the linear model (xᵀθ) with the sigmoid function to produce a probability output between 0 and 1."},
+
+  {id:"lec7_08",lecture:"Lecture 7",topic:"Sigmoid Function",type:"ms",label:"Multi-Select",
+   q:"Which of the following are true about the sigmoid function? Select all that apply.",
+   opts:["Its output is always between 0 and 1","It is also called the logistic function","It is S-shaped","It outputs exactly 0.5 when its input is 0","It is the same as the softmax function"],
+   ans:[0,1,2,3],exp:"The sigmoid outputs values between 0 and 1 (A), is also called the logistic function (B), is S-shaped (C), and equals 0.5 when input is 0 (D). The softmax function is a generalization of sigmoid for multiple classes but is not the same thing (E is false)."},
+
+  {id:"lec7_09",lecture:"Lecture 7",topic:"Decision Boundary",type:"mc",label:"Multiple Choice",
+   q:"What is the decision boundary in Logistic Regression?",
+   opts:["The point where the cost function reaches its minimum","The set of points where p̂ = 0.5 (i.e. xᵀθ = 0), which is a linear boundary","The threshold where the model switches from using GD to the Normal Equation","The point where training error equals validation error"],
+   ans:1,exp:"The decision boundary is where p̂ = 0.5, which occurs when xᵀθ = 0. This is a linear boundary — a line in 2D, a hyperplane in higher dimensions. This is why Logistic Regression creates linear decision boundaries despite being used for classification."},
+
+  {id:"lec7_10",lecture:"Lecture 7",topic:"Decision Boundary",type:"tf",label:"True / False",
+   q:"True or False: Logistic Regression creates a linear decision boundary.",
+   opts:["True","False"],
+   ans:0,exp:"True. Despite its name and use for classification, Logistic Regression creates a linear decision boundary (a hyperplane defined by xᵀθ = 0). Your slides confirm this — the decision boundaries between classes are linear."},
+
+  {id:"lec7_11",lecture:"Lecture 7",topic:"Cost Function",type:"mc",label:"Multiple Choice",
+   q:"What is the cost function for Logistic Regression called?",
+   opts:["Mean Squared Error (MSE)","Root Mean Square Error (RMSE)","Log loss (binary cross-entropy / negative log-likelihood)","Hinge loss"],
+   ans:2,exp:"The cost function for Logistic Regression is called log loss (also called binary cross-entropy or negative log-likelihood). It is derived from maximum likelihood estimation and penalizes the model when it estimates low probability for the correct class."},
+
+  {id:"lec7_12",lecture:"Lecture 7",topic:"Cost Function",type:"eq",label:"Equation",
+   q:"What is the log loss (cost function) for Logistic Regression?",
+   opts:["J(θ) = −(1/m) Σ [y⁽ⁱ⁾ log(p̂⁽ⁱ⁾) + (1−y⁽ⁱ⁾) log(1−p̂⁽ⁱ⁾)]","J(θ) = (1/m) Σ (p̂⁽ⁱ⁾ − y⁽ⁱ⁾)²","J(θ) = (1/m) Σ |p̂⁽ⁱ⁾ − y⁽ⁱ⁾|","J(θ) = Σ max(0, 1 − y⁽ⁱ⁾ × p̂⁽ⁱ⁾)"],
+   ans:0,exp:"Log loss = −(1/m) Σ [y log(p̂) + (1−y) log(1−p̂)]. When y=1, cost = −log(p̂) — large if p̂ is close to 0. When y=0, cost = −log(1−p̂) — large if p̂ is close to 1. Option B is MSE, Option D is hinge loss (SVM)."},
+
+  {id:"lec7_13",lecture:"Lecture 7",topic:"Cost Function",type:"ms",label:"Multi-Select",
+   q:"Which of the following are true about the Logistic Regression cost function? Select all that apply.",
+   opts:["There is no closed-form solution (no equivalent to the Normal Equation)","The cost function is convex","Gradient Descent is guaranteed to find the global minimum","The cost function is called log loss or binary cross-entropy","The cost function is Mean Squared Error (MSE)"],
+   ans:[0,1,2,3],exp:"There is NO Normal Equation for Logistic Regression (A). The cost function IS convex (B), so GD finds the global minimum (C). It is called log loss or binary cross-entropy (D). It is NOT MSE — that's for linear regression (E is false)."},
+
+  {id:"lec7_14",lecture:"Lecture 7",topic:"Cost Function",type:"tf",label:"True / False",
+   q:"True or False: There is a closed-form equation (like the Normal Equation) for computing the optimal θ in Logistic Regression.",
+   opts:["True","False"],
+   ans:1,exp:"False. Your slides explicitly state: 'there is no known closed-form equation to compute the value of θ that minimizes this cost function (there is no equivalent of the Normal Equation).' You must use Gradient Descent or another optimization algorithm."},
+
+  {id:"lec7_15",lecture:"Lecture 7",topic:"Cost Function",type:"mc",label:"Multiple Choice",
+   q:"Why does the log loss penalize a model that estimates close to 0 probability for a positive instance?",
+   opts:["Because the cost function adds the absolute error for each instance","Because −log(p̂) grows very large as p̂ approaches 0, so estimating near-0 probability for a positive instance incurs a huge cost","Because the MSE increases when the prediction is wrong","Because the cost function compares probabilities using the Euclidean norm"],
+   ans:1,exp:"The cost for a positive instance (y=1) is −log(p̂). As p̂ → 0, −log(p̂) → ∞. So if the model confidently predicts 'not positive' for an actually positive instance, the cost becomes extremely large. Conversely, if p̂ → 1, −log(p̂) → 0 (no cost)."},
+
+  {id:"lec7_16",lecture:"Lecture 7",topic:"Maximum Likelihood",type:"mc",label:"Multiple Choice",
+   q:"What is the maximum likelihood perspective for Logistic Regression?",
+   opts:["It maximizes the MSE to find the best parameters","The likelihood L = p̂ʸ(1−p̂)^(1−y) is maximized, which is equivalent to minimizing the negative log-likelihood (cross-entropy loss)","It maximizes the margin between classes","It minimizes the number of misclassified instances"],
+   ans:1,exp:"From a maximum likelihood perspective, the likelihood of observing label y given predicted probability p̂ is L = p̂ʸ(1−p̂)^(1−y). Maximizing the likelihood over all training instances (or equivalently minimizing the negative log-likelihood) gives exactly the cross-entropy (log loss) cost function."},
+
+  {id:"lec7_17",lecture:"Lecture 7",topic:"Maximum Likelihood",type:"tf",label:"True / False",
+   q:"True or False: Minimizing the negative log-likelihood for Logistic Regression is equivalent to minimizing the cross-entropy loss.",
+   opts:["True","False"],
+   ans:0,exp:"True. Your slides show this derivation: the negative log-likelihood −log(L) = −Σ[yᵢ log(p̂ᵢ) + (1−yᵢ) log(1−p̂ᵢ)], which is exactly the cross-entropy loss function for binary classification."},
+
+  {id:"lec7_18",lecture:"Lecture 7",topic:"Maximum Likelihood",type:"mc",label:"Multiple Choice",
+   q:"According to your slides, what is the connection between MSE loss in linear regression and maximum likelihood?",
+   opts:["MSE is the cross-entropy for regression problems","The MSE loss function is directly analogous to one of the terms in the negative log-likelihood for linear regression (assuming Gaussian noise)","MSE and log-likelihood are completely unrelated","MSE maximizes the likelihood while log loss minimizes it"],
+   ans:1,exp:"Your slides show that when you assume Gaussian noise in linear regression and take the negative log-likelihood, the MSE loss function appears directly as one of the terms. This connects MSE to maximum likelihood estimation."},
+
+  {id:"lec7_19",lecture:"Lecture 7",topic:"Sigmoid Function",type:"mc",label:"Multiple Choice",
+   q:"According to your slides, what is the 'logit' also called?",
+   opts:["The sigmoid output","The log-odds (log of the ratio of positive to negative class probability)","The regularization hyperparameter","The decision threshold"],
+   ans:1,exp:"The logit is also called log-odds, since it is the log of the ratio between the estimated probability for the positive class and the estimated probability for the negative class: logit(p) = log(p/(1−p))."},
+
+  {id:"lec7_20",lecture:"Lecture 7",topic:"Logistic Regression Basics",type:"ms",label:"Multi-Select",
+   q:"Which of the following are true about Logistic Regression? Select all that apply.",
+   opts:["It estimates the probability that an instance belongs to a class","It is a binary classifier","It creates a linear decision boundary","It uses the sigmoid function to produce probability outputs","It can directly handle more than two classes without modification"],
+   ans:[0,1,2,3],exp:"Logistic Regression estimates class probabilities (A), is a binary classifier (B), creates a linear decision boundary (C), and uses the sigmoid function (D). Without modification (e.g. OvR or using Softmax/Multinomial), it is strictly binary — it cannot natively handle more than two classes (E is false)."},
+
+  {id:"lec7_21",lecture:"Lecture 7",topic:"Decision Boundary",type:"mc",label:"Multiple Choice",
+   q:"At what value of xᵀθ does the sigmoid function output exactly 0.5, forming the decision boundary?",
+   opts:["xᵀθ = 1","xᵀθ = 0","xᵀθ = −1","xᵀθ = 0.5"],
+   ans:1,exp:"When xᵀθ = 0, σ(0) = 1/(1+e⁰) = 1/(1+1) = 0.5. The decision boundary is the hyperplane where xᵀθ = 0, which is where p̂ = 0.5 — the threshold between predicting class 0 and class 1."},
+
+  {id:"lec7_22",lecture:"Lecture 7",topic:"Cost Function",type:"mc",label:"Multiple Choice",
+   q:"Since the Logistic Regression cost function is convex, what does this guarantee about Gradient Descent?",
+   opts:["GD will always converge in exactly 100 iterations","GD is guaranteed to find the global minimum (if the learning rate is not too large and you wait long enough)","GD will find a local minimum but not necessarily the global minimum","GD is not needed because a closed-form solution exists"],
+   ans:1,exp:"Because the log loss cost function is convex, Gradient Descent (or any optimization algorithm) is guaranteed to find the global minimum — given the learning rate is not too large and you wait long enough. There are no local minima to get stuck in."},
+
+  {id:"lec7_23",lecture:"Lecture 7",topic:"Logistic Regression Basics",type:"mc",label:"Multiple Choice",
+   q:"What is the prediction rule for Logistic Regression?",
+   opts:["Predict 1 if p̂ > 0; predict 0 if p̂ ≤ 0","Predict 1 if p̂ ≥ 0.5; predict 0 if p̂ < 0.5","Predict 1 if p̂ > 0.9; predict 0 otherwise","Predict the class with the highest score regardless of probability"],
+   ans:1,exp:"The prediction rule is: ŷ = 1 if p̂ ≥ 0.5, ŷ = 0 if p̂ < 0.5. Since σ(t) = 0.5 when t = 0, this means predict 1 when xᵀθ ≥ 0 and predict 0 when xᵀθ < 0."},
+
+  {id:"lec7_24",lecture:"Lecture 7",topic:"Sigmoid Function",type:"ms",label:"Multi-Select",
+   q:"Which of the following correctly describe the relationship between the logit and logistic functions? Select all that apply.",
+   opts:["The logit function is the inverse of the sigmoid (logistic) function","logit(p) = log(p / (1 − p))","The score t = xᵀθ is also called the logit","The logit maps probabilities (0 to 1) to real numbers (−∞ to +∞)","The logit is always between 0 and 1"],
+   ans:[0,1,2,3],exp:"The logit is the inverse of the sigmoid (A). logit(p) = log(p/(1−p)) (B). The score t = xᵀθ is called the logit (C). The logit maps probabilities to real numbers (D). The logit is NOT between 0 and 1 — it ranges from −∞ to +∞ (E is false)."},
+
+  {id:"lec7_25",lecture:"Lecture 7",topic:"Cost Function",type:"ms",label:"Multi-Select",
+   q:"Which of the following are ways to describe the Logistic Regression cost function? Select all that apply.",
+   opts:["Log loss","Binary cross-entropy","Negative log-likelihood","Mean Squared Error (MSE)","Hinge loss"],
+   ans:[0,1,2],exp:"The Logistic Regression cost function can be described as log loss (A), binary cross-entropy (B), or negative log-likelihood (C) — these are all the same thing. MSE (D) is for linear regression. Hinge loss (E) is used by SVMs."},
+
+  {id:"lec7_26",lecture:"Lecture 7",topic:"Logistic Regression Basics",type:"mc",label:"Multiple Choice",
+   q:"What does it mean that Logistic Regression's decision boundary is 'linear in the parameters'?",
+   opts:["The predictions are always 0 or 1 with no gradient","The decision boundary is a straight line (or hyperplane) defined by the linear equation xᵀθ = 0","The model uses linear activation functions at each layer","The cost function decreases linearly during training"],
+   ans:1,exp:"The decision boundary xᵀθ = 0 is a linear equation — it defines a straight line in 2D or a hyperplane in higher dimensions. Although Logistic Regression models non-linear probability curves (via sigmoid), the boundary between classes is always linear."}
+];
+
+const LETTERS=['A','B','C','D','E'];
+let deck=[],idx=0,score=0,answered=0,shuffleQ=true,shuffleA=true,selectedMulti=new Set(),currentAns=null;
+function showTab(tab){document.getElementById('paneNotes').classList.toggle('active',tab==='notes');document.getElementById('paneQuiz').classList.toggle('active',tab==='quiz');document.getElementById('tabNotes').classList.toggle('active',tab==='notes');document.getElementById('tabQuiz').classList.toggle('active',tab==='quiz');document.getElementById('scoreWrap').style.display=tab==='quiz'?'block':'none';}
+function toggleNote(id){document.getElementById(id).classList.toggle('open');}
+function toggleShuffle(w){if(w==='q'){shuffleQ=!shuffleQ;document.getElementById('toggleQ').classList.toggle('on',shuffleQ);}else{shuffleA=!shuffleA;document.getElementById('toggleA').classList.toggle('on',shuffleA);}}
+function buildDeck(){deck=shuffleQ?shuffle([...QUESTIONS]):[...QUESTIONS];}
+function renderQ(){
+  const q=deck[idx];selectedMulti=new Set();
+  document.getElementById('missedBadge').classList.toggle('show',!!getMissed()[q.id]);
+  document.getElementById('missedNotice').classList.remove('show');
+  document.getElementById('qTypeBadge').textContent=q.label;
+  document.getElementById('qHint').style.display=q.type==='ms'?'block':'none';
+  document.getElementById('qText').textContent=q.q;
+  const eqEl=document.getElementById('qEquation');if(q.equation){eqEl.textContent=q.equation;eqEl.style.display='block';}else{eqEl.style.display='none';}
+  document.getElementById('explanation').classList.remove('show');document.getElementById('explanation').textContent='';
+  document.getElementById('btnNext').classList.remove('show');document.getElementById('btnSubmit').classList.remove('show');
+  const{opts,ans}=shuffleA?shuffleOpts(q):{opts:q.opts,ans:q.ans};currentAns=ans;
+  const div=document.getElementById('optionsDiv');div.innerHTML='';
+  opts.forEach((o,i)=>{
+    const el=document.createElement('div');el.className='opt';
+    const ind=document.createElement('span');ind.className='opt-indicator';ind.textContent=q.type==='ms'?'☐':LETTERS[i];
+    const txt=document.createElement('span');txt.className='opt-text';txt.textContent=o;
+    el.appendChild(ind);el.appendChild(txt);
+    if(q.type==='ms'){el.onclick=()=>{if(el.classList.contains('disabled'))return;if(selectedMulti.has(i)){selectedMulti.delete(i);el.classList.remove('selected');ind.textContent='☐';}else{selectedMulti.add(i);el.classList.add('selected');ind.textContent='☑';}document.getElementById('btnSubmit').classList.toggle('show',selectedMulti.size>0);};}
+    else{el.onclick=()=>resolveSingle(i);}
+    div.appendChild(el);
+  });
+  document.getElementById('qCounter').textContent='Question '+(idx+1)+' of '+deck.length;
+  document.getElementById('progressFill').style.width=Math.round((idx/deck.length)*100)+'%';
+  document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+}
+function resolveSingle(chosen){const correct=chosen===currentAns;const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(i===currentAns){opts[i].classList.add(correct&&i===chosen?'correct':'reveal-correct');ind.textContent='✓';}else if(i===chosen){opts[i].classList.add('wrong');ind.textContent='✗';}}finalize(correct);}
+function submitMulti(){const correctSet=new Set(Array.isArray(currentAns)?currentAns:[currentAns]);const correct=selectedMulti.size===correctSet.size&&[...selectedMulti].every(i=>correctSet.has(i));const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('correct');ind.textContent='✓';}else if(!correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('wrong');ind.textContent='✗';}else if(correctSet.has(i)&&!selectedMulti.has(i)){opts[i].classList.add('reveal-correct');ind.textContent='✓';}}document.getElementById('btnSubmit').classList.remove('show');finalize(correct);}
+function finalize(correct){if(correct){score++;}else{recordMiss(deck[idx]);document.getElementById('missedNotice').classList.add('show');}answered++;document.getElementById('scoreDisplay').textContent=score+' / '+answered;const exp=document.getElementById('explanation');exp.textContent=(correct?'✓ Correct. ':'✗ Incorrect. ')+deck[idx].exp;exp.classList.add('show');document.getElementById('btnNext').classList.add('show');}
+function nextQ(){idx++;if(idx>=deck.length)showSummary();else renderQ();}
+function showSummary(){document.getElementById('questionCard').style.display='none';document.getElementById('btnNext').style.display='none';document.getElementById('qCounter').style.display='none';document.getElementById('progressFill').style.width='100%';const pct=Math.round((score/deck.length)*100);document.getElementById('summaryScore').textContent=pct+'%';document.getElementById('summaryFrac').textContent=score+' out of '+deck.length+' correct';document.getElementById('summaryMsg').textContent=pct>=85?'Excellent — you have this lecture locked in.':pct>=65?'Solid effort. Review the ones you missed, then try again.':'Keep at it — go back through the notes tab and restart the deck.';const mc=getMissedCount();if(mc>0){document.getElementById('summaryMissedBox').style.display='block';document.getElementById('summaryMissedBox').textContent=mc+' question'+(mc!==1?'s':'')+' in your missed deck across all lectures.';document.getElementById('linkMissed').style.display='inline-block';}document.getElementById('summary').classList.add('show');}
+function restart(){idx=0;score=0;answered=0;buildDeck();document.getElementById('questionCard').style.display='block';document.getElementById('btnNext').style.display='';document.getElementById('btnNext').classList.remove('show');document.getElementById('qCounter').style.display='block';document.getElementById('summary').classList.remove('show');renderQ();}
+buildDeck();renderQ();
+</script>
+</body>
+</html>

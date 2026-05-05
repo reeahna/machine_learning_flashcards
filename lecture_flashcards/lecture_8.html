@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 8 — Softmax Regression</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#f5f4f0;--surface:#ffffff;--surface2:#f0eeea;--border:#e2dfd8;--text:#1a1916;--muted:#8a8680;--accent:#5046e4;--accent-dim:rgba(80,70,228,0.08);--accent-border:rgba(80,70,228,0.2);--green:#16a05a;--green-bg:#edf7f2;--green-border:#b6e4cf;--red:#d63a3a;--red-bg:#fdf0f0;--red-border:#f5c0c0;--reveal-bg:#f7f6f2;--yellow-bg:#fffbea;--yellow-border:#f5e49a;--orange:#d97706;--orange-bg:#fff7ed;--orange-border:#fed7aa;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  header{padding:1.25rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);gap:1rem;flex-wrap:wrap;}
+  .header-left{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+  .back-link{font-size:13px;color:var(--muted);text-decoration:none;}.back-link:hover{color:var(--text);}
+  .header-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);}
+  .header-badge{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);padding:3px 10px;border-radius:99px;}
+  .score-display{font-size:14px;color:var(--muted);white-space:nowrap;}.score-display span{color:var(--text);font-weight:600;}
+  .progress-wrap{height:3px;background:var(--border);}
+  .progress-fill{height:3px;background:var(--accent);transition:width 0.4s ease;width:0%;}
+  .tab-nav{display:flex;border-bottom:1px solid var(--border);background:var(--surface);padding:0 2rem;}
+  .tab-btn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:12px 18px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--muted);cursor:pointer;transition:color 0.15s,border-color 0.15s;margin-bottom:-1px;}
+  .tab-btn:hover{color:var(--text);}.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .pane{display:none;}.pane.active{display:block;}
+  .notes-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;}
+  .notes-intro{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;}
+  .note-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .note-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.12s;}
+  .note-header:hover{background:var(--surface2);}
+  .note-header-left{display:flex;align-items:center;gap:10px;}
+  .note-icon{width:28px;height:28px;border-radius:6px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .note-title{font-size:14px;font-weight:500;color:var(--text);}
+  .note-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s;}
+  .note-block.open .note-chevron{transform:rotate(180deg);}
+  .note-body{display:none;padding:0 1.25rem 1.25rem;border-top:1px solid var(--border);}
+  .note-block.open .note-body{display:block;}
+  .note-body ul{margin-top:0.75rem;padding-left:1.25rem;}
+  .note-body li{font-size:14px;color:var(--text);line-height:1.75;margin-bottom:4px;}
+  .note-body li strong{font-weight:600;}
+  .equation-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'DM Sans',sans-serif;margin-top:1rem;}
+  .equation-box{background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:12px 16px;font-size:14px;font-family:'Georgia',serif;color:var(--text);text-align:center;line-height:1.8;}
+  .equation-note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6;}
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.75rem;}
+  .tag{font-size:11px;padding:2px 9px;border-radius:99px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  .tag.important{background:var(--accent-dim);color:var(--accent);border-color:var(--accent-border);}
+  .quiz-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;display:flex;flex-direction:column;align-items:center;}
+  .shuffle-bar{align-self:stretch;display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;}
+  .shuffle-label{font-size:12px;color:var(--muted);font-weight:500;}
+  .toggle-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;user-select:none;}
+  .toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .toggle-btn.on{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+  .toggle-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background 0.15s;flex-shrink:0;}
+  .toggle-btn.on .toggle-dot{background:var(--accent);}
+  .q-counter{font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5rem;align-self:flex-start;}
+  .question-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;margin-bottom:1.25rem;}
+  .missed-badge{display:none;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);padding:3px 10px;border-radius:99px;margin-bottom:0.75rem;}
+  .missed-badge.show{display:inline-block;}
+  .q-type-badge{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
+  .q-hint{font-size:12px;color:var(--accent);margin-bottom:1rem;font-style:italic;display:none;}
+  .q-text{font-family:'DM Serif Display',serif;font-size:20px;line-height:1.5;color:var(--text);margin-bottom:1.75rem;}
+  .q-equation{font-family:'Georgia',serif;font-size:15px;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;text-align:center;display:none;line-height:1.8;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.15s,background 0.15s;background:var(--surface);}
+  .opt:hover:not(.disabled){border-color:var(--accent);background:var(--accent-dim);}
+  .opt-indicator{width:22px;height:22px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:12px;font-weight:600;color:var(--muted);transition:all 0.15s;}
+  .opt.selected .opt-indicator{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .opt-text{font-size:15px;color:var(--text);line-height:1.5;}
+  .opt.correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.wrong{border-color:var(--red-border);background:var(--red-bg);}
+  .opt.wrong .opt-indicator{background:var(--red);color:#fff;border-color:var(--red);}
+  .opt.reveal-correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.reveal-correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.disabled{cursor:default;}
+  .btn-submit{display:none;margin-top:1rem;background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-submit:hover{opacity:0.88;}.btn-submit.show{display:block;}
+  .explanation{display:none;margin-top:1.25rem;padding:14px 16px;border-radius:10px;background:var(--reveal-bg);border-left:3px solid var(--accent);font-size:14px;color:var(--muted);line-height:1.7;}
+  .explanation.show{display:block;}
+  .missed-notice{display:none;margin-top:10px;padding:10px 14px;border-radius:8px;background:var(--orange-bg);border:1px solid var(--orange-border);font-size:13px;color:var(--orange);font-weight:500;}
+  .missed-notice.show{display:block;}
+  .btn-next{display:none;margin-top:1.5rem;align-self:flex-end;background:var(--accent);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-next:hover{opacity:0.88;}.btn-next.show{display:block;}
+  .summary{display:none;flex-direction:column;align-items:center;text-align:center;padding:3rem 2rem;width:100%;}
+  .summary.show{display:flex;}
+  .summary-score{font-family:'DM Serif Display',serif;font-size:72px;color:var(--accent);line-height:1;margin-bottom:0.5rem;}
+  .summary-label{font-size:14px;color:var(--muted);margin-bottom:0.25rem;}
+  .summary-msg{font-size:17px;color:var(--text);margin:1.25rem 0 1.5rem;line-height:1.6;max-width:400px;}
+  .summary-missed-box{font-size:14px;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:10px;padding:10px 18px;margin-bottom:1.5rem;display:none;}
+  .btn-group{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .btn-restart{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-restart:hover{background:var(--accent-dim);}
+  .link-missed{font-size:14px;color:var(--orange);text-decoration:none;padding:10px 24px;border:1px solid var(--orange-border);border-radius:10px;background:var(--orange-bg);display:none;}
+  .link-home{font-size:14px;color:var(--muted);text-decoration:none;margin-top:0.25rem;}
+  .link-home:hover{color:var(--text);}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <a href="../index.html" class="back-link">← Back</a>
+    <span class="header-title">Lecture 8</span>
+    <span class="header-badge">Softmax Regression</span>
+  </div>
+  <div class="score-display" id="scoreWrap" style="display:none">Score: <span id="scoreDisplay">0 / 0</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+<div class="tab-nav">
+  <button class="tab-btn active" id="tabNotes" onclick="showTab('notes')">📋 Notes</button>
+  <button class="tab-btn" id="tabQuiz" onclick="showTab('quiz')">⚡ Practice Questions</button>
+</div>
+
+<!-- NOTES -->
+<div class="pane active" id="paneNotes">
+  <div class="notes-section">
+    <p class="notes-intro">Key concepts from Lecture 8. Tap each section to expand.</p>
+
+    <div class="note-block open" id="nb1">
+      <div class="note-header" onclick="toggleNote('nb1')">
+        <div class="note-header-left"><div class="note-icon">🎯</div><span class="note-title">What is Softmax Regression?</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Softmax Regression</strong> (Multinomial Logistic Regression): a generalization of Logistic Regression that directly supports multiple classes without needing to combine multiple binary classifiers.</li>
+          <li>For each instance, it computes a <strong>score sₖ(x)</strong> for each class k, then applies the softmax function to get class probabilities.</li>
+          <li>Each class k has its own dedicated parameter vector <strong>θ⁽ᵏ⁾</strong>. All parameter vectors are stored as rows in a <strong>parameter matrix Θ</strong>.</li>
+          <li>Score equation: sₖ(x) = (θ⁽ᵏ⁾)ᵀ x — just like linear regression prediction, one per class.</li>
+        </ul>
+        <div class="equation-label">Score for class k</div>
+        <div class="equation-box">sₖ(x) = (θ⁽ᵏ⁾)ᵀ x</div>
+        <div class="tag-row"><span class="tag important">Generalizes Logistic Regression to K classes</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb2">
+      <div class="note-header" onclick="toggleNote('nb2')">
+        <div class="note-header-left"><div class="note-icon">📐</div><span class="note-title">Softmax Function &amp; Prediction</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li>The <strong>softmax function</strong> (also called normalized exponential) converts raw scores into class probabilities. Each output is between 0 and 1, and all outputs sum to 1.</li>
+          <li><strong>Prediction:</strong> The class with the highest estimated probability (= highest score) is predicted.</li>
+          <li>The scores are also called <strong>logits or log-odds</strong>.</li>
+          <li><strong>Multiclass, not multioutput:</strong> Softmax predicts exactly one class at a time. It should only be used with mutually exclusive classes (e.g. different types of plants — not multiple people in a photo).</li>
+          <li>Decision boundaries between any two classes are linear.</li>
+          <li>A model can predict a class with estimated probability below 50% (if all other classes have even lower probabilities).</li>
+        </ul>
+        <div class="equation-label">Softmax function (probability for class k)</div>
+        <div class="equation-box">p̂ₖ = σ(s(x))ₖ = exp(sₖ(x)) / Σⱼ₌₁ᴷ exp(sⱼ(x))</div>
+        <div class="equation-label" style="margin-top:0.75rem">Softmax prediction rule</div>
+        <div class="equation-box">ŷ = argmax_k σ(s(x))ₖ = argmax_k sₖ(x) = argmax_k (θ⁽ᵏ⁾)ᵀx</div>
+        <p class="equation-note">K = number of classes. s(x) = vector of scores for each class. argmax returns the class k with the highest score.</p>
+        <div class="tag-row"><span class="tag important">Both equations — know them</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb3">
+      <div class="note-header" onclick="toggleNote('nb3')">
+        <div class="note-header-left"><div class="note-icon">💰</div><span class="note-title">Cross-Entropy Cost Function</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li>Training objective: model should estimate high probability for the target class and low probabilities for others.</li>
+          <li>Cost function is called <strong>cross-entropy</strong> — a generalization of log loss to K classes.</li>
+          <li>Cross-entropy penalizes the model when it estimates a low probability for the target class.</li>
+          <li>The likelihood for one data point: L = Π_{k=1}^{K} pₖ^{yₖ}. Taking negative log-likelihood gives the cross-entropy cost.</li>
+          <li>Training is done with Gradient Descent (no closed-form solution).</li>
+          <li><strong>Cross-entropy information theory origin:</strong> Measures the average number of bits needed to send information about the true distribution using the model's predicted distribution. KL divergence measures the extra cost from wrong assumptions.</li>
+        </ul>
+        <div class="equation-label">Cross-entropy cost function</div>
+        <div class="equation-box">J(Θ) = −(1/m) Σᵢ₌₁ᵐ Σₖ₌₁ᴷ yₖ⁽ⁱ⁾ log(p̂ₖ⁽ⁱ⁾)</div>
+        <p class="equation-note">yₖ⁽ⁱ⁾ = 1 if instance i belongs to class k, else 0 (one-hot). p̂ₖ⁽ⁱ⁾ = estimated probability for class k for instance i. Reduces to binary cross-entropy when K=2.</p>
+        <div class="tag-row"><span class="tag important">Equation — know it</span><span class="tag">Gradient Descent to train</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="pane" id="paneQuiz">
+  <div class="quiz-section">
+    <div class="shuffle-bar">
+      <span class="shuffle-label">Shuffle:</span>
+      <button class="toggle-btn on" id="toggleQ" onclick="toggleShuffle('q')"><span class="toggle-dot"></span> Questions</button>
+      <button class="toggle-btn on" id="toggleA" onclick="toggleShuffle('a')"><span class="toggle-dot"></span> Answer choices</button>
+    </div>
+    <div class="q-counter" id="qCounter">Question 1 of 24</div>
+    <div class="question-card" id="questionCard">
+      <div class="missed-badge" id="missedBadge">⚠ Previously missed</div>
+      <div class="q-type-badge" id="qTypeBadge"></div>
+      <div class="q-hint" id="qHint">Select all that apply, then click Submit.</div>
+      <p class="q-text" id="qText"></p>
+      <div class="q-equation" id="qEquation"></div>
+      <div class="options" id="optionsDiv"></div>
+      <button class="btn-submit" id="btnSubmit" onclick="submitMulti()">Submit answer</button>
+      <div class="explanation" id="explanation"></div>
+      <div class="missed-notice" id="missedNotice">⚠ Added to your missed questions deck.</div>
+    </div>
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Next question →</button>
+    <div class="summary" id="summary">
+      <div class="summary-label">Final score</div>
+      <div class="summary-score" id="summaryScore"></div>
+      <div class="summary-label" id="summaryFrac"></div>
+      <p class="summary-msg" id="summaryMsg"></p>
+      <div class="summary-missed-box" id="summaryMissedBox"></div>
+      <div class="btn-group">
+        <button class="btn-restart" onclick="restart()">↺ Restart deck</button>
+        <a href="../missed.html" class="link-missed" id="linkMissed">Review missed questions →</a>
+        <a href="../index.html" class="link-home">← Back to all lectures</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MISSED_KEY='ml_missed_questions';
+function getMissed(){try{return JSON.parse(localStorage.getItem(MISSED_KEY)||'{}');}catch{return{};}}
+function saveMissed(d){localStorage.setItem(MISSED_KEY,JSON.stringify(d));}
+function getMissedCount(){return Object.keys(getMissed()).length;}
+function recordMiss(q){const m=getMissed(),s=JSON.parse(localStorage.getItem('ml_streak_data')||'{}');m[q.id]={id:q.id,lecture:q.lecture,topic:q.topic};s[q.id]=0;saveMissed(m);localStorage.setItem('ml_streak_data',JSON.stringify(s));}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function shuffleOpts(q){if(q.type==='tf')return{opts:q.opts,ans:q.ans};const idxs=shuffle(q.opts.map((_,i)=>i));const map={};idxs.forEach((old,n)=>{map[old]=n;});return{opts:idxs.map(i=>q.opts[i]),ans:Array.isArray(q.ans)?q.ans.map(i=>map[i]):map[q.ans]};}
+
+const QUESTIONS = [
+  {id:"lec8_01",lecture:"Lecture 8",topic:"Softmax Regression Basics",type:"mc",label:"Multiple Choice",
+   q:"What is Softmax Regression also called?",
+   opts:["Hard Margin Classification","Multinomial Logistic Regression","One-versus-Rest Logistic Regression","Support Vector Classification"],
+   ans:1,exp:"Softmax Regression is also called Multinomial Logistic Regression. It is a generalization of Logistic Regression that directly supports multiple classes without needing to combine multiple binary classifiers."},
+
+  {id:"lec8_02",lecture:"Lecture 8",topic:"Softmax Regression Basics",type:"mc",label:"Multiple Choice",
+   q:"How does Softmax Regression generalize Logistic Regression?",
+   opts:["It adds a regularization term to the Logistic Regression cost function","It generalizes Logistic Regression to support multiple classes directly without training and combining multiple binary classifiers","It applies Logistic Regression to each feature separately","It uses a different cost function but the same prediction rule"],
+   ans:1,exp:"Softmax Regression generalizes Logistic Regression to multiple classes directly. While Logistic Regression is binary, Softmax handles K classes by computing a score for each class and estimating probabilities via the softmax function."},
+
+  {id:"lec8_03",lecture:"Lecture 8",topic:"Softmax Regression Basics",type:"mc",label:"Multiple Choice",
+   q:"What does Softmax Regression compute for each instance before estimating probabilities?",
+   opts:["A single probability for the most likely class","A score sₖ(x) for each class k","A decision boundary for each pair of classes","A confusion matrix entry for each class"],
+   ans:1,exp:"Softmax Regression first computes a score sₖ(x) = (θ⁽ᵏ⁾)ᵀx for each class k, then converts these scores into probabilities using the softmax function. Each class has its own dedicated parameter vector θ⁽ᵏ⁾."},
+
+  {id:"lec8_04",lecture:"Lecture 8",topic:"Softmax Regression Basics",type:"eq",label:"Equation",
+   q:"What is the score equation for class k in Softmax Regression?",
+   opts:["sₖ(x) = (θ⁽ᵏ⁾)ᵀ x","sₖ(x) = σ(xᵀθ)","sₖ(x) = exp(xᵀθ) / Σ exp(xᵀθ)","sₖ(x) = 1 / (1 + exp(−xᵀθ))"],
+   ans:0,exp:"The score for class k is sₖ(x) = (θ⁽ᵏ⁾)ᵀx — just like the Linear Regression prediction equation, but each class has its own parameter vector θ⁽ᵏ⁾. All these vectors are stored as rows in the parameter matrix Θ."},
+
+  {id:"lec8_05",lecture:"Lecture 8",topic:"Softmax Function",type:"eq",label:"Equation",
+   q:"What is the softmax function (probability for class k)?",
+   opts:["p̂ₖ = exp(sₖ(x)) / Σⱼ₌₁ᴷ exp(sⱼ(x))","p̂ₖ = 1 / (1 + exp(−sₖ(x)))","p̂ₖ = sₖ(x) / Σⱼ sⱼ(x)","p̂ₖ = argmax_k sₖ(x)"],
+   ans:0,exp:"The softmax function is p̂ₖ = exp(sₖ(x)) / Σⱼ₌₁ᴷ exp(sⱼ(x)). It computes the exponential of every score, then normalizes by dividing by the sum of all exponentials. This ensures outputs are between 0 and 1 and sum to 1."},
+
+  {id:"lec8_06",lecture:"Lecture 8",topic:"Softmax Function",type:"mc",label:"Multiple Choice",
+   q:"What is the softmax function also called?",
+   opts:["Normalized sigmoid","Normalized exponential","Logistic normalization","Probability calibration function"],
+   ans:1,exp:"The softmax function is also called the normalized exponential. It computes the exponential of every score, then normalizes them by dividing by the sum of all the exponentials."},
+
+  {id:"lec8_07",lecture:"Lecture 8",topic:"Softmax Function",type:"mc",label:"Multiple Choice",
+   q:"How does Softmax Regression make its prediction?",
+   opts:["It predicts the class with the highest raw feature value","It predicts the class with the highest estimated probability, which is the class with the highest score","It predicts the class with probability above 50%","It takes a majority vote across all binary classifiers"],
+   ans:1,exp:"Softmax Regression predicts the class with the highest estimated probability — which is simply the class with the highest score sₖ(x). The argmax over k of σ(s(x))ₖ equals the argmax over k of sₖ(x)."},
+
+  {id:"lec8_08",lecture:"Lecture 8",topic:"Softmax Function",type:"eq",label:"Equation",
+   q:"What is the Softmax Regression prediction rule?",
+   opts:["ŷ = argmax_k σ(s(x))ₖ = argmax_k sₖ(x)","ŷ = argmin_k sₖ(x)","ŷ = Σ_k k × p̂ₖ","ŷ = 1 if p̂ ≥ 0.5 else 0"],
+   ans:0,exp:"ŷ = argmax_k σ(s(x))ₖ = argmax_k sₖ(x) = argmax_k (θ⁽ᵏ⁾)ᵀx. Since softmax is monotonic, the class with the highest score always has the highest probability — so argmax on scores equals argmax on probabilities."},
+
+  {id:"lec8_09",lecture:"Lecture 8",topic:"Softmax Regression Basics",type:"tf",label:"True / False",
+   q:"True or False: Softmax Regression is multiclass but not multioutput — it predicts exactly one class at a time and should only be used with mutually exclusive classes.",
+   opts:["True","False"],
+   ans:0,exp:"True. Softmax Regression is multiclass (can predict one of K classes) but NOT multioutput (cannot predict multiple classes simultaneously). It should only be used when classes are mutually exclusive — e.g. different plant species, not recognizing multiple people in a photo."},
+
+  {id:"lec8_10",lecture:"Lecture 8",topic:"Softmax Regression Basics",type:"mc",label:"Multiple Choice",
+   q:"Why can't you use Softmax Regression to recognize multiple people in a single photo?",
+   opts:["Softmax Regression can only handle two classes","Softmax Regression is multiclass but not multioutput — it predicts exactly one class at a time, requiring mutually exclusive classes","Softmax Regression requires more training data than is typically available for face recognition","Softmax Regression cannot handle image data"],
+   ans:1,exp:"Softmax Regression predicts ONE class at a time. Recognizing multiple people requires predicting multiple labels simultaneously (multilabel classification). Softmax is only appropriate when classes are mutually exclusive — exactly one can be true."},
+
+  {id:"lec8_11",lecture:"Lecture 8",topic:"Softmax Regression Basics",type:"ms",label:"Multi-Select",
+   q:"Which of the following are true about the parameter structure of Softmax Regression? Select all that apply.",
+   opts:["Each class k has its own dedicated parameter vector θ⁽ᵏ⁾","All parameter vectors are stored as rows in a parameter matrix Θ","There is one shared parameter vector for all classes","The score for class k is computed as sₖ(x) = (θ⁽ᵏ⁾)ᵀx","The parameter matrix Θ has one column per class"],
+   ans:[0,1,3],exp:"Each class has its own θ⁽ᵏ⁾ (A), all stored as rows in matrix Θ (B), and sₖ(x) = (θ⁽ᵏ⁾)ᵀx (D). There is NOT one shared parameter vector (C is false). The matrix has one ROW per class, not one column per class (E is false)."},
+
+  {id:"lec8_12",lecture:"Lecture 8",topic:"Cross-Entropy Cost",type:"mc",label:"Multiple Choice",
+   q:"What cost function does Softmax Regression use?",
+   opts:["Mean Squared Error (MSE)","Hinge loss","Cross-entropy (generalization of log loss to K classes)","Binary cross-entropy"],
+   ans:2,exp:"Softmax Regression uses the cross-entropy cost function — a generalization of log loss (binary cross-entropy) to K classes. It penalizes the model when it estimates a low probability for the target class."},
+
+  {id:"lec8_13",lecture:"Lecture 8",topic:"Cross-Entropy Cost",type:"eq",label:"Equation",
+   q:"What is the cross-entropy cost function for Softmax Regression?",
+   opts:["J(Θ) = −(1/m) Σᵢ Σₖ yₖ⁽ⁱ⁾ log(p̂ₖ⁽ⁱ⁾)","J(Θ) = (1/m) Σᵢ (p̂⁽ⁱ⁾ − y⁽ⁱ⁾)²","J(Θ) = −(1/m) Σᵢ [y⁽ⁱ⁾ log(p̂⁽ⁱ⁾) + (1−y⁽ⁱ⁾) log(1−p̂⁽ⁱ⁾)]","J(Θ) = Σᵢ max(0, 1 − yᵢ × p̂ᵢ)"],
+   ans:0,exp:"The cross-entropy cost for Softmax is J(Θ) = −(1/m) Σᵢ Σₖ yₖ⁽ⁱ⁾ log(p̂ₖ⁽ⁱ⁾). The double sum runs over all instances and all classes. yₖ⁽ⁱ⁾ is 1 if instance i belongs to class k, otherwise 0. Option C is the binary cross-entropy (Logistic Regression)."},
+
+  {id:"lec8_14",lecture:"Lecture 8",topic:"Cross-Entropy Cost",type:"mc",label:"Multiple Choice",
+   q:"Why does cross-entropy penalize a model that estimates low probability for the target class?",
+   opts:["Because low probabilities lead to high MSE","Because −log(p̂ₖ) grows very large as p̂ₖ approaches 0, so predicting near-zero probability for the true class incurs a huge cost","Because the cost function squares the probabilities","Because cross-entropy multiplies probabilities together"],
+   ans:1,exp:"The cost for predicting class k is −log(p̂ₖ). As p̂ₖ → 0, −log(p̂ₖ) → ∞. So if the model assigns very low probability to the correct class, the cost becomes enormous. This forces the model to estimate high probability for the target class."},
+
+  {id:"lec8_15",lecture:"Lecture 8",topic:"Cross-Entropy Cost",type:"mc",label:"Multiple Choice",
+   q:"What optimization algorithm is used to train Softmax Regression?",
+   opts:["The Normal Equation (closed-form)","Gradient Descent (or another optimization algorithm) — there is no closed-form solution","K-fold cross-validation","The Simplex method"],
+   ans:1,exp:"Like Logistic Regression, Softmax Regression is trained using Gradient Descent (or another optimization algorithm). The gradient of the cost function can be computed, then GD minimizes it. There is no closed-form solution equivalent to the Normal Equation."},
+
+  {id:"lec8_16",lecture:"Lecture 8",topic:"Cross-Entropy Information Theory",type:"mc",label:"Multiple Choice",
+   q:"What does cross-entropy measure from an information theory perspective?",
+   opts:["The squared difference between two probability distributions","The average number of bits actually sent per option when using the model's predicted distribution to encode the true distribution","The total number of training instances misclassified","The Euclidean distance between predicted and true probability vectors"],
+   ans:1,exp:"From information theory: cross-entropy measures the average number of bits you need to send per option when you use the model's assumed distribution to encode options from the true distribution. If your assumptions are perfect, cross-entropy equals the entropy. If wrong, cross-entropy is higher by the KL divergence."},
+
+  {id:"lec8_17",lecture:"Lecture 8",topic:"Cross-Entropy Information Theory",type:"mc",label:"Multiple Choice",
+   q:"What is KL divergence in the context of cross-entropy?",
+   opts:["The total cost of all misclassifications","The extra amount of cross-entropy beyond the true entropy — measuring how wrong the model's distributional assumptions are","The variance of the predicted probability distribution","The difference between training and validation loss"],
+   ans:1,exp:"KL (Kullback-Leibler) divergence is the extra cost beyond the true entropy — it measures how wrong your assumptions are. If your model perfectly captures the true distribution, KL divergence = 0 and cross-entropy = entropy."},
+
+  {id:"lec8_18",lecture:"Lecture 8",topic:"Softmax Function",type:"ms",label:"Multi-Select",
+   q:"Which of the following are true about the softmax function? Select all that apply.",
+   opts:["It outputs values between 0 and 1 for each class","All class probabilities sum to 1","It takes the exponential of each score then normalizes","It is also called the normalized exponential","It is the inverse of the sigmoid function"],
+   ans:[0,1,2,3],exp:"Softmax outputs values between 0 and 1 (A), they sum to 1 (B), it exponentiates then normalizes (C), and is also called the normalized exponential (D). The sigmoid function's inverse is the logit function — not the softmax (E is false)."},
+
+  {id:"lec8_19",lecture:"Lecture 8",topic:"Softmax Regression Basics",type:"mc",label:"Multiple Choice",
+   q:"According to your slides, what is true about the decision boundaries of Softmax Regression?",
+   opts:["Decision boundaries are curved","Decision boundaries between any two classes are linear","There is only one decision boundary for all K classes","Decision boundaries are computed using the kernel trick"],
+   ans:1,exp:"Your slides explicitly state: 'the decision boundaries between any two classes are linear.' Even though Softmax handles K classes, each pairwise boundary is a straight line (or hyperplane in higher dimensions)."},
+
+  {id:"lec8_20",lecture:"Lecture 8",topic:"Softmax Regression Basics",type:"tf",label:"True / False",
+   q:"True or False: A Softmax Regression model can predict a class with an estimated probability below 50%.",
+   opts:["True","False"],
+   ans:0,exp:"True. Softmax picks the class with the highest probability. If there are 3 classes and probabilities are 40%, 35%, 25%, the model predicts the first class even though its probability is below 50%. Your slides give the example of all three classes having 33% probability at the intersection of decision boundaries."},
+
+  {id:"lec8_21",lecture:"Lecture 8",topic:"Cross-Entropy Cost",type:"ms",label:"Multi-Select",
+   q:"In the cross-entropy cost function J(Θ) = −(1/m) Σᵢ Σₖ yₖ⁽ⁱ⁾ log(p̂ₖ⁽ⁱ⁾), what do the following terms represent? Select all that apply.",
+   opts:["m = number of training instances","K = number of classes","yₖ⁽ⁱ⁾ = 1 if instance i belongs to class k, 0 otherwise (one-hot)","p̂ₖ⁽ⁱ⁾ = the predicted probability that instance i belongs to class k","Σᵢ sums over classes, Σₖ sums over instances"],
+   ans:[0,1,2,3],exp:"m = instances (A), K = classes (B), yₖ⁽ⁱ⁾ is the one-hot label (C), p̂ₖ⁽ⁱ⁾ is the predicted probability (D). Option E has the sums reversed — Σᵢ sums over instances and Σₖ sums over classes, not the other way around."},
+
+  {id:"lec8_22",lecture:"Lecture 8",topic:"Softmax Regression Basics",type:"mc",label:"Multiple Choice",
+   q:"In the Iris classification example in your slides, what solver does Scikit-Learn require to use Softmax Regression (Multinomial Logistic Regression)?",
+   opts:["The 'lbfgs' solver","The 'sgd' solver","The 'liblinear' solver","The 'adam' solver"],
+   ans:0,exp:"Your slides show that for Softmax Regression, you set multi_class='multinomial' and must use a solver that supports it, such as the 'lbfgs' solver. The slides also note that it applies ℓ2 regularization by default (controlled by hyperparameter C)."},
+
+  {id:"lec8_23",lecture:"Lecture 8",topic:"Softmax Regression Basics",type:"ms",label:"Multi-Select",
+   q:"Which of the following correctly distinguish Softmax Regression from Logistic Regression? Select all that apply.",
+   opts:["Softmax supports multiple classes directly without binary classifiers","Logistic Regression is binary; Softmax is multiclass","Softmax computes one score per class; Logistic computes one score total","Both use cross-entropy as their cost function","Softmax requires one parameter vector per class; Logistic uses one"],
+   ans:[0,1,2,3,4],exp:"All five are correct. Softmax handles K classes directly (A). Logistic is binary, Softmax is multiclass (B). Softmax computes K scores (C). Both use cross-entropy — binary cross-entropy for Logistic, multiclass for Softmax (D). Softmax needs K parameter vectors (E)."},
+
+  {id:"lec8_24",lecture:"Lecture 8",topic:"Cross-Entropy Cost",type:"tf",label:"True / False",
+   q:"True or False: The cross-entropy cost function for Softmax Regression reduces to the binary cross-entropy (log loss) when K=2.",
+   opts:["True","False"],
+   ans:0,exp:"True. When K=2, the cross-entropy J(Θ) = −(1/m) Σᵢ Σₖ yₖ⁽ⁱ⁾ log(p̂ₖ⁽ⁱ⁾) reduces to the binary cross-entropy (log loss) used in Logistic Regression: −(1/m) Σ [y log(p̂) + (1−y) log(1−p̂)]. Softmax is a true generalization of Logistic Regression."}
+];
+
+const LETTERS=['A','B','C','D','E'];
+let deck=[],idx=0,score=0,answered=0,shuffleQ=true,shuffleA=true,selectedMulti=new Set(),currentAns=null;
+function showTab(tab){document.getElementById('paneNotes').classList.toggle('active',tab==='notes');document.getElementById('paneQuiz').classList.toggle('active',tab==='quiz');document.getElementById('tabNotes').classList.toggle('active',tab==='notes');document.getElementById('tabQuiz').classList.toggle('active',tab==='quiz');document.getElementById('scoreWrap').style.display=tab==='quiz'?'block':'none';}
+function toggleNote(id){document.getElementById(id).classList.toggle('open');}
+function toggleShuffle(w){if(w==='q'){shuffleQ=!shuffleQ;document.getElementById('toggleQ').classList.toggle('on',shuffleQ);}else{shuffleA=!shuffleA;document.getElementById('toggleA').classList.toggle('on',shuffleA);}}
+function buildDeck(){deck=shuffleQ?shuffle([...QUESTIONS]):[...QUESTIONS];}
+function renderQ(){
+  const q=deck[idx];selectedMulti=new Set();
+  document.getElementById('missedBadge').classList.toggle('show',!!getMissed()[q.id]);
+  document.getElementById('missedNotice').classList.remove('show');
+  document.getElementById('qTypeBadge').textContent=q.label;
+  document.getElementById('qHint').style.display=q.type==='ms'?'block':'none';
+  document.getElementById('qText').textContent=q.q;
+  const eqEl=document.getElementById('qEquation');if(q.equation){eqEl.textContent=q.equation;eqEl.style.display='block';}else{eqEl.style.display='none';}
+  document.getElementById('explanation').classList.remove('show');document.getElementById('explanation').textContent='';
+  document.getElementById('btnNext').classList.remove('show');document.getElementById('btnSubmit').classList.remove('show');
+  const{opts,ans}=shuffleA?shuffleOpts(q):{opts:q.opts,ans:q.ans};currentAns=ans;
+  const div=document.getElementById('optionsDiv');div.innerHTML='';
+  opts.forEach((o,i)=>{
+    const el=document.createElement('div');el.className='opt';
+    const ind=document.createElement('span');ind.className='opt-indicator';ind.textContent=q.type==='ms'?'☐':LETTERS[i];
+    const txt=document.createElement('span');txt.className='opt-text';txt.textContent=o;
+    el.appendChild(ind);el.appendChild(txt);
+    if(q.type==='ms'){el.onclick=()=>{if(el.classList.contains('disabled'))return;if(selectedMulti.has(i)){selectedMulti.delete(i);el.classList.remove('selected');ind.textContent='☐';}else{selectedMulti.add(i);el.classList.add('selected');ind.textContent='☑';}document.getElementById('btnSubmit').classList.toggle('show',selectedMulti.size>0);};}
+    else{el.onclick=()=>resolveSingle(i);}
+    div.appendChild(el);
+  });
+  document.getElementById('qCounter').textContent='Question '+(idx+1)+' of '+deck.length;
+  document.getElementById('progressFill').style.width=Math.round((idx/deck.length)*100)+'%';
+  document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+}
+function resolveSingle(chosen){const correct=chosen===currentAns;const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(i===currentAns){opts[i].classList.add(correct&&i===chosen?'correct':'reveal-correct');ind.textContent='✓';}else if(i===chosen){opts[i].classList.add('wrong');ind.textContent='✗';}}finalize(correct);}
+function submitMulti(){const correctSet=new Set(Array.isArray(currentAns)?currentAns:[currentAns]);const correct=selectedMulti.size===correctSet.size&&[...selectedMulti].every(i=>correctSet.has(i));const opts=document.getElementById('optionsDiv').children;for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('correct');ind.textContent='✓';}else if(!correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('wrong');ind.textContent='✗';}else if(correctSet.has(i)&&!selectedMulti.has(i)){opts[i].classList.add('reveal-correct');ind.textContent='✓';}}document.getElementById('btnSubmit').classList.remove('show');finalize(correct);}
+function finalize(correct){if(correct){score++;}else{recordMiss(deck[idx]);document.getElementById('missedNotice').classList.add('show');}answered++;document.getElementById('scoreDisplay').textContent=score+' / '+answered;const exp=document.getElementById('explanation');exp.textContent=(correct?'✓ Correct. ':'✗ Incorrect. ')+deck[idx].exp;exp.classList.add('show');document.getElementById('btnNext').classList.add('show');}
+function nextQ(){idx++;if(idx>=deck.length)showSummary();else renderQ();}
+function showSummary(){document.getElementById('questionCard').style.display='none';document.getElementById('btnNext').style.display='none';document.getElementById('qCounter').style.display='none';document.getElementById('progressFill').style.width='100%';const pct=Math.round((score/deck.length)*100);document.getElementById('summaryScore').textContent=pct+'%';document.getElementById('summaryFrac').textContent=score+' out of '+deck.length+' correct';document.getElementById('summaryMsg').textContent=pct>=85?'Excellent — you have this lecture locked in.':pct>=65?'Solid effort. Review the ones you missed, then try again.':'Keep at it — go back through the notes tab and restart the deck.';const mc=getMissedCount();if(mc>0){document.getElementById('summaryMissedBox').style.display='block';document.getElementById('summaryMissedBox').textContent=mc+' question'+(mc!==1?'s':'')+' in your missed deck across all lectures.';document.getElementById('linkMissed').style.display='inline-block';}document.getElementById('summary').classList.add('show');}
+function restart(){idx=0;score=0;answered=0;buildDeck();document.getElementById('questionCard').style.display='block';document.getElementById('btnNext').style.display='';document.getElementById('btnNext').classList.remove('show');document.getElementById('qCounter').style.display='block';document.getElementById('summary').classList.remove('show');renderQ();}
+buildDeck();renderQ();
+</script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 5 — Linear Regression</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#f5f4f0;--surface:#ffffff;--surface2:#f0eeea;--border:#e2dfd8;--text:#1a1916;--muted:#8a8680;--accent:#5046e4;--accent-dim:rgba(80,70,228,0.08);--accent-border:rgba(80,70,228,0.2);--green:#16a05a;--green-bg:#edf7f2;--green-border:#b6e4cf;--red:#d63a3a;--red-bg:#fdf0f0;--red-border:#f5c0c0;--reveal-bg:#f7f6f2;--yellow-bg:#fffbea;--yellow-border:#f5e49a;--orange:#d97706;--orange-bg:#fff7ed;--orange-border:#fed7aa;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  header{padding:1.25rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);gap:1rem;flex-wrap:wrap;}
+  .header-left{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+  .back-link{font-size:13px;color:var(--muted);text-decoration:none;}
+  .back-link:hover{color:var(--text);}
+  .header-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text);}
+  .header-badge{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-border);padding:3px 10px;border-radius:99px;}
+  .score-display{font-size:14px;color:var(--muted);white-space:nowrap;}
+  .score-display span{color:var(--text);font-weight:600;}
+  .progress-wrap{height:3px;background:var(--border);}
+  .progress-fill{height:3px;background:var(--accent);transition:width 0.4s ease;width:0%;}
+  .tab-nav{display:flex;border-bottom:1px solid var(--border);background:var(--surface);padding:0 2rem;}
+  .tab-btn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:12px 18px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--muted);cursor:pointer;transition:color 0.15s,border-color 0.15s;margin-bottom:-1px;}
+  .tab-btn:hover{color:var(--text);}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .pane{display:none;}.pane.active{display:block;}
+  .notes-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;}
+  .notes-intro{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.6;}
+  .note-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .note-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.12s;}
+  .note-header:hover{background:var(--surface2);}
+  .note-header-left{display:flex;align-items:center;gap:10px;}
+  .note-icon{width:28px;height:28px;border-radius:6px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .note-title{font-size:14px;font-weight:500;color:var(--text);}
+  .note-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s;}
+  .note-block.open .note-chevron{transform:rotate(180deg);}
+  .note-body{display:none;padding:0 1.25rem 1.25rem;border-top:1px solid var(--border);}
+  .note-block.open .note-body{display:block;}
+  .note-body ul{margin-top:0.75rem;padding-left:1.25rem;}
+  .note-body li{font-size:14px;color:var(--text);line-height:1.75;margin-bottom:4px;}
+  .note-body li strong{font-weight:600;}
+  .equation-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:'DM Sans',sans-serif;margin-top:1rem;}
+  .equation-box{background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:12px 16px;font-size:14px;font-family:'Georgia',serif;color:var(--text);text-align:center;line-height:1.8;}
+  .equation-note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6;}
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.75rem;}
+  .tag{font-size:11px;padding:2px 9px;border-radius:99px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  .tag.important{background:var(--accent-dim);color:var(--accent);border-color:var(--accent-border);}
+  .quiz-section{max-width:720px;margin:0 auto;padding:2rem 1.5rem;width:100%;display:flex;flex-direction:column;align-items:center;}
+  .shuffle-bar{align-self:stretch;display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;}
+  .shuffle-label{font-size:12px;color:var(--muted);font-weight:500;}
+  .toggle-btn{display:flex;align-items:center;gap:7px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all 0.15s;user-select:none;}
+  .toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .toggle-btn.on{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+  .toggle-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background 0.15s;flex-shrink:0;}
+  .toggle-btn.on .toggle-dot{background:var(--accent);}
+  .q-counter{font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5rem;align-self:flex-start;}
+  .question-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;margin-bottom:1.25rem;}
+  .missed-badge{display:none;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);padding:3px 10px;border-radius:99px;margin-bottom:0.75rem;}
+  .missed-badge.show{display:inline-block;}
+  .q-type-badge{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
+  .q-hint{font-size:12px;color:var(--accent);margin-bottom:1rem;font-style:italic;display:none;}
+  .q-text{font-family:'DM Serif Display',serif;font-size:20px;line-height:1.5;color:var(--text);margin-bottom:1.75rem;}
+  .q-equation{font-family:'Georgia',serif;font-size:15px;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:10px 16px;margin-bottom:1.5rem;text-align:center;display:none;line-height:1.8;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.15s,background 0.15s;background:var(--surface);}
+  .opt:hover:not(.disabled){border-color:var(--accent);background:var(--accent-dim);}
+  .opt-indicator{width:22px;height:22px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:12px;font-weight:600;color:var(--muted);transition:all 0.15s;}
+  .opt.selected .opt-indicator{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .opt-text{font-size:15px;color:var(--text);line-height:1.5;}
+  .opt.correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.wrong{border-color:var(--red-border);background:var(--red-bg);}
+  .opt.wrong .opt-indicator{background:var(--red);color:#fff;border-color:var(--red);}
+  .opt.reveal-correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.reveal-correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.disabled{cursor:default;}
+  .btn-submit{display:none;margin-top:1rem;background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-submit:hover{opacity:0.88;}
+  .btn-submit.show{display:block;}
+  .explanation{display:none;margin-top:1.25rem;padding:14px 16px;border-radius:10px;background:var(--reveal-bg);border-left:3px solid var(--accent);font-size:14px;color:var(--muted);line-height:1.7;}
+  .explanation.show{display:block;}
+  .missed-notice{display:none;margin-top:10px;padding:10px 14px;border-radius:8px;background:var(--orange-bg);border:1px solid var(--orange-border);font-size:13px;color:var(--orange);font-weight:500;}
+  .missed-notice.show{display:block;}
+  .btn-next{display:none;margin-top:1.5rem;align-self:flex-end;background:var(--accent);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-next:hover{opacity:0.88;}
+  .btn-next.show{display:block;}
+  .summary{display:none;flex-direction:column;align-items:center;text-align:center;padding:3rem 2rem;width:100%;}
+  .summary.show{display:flex;}
+  .summary-score{font-family:'DM Serif Display',serif;font-size:72px;color:var(--accent);line-height:1;margin-bottom:0.5rem;}
+  .summary-label{font-size:14px;color:var(--muted);margin-bottom:0.25rem;}
+  .summary-msg{font-size:17px;color:var(--text);margin:1.25rem 0 1.5rem;line-height:1.6;max-width:400px;}
+  .summary-missed-box{font-size:14px;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:10px;padding:10px 18px;margin-bottom:1.5rem;display:none;}
+  .btn-group{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .btn-restart{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-restart:hover{background:var(--accent-dim);}
+  .link-missed{font-size:14px;color:var(--orange);text-decoration:none;padding:10px 24px;border:1px solid var(--orange-border);border-radius:10px;background:var(--orange-bg);display:none;}
+  .link-home{font-size:14px;color:var(--muted);text-decoration:none;margin-top:0.25rem;}
+  .link-home:hover{color:var(--text);}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <a href="../index.html" class="back-link">← Back</a>
+    <span class="header-title">Lecture 5</span>
+    <span class="header-badge">Linear Regression</span>
+  </div>
+  <div class="score-display" id="scoreWrap" style="display:none">Score: <span id="scoreDisplay">0 / 0</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+<div class="tab-nav">
+  <button class="tab-btn active" id="tabNotes" onclick="showTab('notes')">📋 Notes</button>
+  <button class="tab-btn" id="tabQuiz" onclick="showTab('quiz')">⚡ Practice Questions</button>
+</div>
+
+<!-- NOTES -->
+<div class="pane active" id="paneNotes">
+  <div class="notes-section">
+    <p class="notes-intro">Key concepts from Lecture 5. Tap each section to expand.</p>
+
+    <div class="note-block open" id="nb1">
+      <div class="note-header" onclick="toggleNote('nb1')">
+        <div class="note-header-left"><div class="note-icon">📏</div><span class="note-title">Linear Regression Model &amp; Normal Equation</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Linear Regression</strong> models a linear relationship between inputs and a continuous output.</li>
+          <li>Two training approaches: (1) closed-form Normal Equation, (2) iterative Gradient Descent.</li>
+          <li><strong>Normal Equation:</strong> Directly computes the θ that minimizes MSE. No iteration needed.</li>
+          <li><strong>SVD approach:</strong> An alternative closed-form method using Singular Value Decomposition.</li>
+          <li><strong>Limitation of Normal Equation:</strong> Gets very slow when the number of features grows large (e.g. 100,000+). Both Normal Equation and SVD are O(m) with respect to instances but slow with many features.</li>
+        </ul>
+        <div class="equation-label">Linear regression model</div>
+        <div class="equation-box">ŷ = θ₀ + θ₁x₁ + θ₂x₂ + ... + θₙxₙ = θᵀx</div>
+        <p class="equation-note">ŷ = predicted value. θ₀ = bias term. θ₁...θₙ = feature weights. x₁...xₙ = feature values. n = number of features.</p>
+        <div class="tag-row"><span class="tag important">Equation — know it</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb2">
+      <div class="note-header" onclick="toggleNote('nb2')">
+        <div class="note-header-left"><div class="note-icon">📉</div><span class="note-title">MSE Cost Function</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li>Training objective: find θ that minimizes the <strong>Mean Squared Error (MSE)</strong> cost function.</li>
+          <li>In practice, we minimize MSE rather than RMSE because they have the same minimum and MSE is easier to compute derivatives for.</li>
+          <li>The MSE cost function for linear regression is <strong>convex</strong> — no local minima, just one global minimum. Gradient Descent is guaranteed to find it.</li>
+          <li>Feature scaling is important for GD convergence: without it the cost function is elongated and takes much longer to converge.</li>
+        </ul>
+        <div class="equation-label">MSE cost function</div>
+        <div class="equation-box">MSE(θ) = (1/m) Σᵢ₌₁ᵐ (θᵀx⁽ⁱ⁾ − y⁽ⁱ⁾)²</div>
+        <div class="tag-row"><span class="tag important">Convex — one global minimum</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb3">
+      <div class="note-header" onclick="toggleNote('nb3')">
+        <div class="note-header-left"><div class="note-icon">⛰️</div><span class="note-title">Gradient Descent &amp; Learning Rate</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Gradient Descent:</strong> Generic optimization algorithm that iteratively tweaks parameters in the direction of steepest descent to minimize a cost function.</li>
+          <li><strong>Learning rate (η):</strong> Controls the step size. Too small = very slow convergence. Too large = may diverge (jump past the minimum).</li>
+          <li>Stop when the gradient vector becomes tiny.</li>
+          <li>GD requires features to have similar scale — otherwise the cost function is elongated and takes much longer.</li>
+        </ul>
+        <div class="equation-label">Gradient Descent update rule</div>
+        <div class="equation-box">θ⁽ⁿᵉˣᵗ ˢᵗᵉᵖ⁾ = θ − η∇θ MSE(θ)</div>
+        <p class="equation-note">η = learning rate. ∇θ MSE(θ) = gradient vector of the cost function (points uphill). We subtract it to go downhill.</p>
+        <div class="tag-row"><span class="tag important">η too small = slow. η too large = diverge.</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb4">
+      <div class="note-header" onclick="toggleNote('nb4')">
+        <div class="note-header-left"><div class="note-icon">🔀</div><span class="note-title">Batch, Stochastic &amp; Mini-batch GD</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Batch Gradient Descent:</strong> Computes gradients using the FULL training set at every step. Very slow on large datasets. Guaranteed to reach the global minimum (for convex functions).</li>
+          <li><strong>Stochastic Gradient Descent (SGD):</strong> Picks ONE random instance per step. Much faster per step, but bounces around. Can escape local minima. Training instances must be IID (shuffled). Settles near but not exactly at the global minimum.</li>
+          <li><strong>Mini-batch GD:</strong> Computes gradients on small random subsets (mini-batches). Main advantage over SGD: hardware optimization (GPU speedup) for matrix operations.</li>
+          <li>SGD requires shuffling instances to ensure IID — otherwise GD optimizes for one label at a time.</li>
+        </ul>
+        <div class="tag-row"><span class="tag important">Know all three differences</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="pane" id="paneQuiz">
+  <div class="quiz-section">
+    <div class="shuffle-bar">
+      <span class="shuffle-label">Shuffle:</span>
+      <button class="toggle-btn on" id="toggleQ" onclick="toggleShuffle('q')"><span class="toggle-dot"></span> Questions</button>
+      <button class="toggle-btn on" id="toggleA" onclick="toggleShuffle('a')"><span class="toggle-dot"></span> Answer choices</button>
+    </div>
+    <div class="q-counter" id="qCounter">Question 1 of 28</div>
+    <div class="question-card" id="questionCard">
+      <div class="missed-badge" id="missedBadge">⚠ Previously missed</div>
+      <div class="q-type-badge" id="qTypeBadge"></div>
+      <div class="q-hint" id="qHint">Select all that apply, then click Submit.</div>
+      <p class="q-text" id="qText"></p>
+      <div class="q-equation" id="qEquation"></div>
+      <div class="options" id="optionsDiv"></div>
+      <button class="btn-submit" id="btnSubmit" onclick="submitMulti()">Submit answer</button>
+      <div class="explanation" id="explanation"></div>
+      <div class="missed-notice" id="missedNotice">⚠ Added to your missed questions deck.</div>
+    </div>
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Next question →</button>
+    <div class="summary" id="summary">
+      <div class="summary-label">Final score</div>
+      <div class="summary-score" id="summaryScore"></div>
+      <div class="summary-label" id="summaryFrac"></div>
+      <p class="summary-msg" id="summaryMsg"></p>
+      <div class="summary-missed-box" id="summaryMissedBox"></div>
+      <div class="btn-group">
+        <button class="btn-restart" onclick="restart()">↺ Restart deck</button>
+        <a href="../missed.html" class="link-missed" id="linkMissed">Review missed questions →</a>
+        <a href="../index.html" class="link-home">← Back to all lectures</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MISSED_KEY='ml_missed_questions';
+function getMissed(){try{return JSON.parse(localStorage.getItem(MISSED_KEY)||'{}');}catch{return{};}}
+function saveMissed(d){localStorage.setItem(MISSED_KEY,JSON.stringify(d));}
+function getMissedCount(){return Object.keys(getMissed()).length;}
+function recordMiss(q){const m=getMissed(),s=JSON.parse(localStorage.getItem('ml_streak_data')||'{}');m[q.id]={id:q.id,lecture:q.lecture,topic:q.topic};s[q.id]=0;saveMissed(m);localStorage.setItem('ml_streak_data',JSON.stringify(s));}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function shuffleOpts(q){if(q.type==='tf')return{opts:q.opts,ans:q.ans};const idxs=shuffle(q.opts.map((_,i)=>i));const map={};idxs.forEach((old,n)=>{map[old]=n;});return{opts:idxs.map(i=>q.opts[i]),ans:Array.isArray(q.ans)?q.ans.map(i=>map[i]):map[q.ans]};}
+
+const QUESTIONS = [
+  {id:"lec5_01",lecture:"Lecture 5",topic:"Linear Regression Model",type:"mc",label:"Multiple Choice",
+   q:"What is the linear regression model equation as shown in your slides?",
+   opts:["ŷ = θ₀ + θ₁x₁ + θ₂x₂ + ... + θₙxₙ","ŷ = σ(θᵀx)","ŷ = argmax σ(s(x))","ŷ = √((1/m) Σ(h(x⁽ⁱ⁾) − y⁽ⁱ⁾)²)"],
+   ans:0,exp:"The linear regression model is ŷ = θ₀ + θ₁x₁ + ... + θₙxₙ, which can also be written compactly as θᵀx. θ₀ is the bias term, θ₁ through θₙ are feature weights, and x₁ through xₙ are feature values."},
+
+  {id:"lec5_02",lecture:"Lecture 5",topic:"Linear Regression Model",type:"ms",label:"Multi-Select",
+   q:"In the linear regression equation ŷ = θ₀ + θ₁x₁ + ... + θₙxₙ, what do the following terms represent? Select all that apply.",
+   opts:["θ₀ is the bias term (intercept)","θ₁ through θₙ are the feature weights","n is the number of training instances","xᵢ is the ith feature value","ŷ is the predicted output value"],
+   ans:[0,1,3,4],exp:"θ₀ = bias/intercept (A), θ₁..θₙ = feature weights (B), xᵢ = ith feature value (D), ŷ = predicted output (E). n is the NUMBER OF FEATURES, not training instances (C is false — m is typically used for instances)."},
+
+  {id:"lec5_03",lecture:"Lecture 5",topic:"Linear Regression Model",type:"mc",label:"Multiple Choice",
+   q:"Your slides mention two ways to train a Linear Regression model. What are they?",
+   opts:["Gradient Descent and Stochastic Descent","A closed-form Normal Equation and iterative Gradient Descent","Logistic Regression and Ridge Regression","Cross-validation and Grid Search"],
+   ans:1,exp:"Your slides describe two training approaches: (1) a closed-form Normal Equation that directly computes the best parameters mathematically, and (2) iterative Gradient Descent that gradually tweaks parameters to minimize the cost function."},
+
+  {id:"lec5_04",lecture:"Lecture 5",topic:"Normal Equation",type:"mc",label:"Multiple Choice",
+   q:"What is the Normal Equation?",
+   opts:["An iterative algorithm that gradually minimizes the cost function","A closed-form mathematical equation that directly computes the model parameters that best fit the training data","A regularization technique that constrains the model weights","A method to evaluate model performance on the test set"],
+   ans:1,exp:"The Normal Equation is a closed-form solution — a mathematical equation that gives the optimal θ directly without iteration. It finds the value of θ that minimizes the MSE cost function in one step."},
+
+  {id:"lec5_05",lecture:"Lecture 5",topic:"Normal Equation",type:"mc",label:"Multiple Choice",
+   q:"What is a key limitation of the Normal Equation and SVD approaches?",
+   opts:["They can only be used when the data is linearly separable","They get very slow when the number of features grows large (e.g. 100,000+)","They require normalized features to work correctly","They can only handle binary classification problems"],
+   ans:1,exp:"Both the Normal Equation and SVD approaches get very slow when the number of features grows large (e.g. 100,000+). However, they are linear with respect to the number of instances (O(m)), so they handle large training sets efficiently if they fit in memory."},
+
+  {id:"lec5_06",lecture:"Lecture 5",topic:"MSE Cost Function",type:"mc",label:"Multiple Choice",
+   q:"Why do we minimize MSE rather than RMSE when training Linear Regression?",
+   opts:["MSE is always smaller than RMSE, making it easier to compare","MSE is simpler to compute derivatives for and leads to the same result since both have the same minimum","RMSE cannot be computed for linear models","MSE penalizes outliers more heavily than RMSE"],
+   ans:1,exp:"In practice, we minimize MSE rather than RMSE because (1) MSE is simpler to compute partial derivatives for, and (2) they have the same minimum — the value that minimizes MSE also minimizes its square root (RMSE)."},
+
+  {id:"lec5_07",lecture:"Lecture 5",topic:"MSE Cost Function",type:"mc",label:"Multiple Choice",
+   q:"Why is the MSE cost function being convex important for Gradient Descent?",
+   opts:["It means the function has many local minima to explore","It guarantees there are no local minima — just one global minimum that GD will approach","It means the function is always differentiable","It means GD will converge instantly"],
+   ans:1,exp:"Because the MSE cost function for Linear Regression is convex, there are no local minima — only one global minimum. This guarantees that Gradient Descent will approach arbitrarily close to the global minimum given enough time and a reasonable learning rate."},
+
+  {id:"lec5_08",lecture:"Lecture 5",topic:"Gradient Descent",type:"mc",label:"Multiple Choice",
+   q:"What is the general idea behind Gradient Descent?",
+   opts:["Randomly initialize parameters and pick the configuration with the lowest cost","Iteratively tweak parameters in the direction of steepest descent to minimize a cost function","Solve a closed-form equation to find the optimal parameters directly","Evaluate all possible parameter values and select the best"],
+   ans:1,exp:"Gradient Descent iteratively tweaks model parameters in the direction of steepest descent (opposite to the gradient, which points uphill) to minimize the cost function. It measures the local gradient and moves in the direction of descending gradient."},
+
+  {id:"lec5_09",lecture:"Lecture 5",topic:"Gradient Descent",type:"eq",label:"Equation",
+   q:"What is the Gradient Descent update rule from your slides?",
+   opts:["θ⁽ⁿᵉˣᵗ⁾ = θ − η∇θ MSE(θ)","θ⁽ⁿᵉˣᵗ⁾ = θ + η∇θ MSE(θ)","θ⁽ⁿᵉˣᵗ⁾ = θ / η∇θ MSE(θ)","θ⁽ⁿᵉˣᵗ⁾ = η − θ∇θ MSE(θ)"],
+   ans:0,exp:"The update rule is θ⁽ⁿᵉˣᵗ⁾ = θ − η∇θ MSE(θ). The gradient points uphill, so we SUBTRACT it (go downhill). η is the learning rate controlling step size."},
+
+  {id:"lec5_10",lecture:"Lecture 5",topic:"Gradient Descent",type:"mc",label:"Multiple Choice",
+   q:"In the GD update rule θ⁽ⁿᵉˣᵗ⁾ = θ − η∇θ MSE(θ), what is η?",
+   opts:["The number of training instances","The learning rate — controls the size of each step","The regularization parameter","The gradient vector"],
+   ans:1,exp:"η (eta) is the learning rate hyperparameter. It controls the size of each step in Gradient Descent. Too small = very slow convergence. Too large = may overshoot and diverge."},
+
+  {id:"lec5_11",lecture:"Lecture 5",topic:"Gradient Descent",type:"ms",label:"Multi-Select",
+   q:"What happens when the learning rate is too small in Gradient Descent? Select all that apply.",
+   opts:["The algorithm will converge quickly","The algorithm has to go through many iterations to converge","Convergence will take a very long time","The algorithm may diverge with larger and larger values","Training will be slow"],
+   ans:[1,2,4],exp:"If the learning rate is too small, the algorithm takes many iterations (B) and convergence is very slow (C, E). Divergence (D) happens when the learning rate is too LARGE. Fast convergence (A) is the opposite problem."},
+
+  {id:"lec5_12",lecture:"Lecture 5",topic:"Gradient Descent",type:"mc",label:"Multiple Choice",
+   q:"What happens when the learning rate is too large in Gradient Descent?",
+   opts:["Convergence is guaranteed but very slow","The algorithm may jump across the valley and diverge, failing to find a good solution","The algorithm finds local minima instead of the global minimum","The cost function becomes non-convex"],
+   ans:1,exp:"If the learning rate is too large, GD may jump across the valley and overshoot the minimum, possibly landing higher than before. This can cause the algorithm to diverge with larger and larger values, failing to find a good solution."},
+
+  {id:"lec5_13",lecture:"Lecture 5",topic:"Gradient Descent",type:"tf",label:"True / False",
+   q:"True or False: You should ensure that all features have a similar scale when using Gradient Descent, otherwise it will take much longer to converge.",
+   opts:["True","False"],
+   ans:0,exp:"True. Without feature scaling, the cost function is elongated (like a narrow valley), and GD will bounce around taking much longer to converge. Feature scaling makes the cost function more spherical and GD converges much faster."},
+
+  {id:"lec5_14",lecture:"Lecture 5",topic:"Gradient Descent",type:"mc",label:"Multiple Choice",
+   q:"When should Gradient Descent stop (what is the convergence criterion)?",
+   opts:["When the cost function reaches exactly zero","When the gradient vector becomes tiny","After a fixed number of 1,000 iterations","When the training error equals the validation error"],
+   ans:1,exp:"Gradient Descent should stop when the gradient vector becomes tiny — meaning you're very close to the minimum and further steps won't improve the solution meaningfully."},
+
+  {id:"lec5_15",lecture:"Lecture 5",topic:"Batch vs SGD vs Mini-batch",type:"mc",label:"Multiple Choice",
+   q:"What defines Batch Gradient Descent?",
+   opts:["It picks one random instance per step","It computes gradients on small random subsets","It uses the full training set to compute gradients at every step","It updates parameters once per epoch using all data simultaneously"],
+   ans:2,exp:"Batch Gradient Descent uses the FULL training set to compute the gradients at every step. This is why it is called 'batch' GD and why it is terribly slow on very large training sets."},
+
+  {id:"lec5_16",lecture:"Lecture 5",topic:"Batch vs SGD vs Mini-batch",type:"mc",label:"Multiple Choice",
+   q:"What defines Stochastic Gradient Descent (SGD)?",
+   opts:["It uses the full training set at every step","It picks one random instance per step and computes gradients based only on that instance","It computes gradients on small random mini-batches","It randomly selects a subset of features at each step"],
+   ans:1,exp:"SGD picks ONE random instance in the training set at every step and computes gradients based only on that single instance. This makes each step fast but the path is noisy and bounces around."},
+
+  {id:"lec5_17",lecture:"Lecture 5",topic:"Batch vs SGD vs Mini-batch",type:"ms",label:"Multi-Select",
+   q:"Which of the following are true about Stochastic Gradient Descent (SGD)? Select all that apply.",
+   opts:["It is much faster per step than Batch GD on large datasets","The cost function bounces up and down, decreasing only on average","It can help the algorithm escape local minima","It always converges to exactly the global minimum","Training instances must be IID (shuffled) for it to work correctly"],
+   ans:[0,1,2,4],exp:"SGD is faster per step (A), noisy cost function (B), can escape local minima (C), and requires shuffled/IID instances (E). SGD does NOT settle exactly at the global minimum — it bounces around it (D is false)."},
+
+  {id:"lec5_18",lecture:"Lecture 5",topic:"Batch vs SGD vs Mini-batch",type:"mc",label:"Multiple Choice",
+   q:"What is the main advantage of Mini-batch Gradient Descent over Stochastic GD?",
+   opts:["Mini-batch GD always finds a better solution","Mini-batch GD uses less memory","Mini-batch GD can get a performance boost from hardware optimization of matrix operations, especially on GPUs","Mini-batch GD always converges faster than SGD"],
+   ans:2,exp:"The main advantage of Mini-batch GD over Stochastic GD is the ability to leverage hardware optimization (especially GPUs) for matrix operations. This gives a significant performance boost compared to one-instance-at-a-time SGD."},
+
+  {id:"lec5_19",lecture:"Lecture 5",topic:"Batch vs SGD vs Mini-batch",type:"ms",label:"Multi-Select",
+   q:"Which of the following correctly describe differences between the three GD variants? Select all that apply.",
+   opts:["Batch GD uses the full training set per step","SGD uses one random instance per step","Mini-batch GD uses small random subsets","All three are guaranteed to find the exact global minimum","Batch GD is slowest per step but most stable"],
+   ans:[0,1,2,4],exp:"Batch GD = full dataset (A), SGD = one instance (B), Mini-batch = small subsets (C), Batch GD is slowest but most stable (E). Not all three find the exact global minimum — SGD and Mini-batch GD bounce around it (D is false)."},
+
+  {id:"lec5_20",lecture:"Lecture 5",topic:"Batch vs SGD vs Mini-batch",type:"mc",label:"Multiple Choice",
+   q:"Why must training instances be shuffled when using Stochastic Gradient Descent?",
+   opts:["To reduce memory usage","To ensure instances are IID so parameters get pulled toward the global optimum on average","To increase the learning rate automatically","To prevent the model from seeing the same instance twice"],
+   ans:1,exp:"SGD requires IID (independent and identically distributed) instances. If instances are sorted by label, SGD optimizes for one label at a time and won't settle near the global minimum. Shuffling ensures the updates point toward the global optimum on average."},
+
+  {id:"lec5_21",lecture:"Lecture 5",topic:"Gradient Descent",type:"tf",label:"True / False",
+   q:"True or False: Batch Gradient Descent scales well with the number of features and is faster than the Normal Equation when there are hundreds of thousands of features.",
+   opts:["True","False"],
+   ans:0,exp:"True. Batch GD scales well with the number of features — training a Linear Regression model with hundreds of thousands of features is much faster using Gradient Descent than the Normal Equation or SVD decomposition."},
+
+  {id:"lec5_22",lecture:"Lecture 5",topic:"MSE Cost Function",type:"eq",label:"Equation",
+   q:"What does the MSE cost function for Linear Regression look like?",
+   opts:["MSE(θ) = (1/m) Σᵢ₌₁ᵐ (θᵀx⁽ⁱ⁾ − y⁽ⁱ⁾)²","MSE(θ) = √((1/m) Σᵢ₌₁ᵐ (θᵀx⁽ⁱ⁾ − y⁽ⁱ⁾)²)","MSE(θ) = (1/m) Σᵢ₌₁ᵐ |θᵀx⁽ⁱ⁾ − y⁽ⁱ⁾|","MSE(θ) = Σᵢ₌₁ᵐ (θᵀx⁽ⁱ⁾ − y⁽ⁱ⁾)"],
+   ans:0,exp:"MSE(θ) = (1/m) Σ (θᵀx⁽ⁱ⁾ − y⁽ⁱ⁾)² — the average of squared errors. Option B is RMSE (has square root). Option C is MAE (absolute value). Option D is missing the average (1/m) and squaring."},
+
+  {id:"lec5_23",lecture:"Lecture 5",topic:"Normal Equation",type:"tf",label:"True / False",
+   q:"True or False: The Normal Equation and SVD approaches are O(m) with respect to the number of training instances, so they handle large training sets efficiently provided the data fits in memory.",
+   opts:["True","False"],
+   ans:0,exp:"True. Both Normal Equation and SVD are linear in the number of instances (O(m)), meaning adding more training instances doesn't slow them down disproportionately — as long as the data fits in memory."},
+
+  {id:"lec5_24",lecture:"Lecture 5",topic:"Batch vs SGD vs Mini-batch",type:"mc",label:"Multiple Choice",
+   q:"Which GD variant is best suited for cases with a very large number of features or too many training instances to fit in memory?",
+   opts:["Batch Gradient Descent, because it uses the full dataset","Gradient Descent with the Normal Equation","Stochastic or Mini-batch Gradient Descent","The SVD approach"],
+   ans:2,exp:"Gradient Descent (especially SGD or Mini-batch) is better suited for large numbers of features or when the training set is too large to fit in memory. The Normal Equation and Batch GD require the full dataset in memory and slow down with many features."},
+
+  {id:"lec5_25",lecture:"Lecture 5",topic:"Gradient Descent",type:"ms",label:"Multi-Select",
+   q:"Which of the following are true about Gradient Descent? Select all that apply.",
+   opts:["It measures the local gradient of the cost function and goes in the direction of descending gradient","It requires features to have similar scale for efficient convergence","It can be used to minimize any differentiable cost function, not just MSE","The learning rate is a hyperparameter that must be tuned","It always starts from the same parameter initialization"],
+   ans:[0,1,2,3],exp:"GD measures the gradient and descends (A), requires feature scaling (B), is a general optimizer for any differentiable function (C), and η must be tuned (D). GD does NOT always start from the same initialization — parameters are typically initialized randomly (E is false)."},
+
+  {id:"lec5_26",lecture:"Lecture 5",topic:"Linear Regression Model",type:"mc",label:"Multiple Choice",
+   q:"What is the compact vector form of the linear regression prediction?",
+   opts:["ŷ = σ(θᵀx)","ŷ = θᵀx","ŷ = ‖θ‖²","ŷ = exp(θᵀx)"],
+   ans:1,exp:"The compact vector form is ŷ = θᵀx, where θ is the parameter vector (including the bias θ₀) and x is the feature vector (with x₀ = 1 for the bias term). This is equivalent to θ₀ + θ₁x₁ + ... + θₙxₙ."},
+
+  {id:"lec5_27",lecture:"Lecture 5",topic:"Batch vs SGD vs Mini-batch",type:"mc",label:"Multiple Choice",
+   q:"In the parameter space diagram shown in your slides, which GD variant has the most erratic (noisy) path toward the minimum?",
+   opts:["Batch Gradient Descent","Mini-batch Gradient Descent","Stochastic Gradient Descent","All three have identical paths"],
+   ans:2,exp:"SGD has the most erratic path because it computes the gradient based on a single random instance at each step, causing the cost function to bounce up and down (decreasing only on average). Batch GD takes the smoothest path."},
+
+  {id:"lec5_28",lecture:"Lecture 5",topic:"Gradient Descent",type:"ms",label:"Multi-Select",
+   q:"Which of the following are advantages of Gradient Descent over the Normal Equation? Select all that apply.",
+   opts:["GD works well when there are a very large number of features","GD does not require computing a matrix inverse","GD is simpler to implement than the Normal Equation","GD can be applied to other cost functions beyond MSE","GD always gives an exact solution in one step"],
+   ans:[0,1,3],exp:"GD works well with many features (A), avoids the matrix inverse computation required by the Normal Equation (B), and can be applied to any differentiable cost function (D). GD is not necessarily simpler to implement (C) and does not give an exact solution in one step — that's the Normal Equation's advantage (E is false)."}
+];
+
+const LETTERS=['A','B','C','D','E','F'];
+let deck=[],idx=0,score=0,answered=0,shuffleQ=true,shuffleA=true,selectedMulti=new Set(),currentAns=null;
+function showTab(tab){document.getElementById('paneNotes').classList.toggle('active',tab==='notes');document.getElementById('paneQuiz').classList.toggle('active',tab==='quiz');document.getElementById('tabNotes').classList.toggle('active',tab==='notes');document.getElementById('tabQuiz').classList.toggle('active',tab==='quiz');document.getElementById('scoreWrap').style.display=tab==='quiz'?'block':'none';}
+function toggleNote(id){document.getElementById(id).classList.toggle('open');}
+function toggleShuffle(w){if(w==='q'){shuffleQ=!shuffleQ;document.getElementById('toggleQ').classList.toggle('on',shuffleQ);}else{shuffleA=!shuffleA;document.getElementById('toggleA').classList.toggle('on',shuffleA);}}
+function buildDeck(){deck=shuffleQ?shuffle([...QUESTIONS]):[...QUESTIONS];}
+function renderQ(){
+  const q=deck[idx];selectedMulti=new Set();
+  document.getElementById('missedBadge').classList.toggle('show',!!getMissed()[q.id]);
+  document.getElementById('missedNotice').classList.remove('show');
+  document.getElementById('qTypeBadge').textContent=q.label;
+  document.getElementById('qHint').style.display=q.type==='ms'?'block':'none';
+  document.getElementById('qText').textContent=q.q;
+  const eqEl=document.getElementById('qEquation');
+  if(q.equation){eqEl.textContent=q.equation;eqEl.style.display='block';}else{eqEl.style.display='none';}
+  document.getElementById('explanation').classList.remove('show');document.getElementById('explanation').textContent='';
+  document.getElementById('btnNext').classList.remove('show');document.getElementById('btnSubmit').classList.remove('show');
+  const{opts,ans}=shuffleA?shuffleOpts(q):{opts:q.opts,ans:q.ans};currentAns=ans;
+  const div=document.getElementById('optionsDiv');div.innerHTML='';
+  opts.forEach((o,i)=>{
+    const el=document.createElement('div');el.className='opt';
+    const ind=document.createElement('span');ind.className='opt-indicator';ind.textContent=q.type==='ms'?'☐':LETTERS[i];
+    const txt=document.createElement('span');txt.className='opt-text';txt.textContent=o;
+    el.appendChild(ind);el.appendChild(txt);
+    if(q.type==='ms'){el.onclick=()=>{if(el.classList.contains('disabled'))return;if(selectedMulti.has(i)){selectedMulti.delete(i);el.classList.remove('selected');ind.textContent='☐';}else{selectedMulti.add(i);el.classList.add('selected');ind.textContent='☑';}document.getElementById('btnSubmit').classList.toggle('show',selectedMulti.size>0);};}
+    else{el.onclick=()=>resolveSingle(i);}
+    div.appendChild(el);
+  });
+  document.getElementById('qCounter').textContent='Question '+(idx+1)+' of '+deck.length;
+  document.getElementById('progressFill').style.width=Math.round((idx/deck.length)*100)+'%';
+  document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+}
+function resolveSingle(chosen){
+  const correct=chosen===currentAns;const opts=document.getElementById('optionsDiv').children;
+  for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(i===currentAns){opts[i].classList.add(correct&&i===chosen?'correct':'reveal-correct');ind.textContent='✓';}else if(i===chosen){opts[i].classList.add('wrong');ind.textContent='✗';}}
+  finalize(correct);
+}
+function submitMulti(){
+  const correctSet=new Set(Array.isArray(currentAns)?currentAns:[currentAns]);
+  const correct=selectedMulti.size===correctSet.size&&[...selectedMulti].every(i=>correctSet.has(i));
+  const opts=document.getElementById('optionsDiv').children;
+  for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('correct');ind.textContent='✓';}else if(!correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('wrong');ind.textContent='✗';}else if(correctSet.has(i)&&!selectedMulti.has(i)){opts[i].classList.add('reveal-correct');ind.textContent='✓';}}
+  document.getElementById('btnSubmit').classList.remove('show');finalize(correct);
+}
+function finalize(correct){
+  if(correct){score++;}else{recordMiss(deck[idx]);document.getElementById('missedNotice').classList.add('show');}
+  answered++;document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+  const exp=document.getElementById('explanation');exp.textContent=(correct?'✓ Correct. ':'✗ Incorrect. ')+deck[idx].exp;
+  exp.classList.add('show');document.getElementById('btnNext').classList.add('show');
+}
+function nextQ(){idx++;if(idx>=deck.length)showSummary();else renderQ();}
+function showSummary(){
+  document.getElementById('questionCard').style.display='none';document.getElementById('btnNext').style.display='none';document.getElementById('qCounter').style.display='none';
+  document.getElementById('progressFill').style.width='100%';
+  const pct=Math.round((score/deck.length)*100);
+  document.getElementById('summaryScore').textContent=pct+'%';document.getElementById('summaryFrac').textContent=score+' out of '+deck.length+' correct';
+  document.getElementById('summaryMsg').textContent=pct>=85?'Excellent — you have this lecture locked in.':pct>=65?'Solid effort. Review the ones you missed, then try again.':'Keep at it — go back through the notes tab and restart the deck.';
+  const mc=getMissedCount();if(mc>0){document.getElementById('summaryMissedBox').style.display='block';document.getElementById('summaryMissedBox').textContent=mc+' question'+(mc!==1?'s':'')+' in your missed deck across all lectures.';document.getElementById('linkMissed').style.display='inline-block';}
+  document.getElementById('summary').classList.add('show');
+}
+function restart(){idx=0;score=0;answered=0;buildDeck();document.getElementById('questionCard').style.display='block';document.getElementById('btnNext').style.display='';document.getElementById('btnNext').classList.remove('show');document.getElementById('qCounter').style.display='block';document.getElementById('summary').classList.remove('show');renderQ();}
+buildDeck();renderQ();
+</script>
+</body>
+</html>

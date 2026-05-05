@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 3 — ML Project Workflow</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f4f0; --surface: #ffffff; --surface2: #f0eeea; --border: #e2dfd8;
+    --text: #1a1916; --muted: #8a8680; --accent: #5046e4;
+    --accent-dim: rgba(80,70,228,0.08); --accent-border: rgba(80,70,228,0.2);
+    --green: #16a05a; --green-bg: #edf7f2; --green-border: #b6e4cf;
+    --red: #d63a3a; --red-bg: #fdf0f0; --red-border: #f5c0c0;
+    --reveal-bg: #f7f6f2; --yellow-bg: #fffbea; --yellow-border: #f5e49a;
+    --orange: #d97706; --orange-bg: #fff7ed; --orange-border: #fed7aa;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 1.25rem 2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); gap: 1rem; flex-wrap: wrap; }
+  .header-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .back-link { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+  .back-link:hover { color: var(--text); }
+  .header-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text); }
+  .header-badge { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: var(--accent-dim); border: 1px solid var(--accent-border); padding: 3px 10px; border-radius: 99px; }
+  .score-display { font-size: 14px; color: var(--muted); white-space: nowrap; }
+  .score-display span { color: var(--text); font-weight: 600; }
+  .progress-wrap { height: 3px; background: var(--border); }
+  .progress-fill { height: 3px; background: var(--accent); transition: width 0.4s ease; width: 0%; }
+
+  .tab-nav { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 2rem; }
+  .tab-btn { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 12px 18px; border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); cursor: pointer; transition: color 0.15s, border-color 0.15s; margin-bottom: -1px; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .pane { display: none; }
+  .pane.active { display: block; }
+
+  /* NOTES */
+  .notes-section { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; width: 100%; }
+  .notes-intro { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; }
+  .note-block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .note-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; user-select: none; transition: background 0.12s; }
+  .note-header:hover { background: var(--surface2); }
+  .note-header-left { display: flex; align-items: center; gap: 10px; }
+  .note-icon { width: 28px; height: 28px; border-radius: 6px; background: var(--accent-dim); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .note-title { font-size: 14px; font-weight: 500; color: var(--text); }
+  .note-chevron { font-size: 12px; color: var(--muted); transition: transform 0.2s; }
+  .note-block.open .note-chevron { transform: rotate(180deg); }
+  .note-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .note-block.open .note-body { display: block; }
+  .note-body ul { margin-top: 0.75rem; padding-left: 1.25rem; }
+  .note-body li { font-size: 14px; color: var(--text); line-height: 1.75; margin-bottom: 4px; }
+  .note-body li strong { font-weight: 600; }
+  .equation-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; font-family: 'DM Sans', sans-serif; margin-top: 1rem; }
+  .equation-box { background: var(--yellow-bg); border: 1px solid var(--yellow-border); border-radius: 8px; padding: 12px 16px; font-size: 14px; font-family: 'Georgia', serif; color: var(--text); text-align: center; line-height: 1.8; }
+  .equation-note { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.75rem; }
+  .tag { font-size: 11px; padding: 2px 9px; border-radius: 99px; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .tag.important { background: var(--accent-dim); color: var(--accent); border-color: var(--accent-border); }
+
+  /* QUIZ */
+  .quiz-section { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .shuffle-bar { align-self: stretch; display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .shuffle-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .toggle-btn { display: flex; align-items: center; gap: 7px; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500; padding: 5px 12px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; transition: all 0.15s; user-select: none; }
+  .toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toggle-btn.on { background: var(--accent-dim); border-color: var(--accent-border); color: var(--accent); }
+  .toggle-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.15s; flex-shrink: 0; }
+  .toggle-btn.on .toggle-dot { background: var(--accent); }
+
+  .q-counter { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; align-self: flex-start; }
+  .question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; margin-bottom: 1.25rem; }
+  .missed-badge { display: none; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--orange); background: var(--orange-bg); border: 1px solid var(--orange-border); padding: 3px 10px; border-radius: 99px; margin-bottom: 0.75rem; }
+  .missed-badge.show { display: inline-block; }
+  .q-type-badge { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+  .q-hint { font-size: 12px; color: var(--accent); margin-bottom: 1rem; font-style: italic; display: none; }
+  .q-text { font-family: 'DM Serif Display', serif; font-size: 20px; line-height: 1.5; color: var(--text); margin-bottom: 1.75rem; }
+  .q-equation { font-family: 'Georgia', serif; font-size: 15px; background: var(--yellow-bg); border: 1px solid var(--yellow-border); border-radius: 8px; padding: 10px 16px; margin-bottom: 1.5rem; text-align: center; display: none; line-height: 1.8; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { display: flex; align-items: flex-start; gap: 14px; padding: 13px 16px; border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.15s, background 0.15s; background: var(--surface); }
+  .opt:hover:not(.disabled) { border-color: var(--accent); background: var(--accent-dim); }
+  .opt-indicator { width: 22px; height: 22px; border-radius: 5px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; font-size: 12px; font-weight: 600; color: var(--muted); transition: all 0.15s; }
+  .opt.selected .opt-indicator { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .opt-text { font-size: 15px; color: var(--text); line-height: 1.5; }
+  .opt.correct { border-color: var(--green-border); background: var(--green-bg); }
+  .opt.correct .opt-indicator { background: var(--green); color: #fff; border-color: var(--green); }
+  .opt.wrong { border-color: var(--red-border); background: var(--red-bg); }
+  .opt.wrong .opt-indicator { background: var(--red); color: #fff; border-color: var(--red); }
+  .opt.reveal-correct { border-color: var(--green-border); background: var(--green-bg); }
+  .opt.reveal-correct .opt-indicator { background: var(--green); color: #fff; border-color: var(--green); }
+  .opt.disabled { cursor: default; }
+
+  .btn-submit { display: none; margin-top: 1rem; background: var(--accent); color: #fff; border: none; padding: 10px 24px; border-radius: 10px; font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; }
+  .btn-submit:hover { opacity: 0.88; }
+  .btn-submit.show { display: block; }
+
+  .explanation { display: none; margin-top: 1.25rem; padding: 14px 16px; border-radius: 10px; background: var(--reveal-bg); border-left: 3px solid var(--accent); font-size: 14px; color: var(--muted); line-height: 1.7; }
+  .explanation.show { display: block; }
+  .missed-notice { display: none; margin-top: 10px; padding: 10px 14px; border-radius: 8px; background: var(--orange-bg); border: 1px solid var(--orange-border); font-size: 13px; color: var(--orange); font-weight: 500; }
+  .missed-notice.show { display: block; }
+
+  .btn-next { display: none; margin-top: 1.5rem; align-self: flex-end; background: var(--accent); color: #fff; border: none; padding: 11px 28px; border-radius: 10px; font-size: 15px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; }
+  .btn-next:hover { opacity: 0.88; }
+  .btn-next.show { display: block; }
+
+  .summary { display: none; flex-direction: column; align-items: center; text-align: center; padding: 3rem 2rem; width: 100%; }
+  .summary.show { display: flex; }
+  .summary-score { font-family: 'DM Serif Display', serif; font-size: 72px; color: var(--accent); line-height: 1; margin-bottom: 0.5rem; }
+  .summary-label { font-size: 14px; color: var(--muted); margin-bottom: 0.25rem; }
+  .summary-msg { font-size: 17px; color: var(--text); margin: 1.25rem 0 1.5rem; line-height: 1.6; max-width: 400px; }
+  .summary-missed-box { font-size: 14px; color: var(--orange); background: var(--orange-bg); border: 1px solid var(--orange-border); border-radius: 10px; padding: 10px 18px; margin-bottom: 1.5rem; display: none; }
+  .btn-group { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .btn-restart { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 11px 28px; border-radius: 10px; font-size: 15px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; }
+  .btn-restart:hover { background: var(--accent-dim); }
+  .link-missed { font-size: 14px; color: var(--orange); text-decoration: none; padding: 10px 24px; border: 1px solid var(--orange-border); border-radius: 10px; background: var(--orange-bg); display: none; }
+  .link-home { font-size: 14px; color: var(--muted); text-decoration: none; margin-top: 0.25rem; }
+  .link-home:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <a href="../index.html" class="back-link">← Back</a>
+    <span class="header-title">Lecture 3</span>
+    <span class="header-badge">ML Project Workflow</span>
+  </div>
+  <div class="score-display" id="scoreWrap" style="display:none">Score: <span id="scoreDisplay">0 / 0</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" id="tabNotes" onclick="showTab('notes')">📋 Notes</button>
+  <button class="tab-btn" id="tabQuiz" onclick="showTab('quiz')">⚡ Practice Questions</button>
+</div>
+
+<!-- NOTES PANE -->
+<div class="pane active" id="paneNotes">
+  <div class="notes-section">
+    <p class="notes-intro">Key concepts from Lecture 3. Review before running through the practice questions. Tap each section to expand.</p>
+
+    <div class="note-block open" id="nb1">
+      <div class="note-header" onclick="toggleNote('nb1')">
+        <div class="note-header-left"><div class="note-icon">🗺️</div><span class="note-title">The 8-Step ML Project Workflow</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>1. Look at the big picture</strong> — frame the problem, define the objective, choose a performance measure.</li>
+          <li><strong>2. Get the data</strong> — collect and load your dataset.</li>
+          <li><strong>3. Discover and visualize the data</strong> — explore distributions, correlations, and patterns.</li>
+          <li><strong>4. Prepare the data</strong> — clean, impute missing values, scale features, encode categories.</li>
+          <li><strong>5. Select and train a model</strong> — try several algorithms, evaluate with cross-validation.</li>
+          <li><strong>6. Fine-tune the model</strong> — tune hyperparameters (Grid Search, Random Search).</li>
+          <li><strong>7. Present the solution</strong> — communicate results clearly.</li>
+          <li><strong>8. Launch, monitor, and maintain</strong> — deploy and watch for model degradation.</li>
+        </ul>
+        <div class="tag-row"><span class="tag important">High priority</span><span class="tag">Know the order</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb2">
+      <div class="note-header" onclick="toggleNote('nb2')">
+        <div class="note-header-left"><div class="note-icon">🏠</div><span class="note-title">Framing the Problem (Real Estate Example)</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li>The running example is predicting <strong>median housing price</strong> by district to decide whether to invest.</li>
+          <li>Three framing questions to always ask: Is it supervised, unsupervised, or RL? Is it classification or regression? Batch or online learning?</li>
+          <li>This is a <strong>supervised regression</strong> problem — labeled data (known prices), continuous output.</li>
+          <li><strong>Data snooping bias:</strong> never look at the test set before training. If you explore it, your intuitions get biased by it.</li>
+        </ul>
+        <div class="tag-row"><span class="tag important">Data snooping — likely tested</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb3">
+      <div class="note-header" onclick="toggleNote('nb3')">
+        <div class="note-header-left"><div class="note-icon">📏</div><span class="note-title">Performance Measures — RMSE and MAE</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>RMSE</strong> (Root Mean Square Error) — the typical performance measure for regression. Uses the Euclidean (ℓ₂) norm. More sensitive to outliers because errors are squared.</li>
+          <li><strong>MAE</strong> (Mean Absolute Error, also called average absolute deviation) — uses the Manhattan (ℓ₁) norm. Preferred when there are many outliers.</li>
+          <li>The higher the norm index, the more it focuses on large errors and neglects small ones.</li>
+          <li>When outliers are exponentially rare (bell-shaped distribution), RMSE performs well and is generally preferred.</li>
+        </ul>
+        <div class="equation-label">RMSE equation (Euclidean / ℓ₂ norm)</div>
+        <div class="equation-box">RMSE(X, h) = √( (1/m) Σᵢ₌₁ᵐ (h(x⁽ⁱ⁾) − y⁽ⁱ⁾)² )</div>
+        <div class="equation-label">MAE equation (Manhattan / ℓ₁ norm)</div>
+        <div class="equation-box">MAE(X, h) = (1/m) Σᵢ₌₁ᵐ |h(x⁽ⁱ⁾) − y⁽ⁱ⁾|</div>
+        <p class="equation-note">m = number of instances. h = hypothesis/prediction function. x⁽ⁱ⁾ = feature vector of instance i. y⁽ⁱ⁾ = true label of instance i. ŷ⁽ⁱ⁾ = h(x⁽ⁱ⁾) = predicted value.</p>
+        <div class="tag-row"><span class="tag important">Equations — know both</span><span class="tag">Know when to use each</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb4">
+      <div class="note-header" onclick="toggleNote('nb4')">
+        <div class="note-header-left"><div class="note-icon">🔧</div><span class="note-title">Data Preparation</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Handling missing values:</strong> drop the attribute, drop the rows, or impute (fill with median/mean/zero). SimpleImputer in sklearn handles this.</li>
+          <li><strong>Feature scaling</strong> is one of the most important transformations — ML algorithms struggle when features have very different scales.</li>
+          <li><strong>Min-max scaling (normalization):</strong> rescales values to [0, 1] by subtracting min and dividing by (max − min). Sensitive to outliers.</li>
+          <li><strong>Standardization (z-score):</strong> subtracts the mean, divides by standard deviation. Result has zero mean and unit variance. Much less affected by outliers.</li>
+        </ul>
+        <div class="equation-label">Min-max scaling formula</div>
+        <div class="equation-box">x_scaled = (x − min) / (max − min)</div>
+        <div class="equation-label">Standardization (z-score) formula</div>
+        <div class="equation-box">x_standardized = (x − μ) / σ</div>
+        <p class="equation-note">μ = mean of the feature. σ = standard deviation. Standardization is preferred when outliers are present.</p>
+        <div class="tag-row"><span class="tag important">Equations — know both</span><span class="tag">Scaling vs. standardization</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb5">
+      <div class="note-header" onclick="toggleNote('nb5')">
+        <div class="note-header-left"><div class="note-icon">⚙️</div><span class="note-title">Model Selection &amp; Fine-Tuning</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Cross-validation:</strong> splits the training set into K folds; trains on K−1 folds and evaluates on the remaining fold, repeated K times. Gives a better estimate of model performance than a single validation split.</li>
+          <li><strong>Grid Search:</strong> tries all combinations of specified hyperparameter values. Exhaustive but slow.</li>
+          <li><strong>Random Search:</strong> samples hyperparameter combinations randomly. Better when the search space is large.</li>
+          <li>Fine-tuning should always be done on the <strong>training/validation set only</strong> — not the test set.</li>
+          <li>After all tuning is done, evaluate once on the <strong>test set</strong> for the final unbiased estimate.</li>
+        </ul>
+        <div class="tag-row"><span class="tag important">High priority</span><span class="tag">Cross-validation</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ PANE -->
+<div class="pane" id="paneQuiz">
+  <div class="quiz-section">
+    <div class="shuffle-bar">
+      <span class="shuffle-label">Shuffle:</span>
+      <button class="toggle-btn on" id="toggleQ" onclick="toggleShuffle('q')"><span class="toggle-dot"></span> Questions</button>
+      <button class="toggle-btn on" id="toggleA" onclick="toggleShuffle('a')"><span class="toggle-dot"></span> Answer choices</button>
+    </div>
+
+    <div class="q-counter" id="qCounter">Question 1 of 28</div>
+
+    <div class="question-card" id="questionCard">
+      <div class="missed-badge" id="missedBadge">⚠ Previously missed</div>
+      <div class="q-type-badge" id="qTypeBadge"></div>
+      <div class="q-hint" id="qHint">Select all that apply, then click Submit.</div>
+      <p class="q-text" id="qText"></p>
+      <div class="q-equation" id="qEquation"></div>
+      <div class="options" id="optionsDiv"></div>
+      <button class="btn-submit" id="btnSubmit" onclick="submitMulti()">Submit answer</button>
+      <div class="explanation" id="explanation"></div>
+      <div class="missed-notice" id="missedNotice">⚠ Added to your missed questions deck.</div>
+    </div>
+
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Next question →</button>
+
+    <div class="summary" id="summary">
+      <div class="summary-label">Final score</div>
+      <div class="summary-score" id="summaryScore"></div>
+      <div class="summary-label" id="summaryFrac"></div>
+      <p class="summary-msg" id="summaryMsg"></p>
+      <div class="summary-missed-box" id="summaryMissedBox"></div>
+      <div class="btn-group">
+        <button class="btn-restart" onclick="restart()">↺ Restart deck</button>
+        <a href="../missed.html" class="link-missed" id="linkMissed">Review missed questions →</a>
+        <a href="../index.html" class="link-home">← Back to all lectures</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── localStorage ──────────────────────────────────────────────────────────────
+const MISSED_KEY = 'ml_missed_questions';
+function getMissed() { try { return JSON.parse(localStorage.getItem(MISSED_KEY) || '{}'); } catch { return {}; } }
+function saveMissed(d) { localStorage.setItem(MISSED_KEY, JSON.stringify(d)); }
+function getMissedCount() { return Object.keys(getMissed()).length; }
+function recordMiss(q) {
+  const m = getMissed();
+  m[q.id] = { id: q.id, lecture: q.lecture, topic: q.topic };
+  saveMissed(m);
+  const s = JSON.parse(localStorage.getItem('ml_streak_data') || '{}');
+  s[q.id] = 0;
+  localStorage.setItem('ml_streak_data', JSON.stringify(s));
+}
+
+// ── Shuffle ───────────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function shuffleOpts(q) {
+  if (q.type === 'tf') return { opts: q.opts, ans: q.ans };
+  const idxs = shuffle(q.opts.map((_,i)=>i));
+  const map = {}; idxs.forEach((old,n) => { map[old]=n; });
+  return { opts: idxs.map(i=>q.opts[i]), ans: Array.isArray(q.ans) ? q.ans.map(i=>map[i]) : map[q.ans] };
+}
+
+// ── Questions ─────────────────────────────────────────────────────────────────
+const QUESTIONS = [
+  { id:"lec3_01", lecture:"Lecture 3", topic:"ML Workflow Steps", type:"mc", label:"Multiple Choice",
+    q:"What is the correct order of the first four steps in the end-to-end ML project workflow from your slides?",
+    opts:["Get data → Look at the big picture → Prepare data → Discover and visualize","Look at the big picture → Get the data → Discover and visualize → Prepare the data","Discover and visualize → Get data → Prepare data → Select a model","Prepare the data → Look at the big picture → Get the data → Train a model"],
+    ans:1, exp:"The 8 steps are: 1) Look at the big picture, 2) Get the data, 3) Discover and visualize, 4) Prepare the data, 5) Select and train a model, 6) Fine-tune, 7) Present solution, 8) Launch and maintain." },
+
+  { id:"lec3_02", lecture:"Lecture 3", topic:"ML Workflow Steps", type:"ms", label:"Multi-Select",
+    q:"Which of the following are part of the 8-step ML project workflow from your slides? Select all that apply.",
+    opts:["Look at the big picture","Delete all outliers from the dataset","Fine-tune your model","Discover and visualize the data","Deploy to a quantum computer","Launch, monitor, and maintain your system"],
+    ans:[0,2,3,5], exp:"The 8 steps include: look at the big picture, get the data, discover and visualize, prepare the data, select and train a model, fine-tune, present the solution, and launch/monitor/maintain. 'Delete all outliers' and 'deploy to a quantum computer' are not steps." },
+
+  { id:"lec3_03", lecture:"Lecture 3", topic:"ML Workflow Steps", type:"mc", label:"Multiple Choice",
+    q:"In the ML workflow, what is the purpose of step 6: 'Fine-tune your model'?",
+    opts:["Collect more training data to improve accuracy","Tune hyperparameters to get the best performance from your selected model","Re-train the model from scratch with a different algorithm","Evaluate the final model on the test set"],
+    ans:1, exp:"Fine-tuning (step 6) involves tuning hyperparameters — using techniques like Grid Search or Random Search — to squeeze the best performance out of your chosen model. The test set evaluation happens separately at the end." },
+
+  { id:"lec3_04", lecture:"Lecture 3", topic:"Framing the Problem", type:"mc", label:"Multiple Choice",
+    q:"The real estate example in your slides predicts median housing price by district. What type of ML problem is this?",
+    opts:["Unsupervised clustering problem","Supervised regression problem","Reinforcement learning problem","Supervised classification problem"],
+    ans:1, exp:"It's supervised (we have labeled data — known housing prices) and regression (we're predicting a continuous value — the median price). Classification would predict a category, not a number." },
+
+  { id:"lec3_05", lecture:"Lecture 3", topic:"Framing the Problem", type:"ms", label:"Multi-Select",
+    q:"When framing an ML problem at the start of a project, which questions should you ask? Select all that apply.",
+    opts:["Is it supervised, unsupervised, or reinforcement learning?","What GPU cluster should I use?","Is it a classification or regression task?","Should I use batch or online learning?","What color should the dashboard be?"],
+    ans:[0,2,3], exp:"The three key framing questions from your slides are: (1) supervised/unsupervised/RL, (2) classification/regression/other, and (3) batch/online learning. GPU and dashboard color are not part of problem framing." },
+
+  { id:"lec3_06", lecture:"Lecture 3", topic:"Framing the Problem", type:"tf", label:"True / False",
+    q:"True or False: Data snooping bias occurs when you look at the test set before training, causing your intuitions to be biased by the test data.",
+    opts:["True","False"],
+    ans:0, exp:"True. Data snooping bias is a real risk — if you explore the test set, you may unconsciously make decisions (feature choices, model choices) that are tailored to it, making your final evaluation overly optimistic." },
+
+  { id:"lec3_07", lecture:"Lecture 3", topic:"Performance Measures", type:"mc", label:"Multiple Choice",
+    q:"What is the typical performance measure used for regression problems?",
+    opts:["Mean Absolute Error (MAE)","Accuracy","Root Mean Square Error (RMSE)","F1 Score"],
+    ans:2, exp:"RMSE is the typical performance measure for regression tasks. It gives an idea of how much error the system typically makes, with higher weight for large errors." },
+
+  { id:"lec3_08", lecture:"Lecture 3", topic:"Performance Measures", type:"mc", label:"Multiple Choice",
+    q:"When would you prefer MAE over RMSE as your performance measure?",
+    opts:["When your dataset has no outliers","When you want to penalize large errors more heavily","When there are many outliers in your dataset","When you are solving a classification problem"],
+    ans:2, exp:"MAE is preferred when there are many outliers. Because MAE uses absolute differences (not squared), it is less sensitive to large individual errors than RMSE." },
+
+  { id:"lec3_09", lecture:"Lecture 3", topic:"Performance Measures", type:"eq", label:"Equation",
+    q:"Which of the following is the correct formula for RMSE?",
+    opts:[
+      "RMSE(X,h) = √( (1/m) Σ (h(x⁽ⁱ⁾) − y⁽ⁱ⁾)² )",
+      "RMSE(X,h) = (1/m) Σ |h(x⁽ⁱ⁾) − y⁽ⁱ⁾|",
+      "RMSE(X,h) = (1/m) Σ (h(x⁽ⁱ⁾) − y⁽ⁱ⁾)²",
+      "RMSE(X,h) = Σ (h(x⁽ⁱ⁾) − y⁽ⁱ⁾)² / (m−1)"
+    ],
+    ans:0, exp:"RMSE is the square root of the average of squared errors. Option B is MAE (no square, no root). Option C is MSE (no square root). Option D is close to variance, not RMSE." },
+
+  { id:"lec3_10", lecture:"Lecture 3", topic:"Performance Measures", type:"eq", label:"Equation",
+    q:"Given this equation, what does it represent?",
+    equation:"(1/m) Σᵢ₌₁ᵐ |h(x⁽ⁱ⁾) − y⁽ⁱ⁾|",
+    opts:["Root Mean Square Error (RMSE)","Mean Absolute Error (MAE)","Mean Squared Error (MSE)","Cross-entropy loss"],
+    ans:1, exp:"This is the MAE formula — it averages the absolute differences between predictions and true values. It uses the Manhattan (ℓ₁) norm, unlike RMSE which uses the Euclidean (ℓ₂) norm." },
+
+  { id:"lec3_11", lecture:"Lecture 3", topic:"Performance Measures", type:"mc", label:"Multiple Choice",
+    q:"RMSE corresponds to the Euclidean norm and MAE corresponds to the Manhattan norm. What does this mean about their sensitivity to outliers?",
+    opts:["MAE is more sensitive to outliers than RMSE","RMSE is more sensitive to outliers than MAE because errors are squared","They are equally sensitive to outliers","Neither is sensitive to outliers"],
+    ans:1, exp:"RMSE squares the errors before averaging, which gives disproportionately high weight to large errors (outliers). MAE simply takes the absolute value, treating all errors more equally." },
+
+  { id:"lec3_12", lecture:"Lecture 3", topic:"Performance Measures", type:"ms", label:"Multi-Select",
+    q:"In the RMSE formula, what do the variables represent? Select all that apply.",
+    opts:["m = number of instances in the dataset","m = number of features","h(x⁽ⁱ⁾) = the predicted value for instance i","y⁽ⁱ⁾ = the predicted value for instance i","y⁽ⁱ⁾ = the true label for instance i"],
+    ans:[0,2,4], exp:"m is the number of instances. h(x⁽ⁱ⁾) is the model's prediction (hypothesis) for instance i. y⁽ⁱ⁾ is the true label. The error for each instance is h(x⁽ⁱ⁾) − y⁽ⁱ⁾." },
+
+  { id:"lec3_13", lecture:"Lecture 3", topic:"Data Preparation", type:"mc", label:"Multiple Choice",
+    q:"What is the purpose of feature scaling?",
+    opts:["To remove outliers from the dataset","To ensure all features have the same scale so ML algorithms perform well","To convert categorical features into numbers","To reduce the number of features in the dataset"],
+    ans:1, exp:"Feature scaling ensures all attributes have the same scale. ML algorithms can struggle when features have very different ranges — e.g. one feature ranging 0–1 and another ranging 0–100,000." },
+
+  { id:"lec3_14", lecture:"Lecture 3", topic:"Data Preparation", type:"mc", label:"Multiple Choice",
+    q:"What does min-max scaling (normalization) do to your data?",
+    opts:["Subtracts the mean and divides by the standard deviation","Shifts and rescales values to range from 0 to 1","Converts all values to z-scores","Removes values outside the interquartile range"],
+    ans:1, exp:"Min-max scaling rescales values to [0, 1] by subtracting the minimum and dividing by (max − min). It is the simplest form of feature scaling." },
+
+  { id:"lec3_15", lecture:"Lecture 3", topic:"Data Preparation", type:"eq", label:"Equation",
+    q:"Which of the following is the correct formula for min-max scaling (normalization)?",
+    opts:[
+      "x_scaled = (x − μ) / σ",
+      "x_scaled = (x − min) / (max − min)",
+      "x_scaled = x / max",
+      "x_scaled = (x − min) / (max + min)"
+    ],
+    ans:1, exp:"Min-max scaling subtracts the minimum and divides by the range (max − min), producing values between 0 and 1. Option A is the standardization (z-score) formula." },
+
+  { id:"lec3_16", lecture:"Lecture 3", topic:"Data Preparation", type:"eq", label:"Equation",
+    q:"Given this formula, what scaling method does it describe?",
+    equation:"x_new = (x − μ) / σ",
+    opts:["Min-max scaling (normalization)","Standardization (z-score normalization)","Log transformation","L2 normalization"],
+    ans:1, exp:"This is standardization (z-score): subtracting the mean (μ) and dividing by the standard deviation (σ). The result has zero mean and unit variance." },
+
+  { id:"lec3_17", lecture:"Lecture 3", topic:"Data Preparation", type:"ms", label:"Multi-Select",
+    q:"Which of the following are true about standardization (z-score scaling)? Select all that apply.",
+    opts:["It subtracts the mean from each value","It produces values that always range from 0 to 1","It divides by the standard deviation","It is much less affected by outliers than min-max scaling","It always produces values between −1 and 1"],
+    ans:[0,2,3], exp:"Standardization subtracts the mean (A) and divides by the standard deviation (C), and is less affected by outliers (D). It does NOT constrain values to [0,1] (B false) — values can range widely. And standardized values are NOT always in [−1, 1] (E false)." },
+
+  { id:"lec3_18", lecture:"Lecture 3", topic:"Data Preparation", type:"mc", label:"Multiple Choice",
+    q:"A dataset has a data entry error where one district has a median income of 100 (the real range is 0–15). Which scaling method handles this outlier better?",
+    opts:["Min-max scaling, because it always produces values in [0, 1]","Standardization, because it is much less affected by outliers","They are equally affected by outliers","Neither handles outliers well"],
+    ans:1, exp:"Min-max scaling would crush all valid values from 0–15 down to 0–0.15 because the outlier (100) becomes the new max. Standardization would barely be affected because it uses mean and standard deviation, which are more robust." },
+
+  { id:"lec3_19", lecture:"Lecture 3", topic:"Data Preparation", type:"tf", label:"True / False",
+    q:"True or False: Feature scaling should be applied to the entire dataset (training + test set) before splitting.",
+    opts:["True","False"],
+    ans:1, exp:"False. You should fit the scaler on the training set only, then apply it to the test set. Fitting on the full dataset would cause data leakage — the scaler would have information from the test set." },
+
+  { id:"lec3_20", lecture:"Lecture 3", topic:"Data Preparation", type:"ms", label:"Multi-Select",
+    q:"Which of the following are valid strategies for handling missing values in a dataset? Select all that apply.",
+    opts:["Drop the rows with missing values","Drop the entire attribute (column)","Fill in missing values with the median","Fill in missing values with the mean or zero","Always leave missing values as-is — most algorithms handle them automatically"],
+    ans:[0,1,2,3], exp:"Valid strategies include: dropping rows, dropping the attribute, or imputing (filling) with a representative value like the median or mean. Most sklearn algorithms do NOT handle missing values automatically — you must deal with them first." },
+
+  { id:"lec3_21", lecture:"Lecture 3", topic:"Model Selection", type:"mc", label:"Multiple Choice",
+    q:"What is K-fold cross-validation?",
+    opts:["Training K different models and picking the best one","Splitting the training set into K folds, training on K−1 and evaluating on the remaining fold, repeated K times","Splitting the data into exactly 3 parts: train, validation, and test","Randomly sampling K instances to use as a test set"],
+    ans:1, exp:"K-fold cross-validation splits the training set into K folds. Each fold takes a turn as the validation set while the model trains on the remaining K−1 folds. This gives K performance estimates that are averaged." },
+
+  { id:"lec3_22", lecture:"Lecture 3", topic:"Model Selection", type:"tf", label:"True / False",
+    q:"True or False: Cross-validation should be done using the test set to get the most accurate estimate of model performance.",
+    opts:["True","False"],
+    ans:1, exp:"False. Cross-validation is done on the training set only. The test set is never used until the very end. Using the test set for cross-validation would cause data leakage and give an overoptimistic performance estimate." },
+
+  { id:"lec3_23", lecture:"Lecture 3", topic:"Model Selection", type:"mc", label:"Multiple Choice",
+    q:"What is the difference between Grid Search and Random Search for hyperparameter tuning?",
+    opts:["Grid Search is faster; Random Search tries all combinations","Grid Search tries all specified combinations; Random Search samples combinations randomly","Random Search always finds better hyperparameters than Grid Search","They are the same method with different names"],
+    ans:1, exp:"Grid Search exhaustively tries all combinations of specified hyperparameter values. Random Search samples combinations randomly, which is more efficient when the search space is large because not all hyperparameters are equally important." },
+
+  { id:"lec3_24", lecture:"Lecture 3", topic:"Model Selection", type:"ms", label:"Multi-Select",
+    q:"Which of the following are true about the fine-tuning step of the ML workflow? Select all that apply.",
+    opts:["Hyperparameter tuning should be done on the training/validation set","You should evaluate hyperparameter choices on the test set repeatedly","Grid Search tries all combinations of specified hyperparameter values","Random Search is better when the hyperparameter search space is large","After tuning, evaluate the final model once on the test set"],
+    ans:[0,2,3,4], exp:"Fine-tuning happens on training/validation data (A). Grid Search is exhaustive (C). Random Search is efficient for large spaces (D). The test set is used only once at the very end (E). Evaluating hyperparameters on the test set repeatedly (B) causes overfitting to the test set." },
+
+  { id:"lec3_25", lecture:"Lecture 3", topic:"Performance Measures", type:"tf", label:"True / False",
+    q:"True or False: The ℓ₂ norm used in RMSE focuses more on large errors than the ℓ₁ norm used in MAE.",
+    opts:["True","False"],
+    ans:0, exp:"True. The higher the norm index, the more it focuses on large values and neglects small ones. The ℓ₂ norm (used in RMSE) squares the errors, giving disproportionately high weight to large errors. The ℓ₁ norm (used in MAE) treats all errors more equally." },
+
+  { id:"lec3_26", lecture:"Lecture 3", topic:"ML Workflow Steps", type:"mc", label:"Multiple Choice",
+    q:"Why is step 8 (Launch, monitor, and maintain) necessary even after a model is deployed?",
+    opts:["To retrain the model on new data every hour","Models can degrade over time as real-world data patterns change","To satisfy legal requirements for ML systems","To convert the model from batch to online learning"],
+    ans:1, exp:"Models can degrade over time — this is called model drift. As the real-world data distribution changes, a model trained on old data may become less accurate. Monitoring lets you detect this and retrain or update the model when needed." },
+
+  { id:"lec3_27", lecture:"Lecture 3", topic:"Data Preparation", type:"mc", label:"Multiple Choice",
+    q:"In your slides, the notation convention uses lowercase bold for vectors and uppercase bold for matrices. What does X (uppercase bold) represent in the RMSE formula?",
+    opts:["A single feature value","A vector of all feature values for one instance","A matrix containing all feature values for all instances in the dataset","The set of all labels in the dataset"],
+    ans:2, exp:"X (uppercase bold) is a matrix — one row per instance, where each row is the transpose of x⁽ⁱ⁾ (the feature vector for that instance). This follows the convention that uppercase bold = matrix, lowercase bold = vector." },
+
+  { id:"lec3_28", lecture:"Lecture 3", topic:"ML Workflow Steps", type:"ms", label:"Multi-Select",
+    q:"Which of the following activities belong to step 4 (Prepare the data) of the ML workflow? Select all that apply.",
+    opts:["Handling missing values","Selecting the best algorithm","Feature scaling","Encoding categorical variables","Evaluating model performance on the test set"],
+    ans:[0,2,3], exp:"Data preparation (step 4) includes handling missing values (imputation), feature scaling (normalization/standardization), and encoding categorical variables. Algorithm selection is step 5, and test set evaluation happens at the very end of the workflow." }
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const LETTERS = ['A','B','C','D','E','F'];
+let deck = [], idx = 0, score = 0, answered = 0;
+let shuffleQ = true, shuffleA = true;
+let selectedMulti = new Set();
+let currentAns = null;
+
+function showTab(tab) {
+  document.getElementById('paneNotes').classList.toggle('active', tab === 'notes');
+  document.getElementById('paneQuiz').classList.toggle('active', tab === 'quiz');
+  document.getElementById('tabNotes').classList.toggle('active', tab === 'notes');
+  document.getElementById('tabQuiz').classList.toggle('active', tab === 'quiz');
+  document.getElementById('scoreWrap').style.display = tab === 'quiz' ? 'block' : 'none';
+}
+
+function toggleNote(id) { document.getElementById(id).classList.toggle('open'); }
+
+function toggleShuffle(which) {
+  if (which === 'q') { shuffleQ = !shuffleQ; document.getElementById('toggleQ').classList.toggle('on', shuffleQ); }
+  else               { shuffleA = !shuffleA; document.getElementById('toggleA').classList.toggle('on', shuffleA); }
+}
+
+function buildDeck() { deck = shuffleQ ? shuffle([...QUESTIONS]) : [...QUESTIONS]; }
+
+function renderQ() {
+  const q = deck[idx];
+  selectedMulti = new Set();
+  document.getElementById('missedBadge').classList.toggle('show', !!getMissed()[q.id]);
+  document.getElementById('missedNotice').classList.remove('show');
+  document.getElementById('qTypeBadge').textContent = q.label;
+  document.getElementById('qHint').style.display = q.type === 'ms' ? 'block' : 'none';
+  document.getElementById('qText').textContent = q.q;
+  const eqEl = document.getElementById('qEquation');
+  if (q.equation) { eqEl.textContent = q.equation; eqEl.style.display = 'block'; }
+  else             { eqEl.style.display = 'none'; }
+  document.getElementById('explanation').classList.remove('show');
+  document.getElementById('explanation').textContent = '';
+  document.getElementById('btnNext').classList.remove('show');
+  document.getElementById('btnSubmit').classList.remove('show');
+
+  const { opts, ans } = shuffleA ? shuffleOpts(q) : { opts: q.opts, ans: q.ans };
+  currentAns = ans;
+
+  const div = document.getElementById('optionsDiv');
+  div.innerHTML = '';
+  opts.forEach((o, i) => {
+    const el = document.createElement('div');
+    el.className = 'opt';
+    const ind = document.createElement('span'); ind.className = 'opt-indicator'; ind.textContent = q.type === 'ms' ? '☐' : LETTERS[i];
+    const txt = document.createElement('span'); txt.className = 'opt-text'; txt.textContent = o;
+    el.appendChild(ind); el.appendChild(txt);
+    if (q.type === 'ms') {
+      el.onclick = () => {
+        if (el.classList.contains('disabled')) return;
+        if (selectedMulti.has(i)) { selectedMulti.delete(i); el.classList.remove('selected'); ind.textContent = '☐'; }
+        else                      { selectedMulti.add(i);    el.classList.add('selected');    ind.textContent = '☑'; }
+        document.getElementById('btnSubmit').classList.toggle('show', selectedMulti.size > 0);
+      };
+    } else { el.onclick = () => resolveSingle(i); }
+    div.appendChild(el);
+  });
+
+  document.getElementById('qCounter').textContent = 'Question ' + (idx + 1) + ' of ' + deck.length;
+  document.getElementById('progressFill').style.width = Math.round((idx / deck.length) * 100) + '%';
+  document.getElementById('scoreDisplay').textContent = score + ' / ' + answered;
+}
+
+function resolveSingle(chosen) {
+  const correct = chosen === currentAns;
+  const opts = document.getElementById('optionsDiv').children;
+  for (let i = 0; i < opts.length; i++) {
+    opts[i].classList.add('disabled'); opts[i].onclick = null;
+    const ind = opts[i].querySelector('.opt-indicator');
+    if (i === currentAns) { opts[i].classList.add(correct && i === chosen ? 'correct' : 'reveal-correct'); ind.textContent = '✓'; }
+    else if (i === chosen) { opts[i].classList.add('wrong'); ind.textContent = '✗'; }
+  }
+  finalize(correct);
+}
+
+function submitMulti() {
+  const correctSet = new Set(Array.isArray(currentAns) ? currentAns : [currentAns]);
+  const correct = selectedMulti.size === correctSet.size && [...selectedMulti].every(i => correctSet.has(i));
+  const opts = document.getElementById('optionsDiv').children;
+  for (let i = 0; i < opts.length; i++) {
+    opts[i].classList.add('disabled'); opts[i].onclick = null;
+    const ind = opts[i].querySelector('.opt-indicator');
+    if (correctSet.has(i) && selectedMulti.has(i))       { opts[i].classList.add('correct');        ind.textContent = '✓'; }
+    else if (!correctSet.has(i) && selectedMulti.has(i)) { opts[i].classList.add('wrong');          ind.textContent = '✗'; }
+    else if (correctSet.has(i) && !selectedMulti.has(i)) { opts[i].classList.add('reveal-correct'); ind.textContent = '✓'; }
+  }
+  document.getElementById('btnSubmit').classList.remove('show');
+  finalize(correct);
+}
+
+function finalize(correct) {
+  if (correct) { score++; }
+  else { recordMiss(deck[idx]); document.getElementById('missedNotice').classList.add('show'); }
+  answered++;
+  document.getElementById('scoreDisplay').textContent = score + ' / ' + answered;
+  const exp = document.getElementById('explanation');
+  exp.textContent = (correct ? '✓ Correct. ' : '✗ Incorrect. ') + deck[idx].exp;
+  exp.classList.add('show');
+  document.getElementById('btnNext').classList.add('show');
+}
+
+function nextQ() { idx++; if (idx >= deck.length) showSummary(); else renderQ(); }
+
+function showSummary() {
+  document.getElementById('questionCard').style.display = 'none';
+  document.getElementById('btnNext').style.display = 'none';
+  document.getElementById('qCounter').style.display = 'none';
+  document.getElementById('progressFill').style.width = '100%';
+  const pct = Math.round((score / deck.length) * 100);
+  document.getElementById('summaryScore').textContent = pct + '%';
+  document.getElementById('summaryFrac').textContent = score + ' out of ' + deck.length + ' correct';
+  document.getElementById('summaryMsg').textContent =
+    pct >= 85 ? 'Excellent — you have this lecture locked in.' :
+    pct >= 65 ? 'Solid effort. Review the ones you missed, then try again.' :
+    'Keep at it — go back through the notes tab and restart the deck.';
+  const mc = getMissedCount();
+  if (mc > 0) {
+    document.getElementById('summaryMissedBox').style.display = 'block';
+    document.getElementById('summaryMissedBox').textContent = mc + ' question' + (mc !== 1 ? 's' : '') + ' in your missed deck across all lectures.';
+    document.getElementById('linkMissed').style.display = 'inline-block';
+  }
+  document.getElementById('summary').classList.add('show');
+}
+
+function restart() {
+  idx = 0; score = 0; answered = 0;
+  buildDeck();
+  document.getElementById('questionCard').style.display = 'block';
+  document.getElementById('btnNext').classList.remove('show');
+  document.getElementById('qCounter').style.display = 'block';
+  document.getElementById('summary').classList.remove('show');
+  renderQ();
+}
+
+buildDeck();
+renderQ();
+</script>
+</body>
+</html>

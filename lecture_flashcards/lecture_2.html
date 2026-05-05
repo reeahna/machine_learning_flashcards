@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture 2 — Intro to ML</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f4f0; --surface: #ffffff; --surface2: #f0eeea; --border: #e2dfd8;
+    --text: #1a1916; --muted: #8a8680; --accent: #5046e4;
+    --accent-dim: rgba(80,70,228,0.08); --accent-border: rgba(80,70,228,0.2);
+    --green: #16a05a; --green-bg: #edf7f2; --green-border: #b6e4cf;
+    --red: #d63a3a; --red-bg: #fdf0f0; --red-border: #f5c0c0;
+    --reveal-bg: #f7f6f2; --yellow-bg: #fffbea; --yellow-border: #f5e49a;
+    --orange: #d97706; --orange-bg: #fff7ed; --orange-border: #fed7aa;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+  header { padding: 1.25rem 2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); gap: 1rem; flex-wrap: wrap; }
+  .header-left { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .back-link { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+  .back-link:hover { color: var(--text); }
+  .header-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text); }
+  .header-badge { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: var(--accent-dim); border: 1px solid var(--accent-border); padding: 3px 10px; border-radius: 99px; }
+  .score-display { font-size: 14px; color: var(--muted); white-space: nowrap; }
+  .score-display span { color: var(--text); font-weight: 600; }
+  .progress-wrap { height: 3px; background: var(--border); }
+  .progress-fill { height: 3px; background: var(--accent); transition: width 0.4s ease; width: 0%; }
+
+  .tab-nav { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 2rem; }
+  .tab-btn { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 12px 18px; border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); cursor: pointer; transition: color 0.15s, border-color 0.15s; margin-bottom: -1px; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .pane { display: none; }
+  .pane.active { display: block; }
+
+  /* NOTES */
+  .notes-section { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; width: 100%; }
+  .notes-intro { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; }
+  .note-block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .note-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; user-select: none; transition: background 0.12s; }
+  .note-header:hover { background: var(--surface2); }
+  .note-header-left { display: flex; align-items: center; gap: 10px; }
+  .note-icon { width: 28px; height: 28px; border-radius: 6px; background: var(--accent-dim); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .note-title { font-size: 14px; font-weight: 500; color: var(--text); }
+  .note-chevron { font-size: 12px; color: var(--muted); transition: transform 0.2s; }
+  .note-block.open .note-chevron { transform: rotate(180deg); }
+  .note-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .note-block.open .note-body { display: block; }
+  .note-body ul { margin-top: 0.75rem; padding-left: 1.25rem; }
+  .note-body li { font-size: 14px; color: var(--text); line-height: 1.75; margin-bottom: 4px; }
+  .note-body li strong { font-weight: 600; }
+  .equation-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; font-family: 'DM Sans', sans-serif; margin-top: 1rem; }
+  .equation-box { background: var(--yellow-bg); border: 1px solid var(--yellow-border); border-radius: 8px; padding: 12px 16px; font-size: 15px; font-family: 'Georgia', serif; color: var(--text); text-align: center; }
+  .equation-note { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.75rem; }
+  .tag { font-size: 11px; padding: 2px 9px; border-radius: 99px; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .tag.important { background: var(--accent-dim); color: var(--accent); border-color: var(--accent-border); }
+
+  /* QUIZ */
+  .quiz-section { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .shuffle-bar { align-self: stretch; display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .shuffle-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .toggle-btn { display: flex; align-items: center; gap: 7px; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500; padding: 5px 12px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; transition: all 0.15s; user-select: none; }
+  .toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toggle-btn.on { background: var(--accent-dim); border-color: var(--accent-border); color: var(--accent); }
+  .toggle-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.15s; flex-shrink: 0; }
+  .toggle-btn.on .toggle-dot { background: var(--accent); }
+
+  .q-counter { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; align-self: flex-start; }
+  .question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; margin-bottom: 1.25rem; }
+  .missed-badge { display: none; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--orange); background: var(--orange-bg); border: 1px solid var(--orange-border); padding: 3px 10px; border-radius: 99px; margin-bottom: 0.75rem; }
+  .missed-badge.show { display: inline-block; }
+  .q-type-badge { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+  .q-hint { font-size: 12px; color: var(--accent); margin-bottom: 1rem; font-style: italic; display: none; }
+  .q-text { font-family: 'DM Serif Display', serif; font-size: 20px; line-height: 1.5; color: var(--text); margin-bottom: 1.75rem; }
+  .q-equation { font-family: 'Georgia', serif; font-size: 17px; background: var(--yellow-bg); border: 1px solid var(--yellow-border); border-radius: 8px; padding: 10px 16px; margin-bottom: 1.5rem; text-align: center; display: none; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { display: flex; align-items: flex-start; gap: 14px; padding: 13px 16px; border-radius: 10px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.15s, background 0.15s; background: var(--surface); }
+  .opt:hover:not(.disabled) { border-color: var(--accent); background: var(--accent-dim); }
+  .opt-indicator { width: 22px; height: 22px; border-radius: 5px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; font-size: 12px; font-weight: 600; color: var(--muted); transition: all 0.15s; }
+  .opt.selected .opt-indicator { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .opt-text { font-size: 15px; color: var(--text); line-height: 1.5; }
+  .opt.correct { border-color: var(--green-border); background: var(--green-bg); }
+  .opt.correct .opt-indicator { background: var(--green); color: #fff; border-color: var(--green); }
+  .opt.wrong { border-color: var(--red-border); background: var(--red-bg); }
+  .opt.wrong .opt-indicator { background: var(--red); color: #fff; border-color: var(--red); }
+  .opt.reveal-correct { border-color: var(--green-border); background: var(--green-bg); }
+  .opt.reveal-correct .opt-indicator { background: var(--green); color: #fff; border-color: var(--green); }
+  .opt.disabled { cursor: default; }
+
+  .btn-submit { display: none; margin-top: 1rem; background: var(--accent); color: #fff; border: none; padding: 10px 24px; border-radius: 10px; font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; }
+  .btn-submit:hover { opacity: 0.88; }
+  .btn-submit.show { display: block; }
+
+  .explanation { display: none; margin-top: 1.25rem; padding: 14px 16px; border-radius: 10px; background: var(--reveal-bg); border-left: 3px solid var(--accent); font-size: 14px; color: var(--muted); line-height: 1.7; }
+  .explanation.show { display: block; }
+  .missed-notice { display: none; margin-top: 10px; padding: 10px 14px; border-radius: 8px; background: var(--orange-bg); border: 1px solid var(--orange-border); font-size: 13px; color: var(--orange); font-weight: 500; }
+  .missed-notice.show { display: block; }
+
+  .btn-next { display: none; margin-top: 1.5rem; align-self: flex-end; background: var(--accent); color: #fff; border: none; padding: 11px 28px; border-radius: 10px; font-size: 15px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; }
+  .btn-next:hover { opacity: 0.88; }
+  .btn-next.show { display: block; }
+
+  .summary { display: none; flex-direction: column; align-items: center; text-align: center; padding: 3rem 2rem; width: 100%; }
+  .summary.show { display: flex; }
+  .summary-score { font-family: 'DM Serif Display', serif; font-size: 72px; color: var(--accent); line-height: 1; margin-bottom: 0.5rem; }
+  .summary-label { font-size: 14px; color: var(--muted); margin-bottom: 0.25rem; }
+  .summary-msg { font-size: 17px; color: var(--text); margin: 1.25rem 0 1.5rem; line-height: 1.6; max-width: 400px; }
+  .summary-missed-box { font-size: 14px; color: var(--orange); background: var(--orange-bg); border: 1px solid var(--orange-border); border-radius: 10px; padding: 10px 18px; margin-bottom: 1.5rem; display: none; }
+  .btn-group { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .btn-restart { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 11px 28px; border-radius: 10px; font-size: 15px; font-family: 'DM Sans', sans-serif; font-weight: 500; cursor: pointer; }
+  .btn-restart:hover { background: var(--accent-dim); }
+  .link-missed { font-size: 14px; color: var(--orange); text-decoration: none; padding: 10px 24px; border: 1px solid var(--orange-border); border-radius: 10px; background: var(--orange-bg); display: none; }
+  .link-home { font-size: 14px; color: var(--muted); text-decoration: none; margin-top: 0.25rem; }
+  .link-home:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <a href="../index.html" class="back-link">← Back</a>
+    <span class="header-title">Lecture 2</span>
+    <span class="header-badge">Intro to ML</span>
+  </div>
+  <div class="score-display" id="scoreWrap" style="display:none">Score: <span id="scoreDisplay">0 / 0</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" id="tabNotes" onclick="showTab('notes')">📋 Notes</button>
+  <button class="tab-btn" id="tabQuiz" onclick="showTab('quiz')">⚡ Practice Questions</button>
+</div>
+
+<!-- NOTES PANE -->
+<div class="pane active" id="paneNotes">
+  <div class="notes-section">
+    <p class="notes-intro">Key concepts from Lecture 2. Review before running through the practice questions. Tap each section to expand.</p>
+
+    <div class="note-block open" id="nb1">
+      <div class="note-header" onclick="toggleNote('nb1')">
+        <div class="note-header-left"><div class="note-icon">🧠</div><span class="note-title">Types of Machine Learning</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Supervised:</strong> Training data has labels. Algorithms: Linear Regression, Logistic Regression, SVMs, k-NN, Decision Trees, Random Forests.</li>
+          <li><strong>Unsupervised:</strong> No labels — finds structure on its own. Algorithms: K-Means, PCA, t-SNE, anomaly detection (Isolation Forest, One-class SVM).</li>
+          <li><strong>Semisupervised:</strong> Lots of unlabeled + a small number of labeled examples.</li>
+          <li><strong>Reinforcement Learning:</strong> Agent takes actions, gets rewards/penalties, learns a <em>policy</em> — the strategy for what action to take in each situation.</li>
+        </ul>
+        <div class="tag-row"><span class="tag important">High priority</span><span class="tag">Likely on exam</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb2">
+      <div class="note-header" onclick="toggleNote('nb2')">
+        <div class="note-header-left"><div class="note-icon">⚙️</div><span class="note-title">Batch vs. Online Learning</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Batch:</strong> Trains on ALL data at once. Cannot update incrementally. New data requires full retrain from scratch.</li>
+          <li><strong>Online:</strong> Trains incrementally on instances individually or in minibatches. Learns on the fly as new data arrives.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb3">
+      <div class="note-header" onclick="toggleNote('nb3')">
+        <div class="note-header-left"><div class="note-icon">📐</div><span class="note-title">Instance-Based vs. Model-Based + Key Equation</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Instance-based:</strong> Memorizes examples. Generalizes by comparing new cases using a similarity measure. Classic example: k-NN.</li>
+          <li><strong>Model-based:</strong> Builds a model with learned parameters and uses it to predict.</li>
+        </ul>
+        <div class="equation-label">Key equation from slides</div>
+        <div class="equation-box">life_satisfaction = θ₀ + θ₁ × GDP_per_capita</div>
+        <p class="equation-note">θ₀ = bias/intercept. θ₁ = weight on the feature. General pattern: ŷ = θ₀ + θ₁x₁ + ... + θₙxₙ.</p>
+        <div class="tag-row"><span class="tag important">Equation — know this</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb4">
+      <div class="note-header" onclick="toggleNote('nb4')">
+        <div class="note-header-left"><div class="note-icon">⚠️</div><span class="note-title">Main Challenges of ML</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Insufficient data:</strong> Quantity often matters more than algorithm choice (Banko &amp; Brill, 2001).</li>
+          <li><strong>Sampling bias:</strong> Nonrepresentative training data → poor generalization.</li>
+          <li><strong>Poor quality data:</strong> Outliers and missing values hurt performance.</li>
+          <li><strong>Irrelevant features ("garbage in, garbage out"):</strong> Feature engineering is critical.</li>
+          <li><strong>Overfitting:</strong> Great on training data, poor on new data. Model too complex. Fix: regularization.</li>
+          <li><strong>Underfitting:</strong> Poor even on training data. Model too simple. Fix: more complex model.</li>
+        </ul>
+        <div class="tag-row"><span class="tag important">High priority</span></div>
+      </div>
+    </div>
+
+    <div class="note-block" id="nb5">
+      <div class="note-header" onclick="toggleNote('nb5')">
+        <div class="note-header-left"><div class="note-icon">🧪</div><span class="note-title">Testing, Validation &amp; Hyperparameter Tuning</span></div>
+        <span class="note-chevron">▼</span>
+      </div>
+      <div class="note-body">
+        <ul>
+          <li><strong>Generalization error:</strong> Error on new, unseen cases. What matters in the real world.</li>
+          <li><strong>Training set:</strong> Learn parameters from this.</li>
+          <li><strong>Validation set:</strong> Tune and compare models during development.</li>
+          <li><strong>Test set:</strong> Touched ONLY ONCE at the very end. Never use for tuning — repeated use = overfitting to the test set.</li>
+          <li><strong>Regularization:</strong> Constrains/simplifies the model. Reduces overfitting. Does NOT increase complexity.</li>
+        </ul>
+        <div class="tag-row"><span class="tag important">High priority</span><span class="tag">Train / val / test split</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ PANE -->
+<div class="pane" id="paneQuiz">
+  <div class="quiz-section">
+    <div class="shuffle-bar">
+      <span class="shuffle-label">Shuffle:</span>
+      <button class="toggle-btn on" id="toggleQ" onclick="toggleShuffle('q')"><span class="toggle-dot"></span> Questions</button>
+      <button class="toggle-btn on" id="toggleA" onclick="toggleShuffle('a')"><span class="toggle-dot"></span> Answer choices</button>
+    </div>
+
+    <div class="q-counter" id="qCounter">Question 1 of 28</div>
+
+    <div class="question-card" id="questionCard">
+      <div class="missed-badge" id="missedBadge">⚠ Previously missed</div>
+      <div class="q-type-badge" id="qTypeBadge"></div>
+      <div class="q-hint" id="qHint">Select all that apply, then click Submit.</div>
+      <p class="q-text" id="qText"></p>
+      <div class="q-equation" id="qEquation"></div>
+      <div class="options" id="optionsDiv"></div>
+      <button class="btn-submit" id="btnSubmit" onclick="submitMulti()">Submit answer</button>
+      <div class="explanation" id="explanation"></div>
+      <div class="missed-notice" id="missedNotice">⚠ Added to your missed questions deck.</div>
+    </div>
+
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Next question →</button>
+
+    <div class="summary" id="summary">
+      <div class="summary-label">Final score</div>
+      <div class="summary-score" id="summaryScore"></div>
+      <div class="summary-label" id="summaryFrac"></div>
+      <p class="summary-msg" id="summaryMsg"></p>
+      <div class="summary-missed-box" id="summaryMissedBox"></div>
+      <div class="btn-group">
+        <button class="btn-restart" onclick="restart()">↺ Restart deck</button>
+        <a href="../missed.html" class="link-missed" id="linkMissed">Review missed questions →</a>
+        <a href="../index.html" class="link-home">← Back to all lectures</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── localStorage ──────────────────────────────────────────────────────────────
+const MISSED_KEY = 'ml_missed_questions';
+const STREAK_KEY = 'ml_streak_data';
+const RETIRE_AT = 3;
+
+function getMissed() { try { return JSON.parse(localStorage.getItem(MISSED_KEY) || '{}'); } catch { return {}; } }
+function getStreaks() { try { return JSON.parse(localStorage.getItem(STREAK_KEY) || '{}'); } catch { return {}; } }
+function saveMissed(d) { localStorage.setItem(MISSED_KEY, JSON.stringify(d)); }
+function saveStreaks(d) { localStorage.setItem(STREAK_KEY, JSON.stringify(d)); }
+function getMissedCount() { return Object.keys(getMissed()).length; }
+
+function recordMiss(q) {
+  const m = getMissed(), s = getStreaks();
+  m[q.id] = { id: q.id, lecture: q.lecture, topic: q.topic };
+  s[q.id] = 0;
+  saveMissed(m); saveStreaks(s);
+}
+
+// ── Shuffle ───────────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function shuffleOpts(q) {
+  if (q.type === 'tf') return { opts: q.opts, ans: q.ans };
+  const idxs = shuffle(q.opts.map((_, i) => i));
+  const oldToNew = {};
+  idxs.forEach((oldIdx, newPos) => { oldToNew[oldIdx] = newPos; });
+  return {
+    opts: idxs.map(i => q.opts[i]),
+    ans: Array.isArray(q.ans) ? q.ans.map(i => oldToNew[i]) : oldToNew[q.ans]
+  };
+}
+
+// ── Questions ─────────────────────────────────────────────────────────────────
+const QUESTIONS = [
+  { id:"lec2_01", lecture:"Lecture 2", topic:"Types of ML", type:"mc", label:"Multiple Choice",
+    q:"What is the defining characteristic of supervised learning?",
+    opts:["The training data has no labels","The training data includes labeled examples with desired outputs","The model learns by receiving rewards and penalties","The model is trained on a small labeled set and large unlabeled set"],
+    ans:1, exp:"In supervised learning, every training example comes with a label (the desired answer). This is what makes it 'supervised' — you are telling the algorithm what the correct output should be." },
+
+  { id:"lec2_02", lecture:"Lecture 2", topic:"Types of ML", type:"ms", label:"Multi-Select",
+    q:"Which of the following are supervised learning algorithms as listed in your slides? Select ALL that apply.",
+    opts:["K-Means","Logistic Regression","k-Nearest Neighbors","Isolation Forest","Support Vector Machines (SVMs)","Decision Trees and Random Forests","PCA","Linear Regression"],
+    ans:[1,2,4,5,7], exp:"Supervised algorithms from your slides: Linear Regression, Logistic Regression, k-Nearest Neighbors, SVMs, Decision Trees and Random Forests. K-Means (clustering), Isolation Forest (anomaly detection), and PCA (dimensionality reduction) are all unsupervised." },
+
+  { id:"lec2_03", lecture:"Lecture 2", topic:"Types of ML", type:"ms", label:"Multi-Select",
+    q:"Which of the following are unsupervised learning algorithms as listed in your slides? Select ALL that apply.",
+    opts:["Linear Regression","K-Means","One-class SVM","Logistic Regression","Isolation Forest","PCA","Kernel PCA","Locally Linear Embedding (LLE)","t-SNE","Decision Trees"],
+    ans:[1,2,4,5,6,7,8], exp:"Unsupervised algorithms from your slides — Clustering: K-Means. Anomaly detection: One-class SVM, Isolation Forest. Dimensionality reduction/visualization: PCA, Kernel PCA, LLE, t-SNE. Linear Regression, Logistic Regression, and Decision Trees are supervised." },
+
+  { id:"lec2_02b", lecture:"Lecture 2", topic:"Types of ML", type:"tf", label:"True / False",
+    q:"True or False: One-class SVM is a supervised learning algorithm used for classification.",
+    opts:["True","False"],
+    ans:1, exp:"False. One-class SVM is an unsupervised algorithm used for anomaly detection and novelty detection — it learns what 'normal' looks like and flags deviations, with no labeled data required." },
+
+  { id:"lec2_03b", lecture:"Lecture 2", topic:"Types of ML", type:"tf", label:"True / False",
+    q:"True or False: Random Forests are listed as a supervised learning algorithm in your slides.",
+    opts:["True","False"],
+    ans:0, exp:"True. Your slides list 'Decision Trees and Random Forests' together as supervised learning algorithms." },
+
+  { id:"lec2_04", lecture:"Lecture 2", topic:"Types of ML", type:"mc", label:"Multiple Choice",
+    q:"A company wants to group customers into segments based on purchasing behavior, with no predefined categories. What type of ML is this?",
+    opts:["Supervised learning, because they have purchase data","Unsupervised learning, because there are no labels","Reinforcement learning, because the model improves over time","Semisupervised learning, because some customers are known"],
+    ans:1, exp:"No predefined labels = unsupervised learning. The algorithm must discover the natural groupings on its own." },
+
+  { id:"lec2_05", lecture:"Lecture 2", topic:"Types of ML", type:"tf", label:"True / False",
+    q:"True or False: In semisupervised learning, you have plenty of labeled instances and very few unlabeled ones.",
+    opts:["True","False"], ans:1,
+    exp:"False. It's the opposite — semisupervised learning has plenty of UNLABELED instances and only a FEW labeled ones." },
+
+  { id:"lec2_06", lecture:"Lecture 2", topic:"Types of ML", type:"mc", label:"Multiple Choice",
+    q:"In reinforcement learning, what is a 'policy'?",
+    opts:["The reward the agent receives for each action","The set of all possible actions the agent can take","The strategy defining what action the agent should take in a given situation","The environment the agent observes"],
+    ans:2, exp:"A policy defines what action the agent should choose when it is in a given situation — it is the learned strategy for maximizing reward over time." },
+
+  { id:"lec2_07", lecture:"Lecture 2", topic:"Batch vs Online", type:"mc", label:"Multiple Choice",
+    q:"A system is trained once on all available data and then deployed. When new data arrives, the entire model must be retrained from scratch. What type of learning is this?",
+    opts:["Online learning","Reinforcement learning","Batch learning","Instance-based learning"],
+    ans:2, exp:"Batch learning trains on all available data at once and cannot learn incrementally. Updating it requires retraining on the full dataset from scratch." },
+
+  { id:"lec2_08", lecture:"Lecture 2", topic:"Batch vs Online", type:"ms", label:"Multi-Select",
+    q:"Which of the following are true about online learning? Select all that apply.",
+    opts:["It trains the system incrementally","It requires the full dataset at every update","Data can be fed individually or in minibatches","Each learning step is fast and cheap","It cannot adapt to new data after deployment"],
+    ans:[0,2,3], exp:"Online learning trains incrementally (not on the full dataset), accepts data individually or in minibatches, and each step is fast and cheap. It CAN adapt to new data on the fly — that's its main advantage." },
+
+  { id:"lec2_09", lecture:"Lecture 2", topic:"Instance vs Model Based", type:"mc", label:"Multiple Choice",
+    q:"A k-Nearest Neighbors classifier works by comparing a new instance to stored training examples using a similarity measure. What type of learning approach is this?",
+    opts:["Model-based learning","Batch learning","Semisupervised learning","Instance-based learning"],
+    ans:3, exp:"Instance-based learning memorizes the training examples and generalizes to new cases by comparing them using a similarity measure — exactly what k-NN does." },
+
+  { id:"lec2_10", lecture:"Lecture 2", topic:"Instance vs Model Based", type:"tf", label:"True / False",
+    q:"True or False: Model-based learning builds a model from training examples and uses that model to make predictions on new data.",
+    opts:["True","False"], ans:0,
+    exp:"True. In model-based learning, you build a model (e.g. a linear equation with learned parameters) and use it to make predictions, rather than looking up similar past examples." },
+
+  { id:"lec2_11", lecture:"Lecture 2", topic:"Equations", type:"eq", label:"Equation",
+    q:"The model-based learning example in your slides predicts life satisfaction from GDP per capita. What is the correct equation?",
+    opts:["life_satisfaction = θ₀ + θ₁ × GDP_per_capita","life_satisfaction = θ₁ × GDP_per_capita²","life_satisfaction = θ₀ × θ₁ + GDP_per_capita","life_satisfaction = GDP_per_capita / (θ₀ + θ₁)"],
+    ans:0, exp:"This is a simple linear model: θ₀ is the bias term (intercept) and θ₁ is the weight on the feature GDP per capita. It follows the general linear model pattern ŷ = θ₀ + θ₁x₁." },
+
+  { id:"lec2_12", lecture:"Lecture 2", topic:"Equations", type:"eq", label:"Equation",
+    q:"Given this equation from your slides, what do θ₀ and θ₁ represent?",
+    equation:"life_satisfaction = θ₀ + θ₁ × GDP_per_capita",
+    opts:["θ₀ is the predicted output; θ₁ is the learning rate","θ₀ is the bias term (intercept); θ₁ is the weight on the feature","θ₀ is the number of features; θ₁ is the regularization term","θ₀ and θ₁ are both bias terms with no difference"],
+    ans:1, exp:"θ₀ is the bias (intercept — what the model predicts when all features are 0). θ₁ is the weight applied to the feature GDP per capita. These are the two parameters the model learns from data." },
+
+  { id:"lec2_13", lecture:"Lecture 2", topic:"ML Challenges", type:"mc", label:"Multiple Choice",
+    q:"A training dataset is collected only from hospital patients in one city, but the model is deployed nationally. What ML challenge does this describe?",
+    opts:["Overfitting","Irrelevant features","Nonrepresentative training data (sampling bias)","Underfitting"],
+    ans:2, exp:"This is sampling bias — the training data is not representative of the real-world population, so the model won't generalize well." },
+
+  { id:"lec2_14", lecture:"Lecture 2", topic:"ML Challenges", type:"ms", label:"Multi-Select",
+    q:"Which of the following are listed as main challenges of machine learning in your slides? Select all that apply.",
+    opts:["Insufficient quantity of training data","Using too many hidden layers","Poor quality data","Irrelevant features","Overfitting the training data","Having too large a validation set"],
+    ans:[0,2,3,4], exp:"The main challenges listed are: insufficient training data, nonrepresentative data, poor quality data, irrelevant features, overfitting, and underfitting. 'Too many hidden layers' and 'too large a validation set' are not listed." },
+
+  { id:"lec2_15", lecture:"Lecture 2", topic:"Overfitting & Underfitting", type:"mc", label:"Multiple Choice",
+    q:"A model performs extremely well on training data but poorly on new data. What is this called and what is the standard remedy?",
+    opts:["Underfitting — use a more complex model","Overfitting — apply regularization or simplify the model","Sampling bias — collect more data","Overfitting — use a more complex model"],
+    ans:1, exp:"Great training performance + poor generalization = overfitting. Regularization constrains the model to make it simpler and reduce overfitting." },
+
+  { id:"lec2_16", lecture:"Lecture 2", topic:"Overfitting & Underfitting", type:"mc", label:"Multiple Choice",
+    q:"A linear model is used to predict life satisfaction, but the relationship is far more complex. The model performs poorly even on training data. What is this?",
+    opts:["Overfitting","Sampling bias","Underfitting","Regularization"],
+    ans:2, exp:"When a model is too simple to capture the underlying structure, it underfits — it performs poorly even on the training examples it was trained on." },
+
+  { id:"lec2_17", lecture:"Lecture 2", topic:"Overfitting & Underfitting", type:"ms", label:"Multi-Select",
+    q:"Which of the following are true about overfitting? Select all that apply.",
+    opts:["The model performs well on training data","The model performs well on new, unseen data","It can be caused by a model that is too complex","It can be reduced by regularization","It occurs when the model is too simple"],
+    ans:[0,2,3], exp:"Overfitting: good training performance (A), caused by too complex a model (C), fixed by regularization (D). It does NOT generalize well to new data (B false), and it is NOT caused by being too simple — that's underfitting (E false)." },
+
+  { id:"lec2_18", lecture:"Lecture 2", topic:"Overfitting & Underfitting", type:"tf", label:"True / False",
+    q:"True or False: Regularization increases model complexity to improve training accuracy.",
+    opts:["True","False"], ans:1,
+    exp:"False. Regularization CONSTRAINS (simplifies) the model to reduce overfitting — it trades some training accuracy for better generalization." },
+
+  { id:"lec2_19", lecture:"Lecture 2", topic:"Testing & Validation", type:"mc", label:"Multiple Choice",
+    q:"What is the generalization error?",
+    opts:["The error on the training set","The difference between training and validation error","The error rate on new, unseen cases","The error introduced by regularization"],
+    ans:2, exp:"The generalization error (also called out-of-sample error) is the error rate on new cases — it estimates how well the model performs in the real world." },
+
+  { id:"lec2_20", lecture:"Lecture 2", topic:"Testing & Validation", type:"mc", label:"Multiple Choice",
+    q:"You tune a model's hyperparameters by evaluating it on the test set 50 times. What is the main problem?",
+    opts:["It is computationally too expensive","You end up overfitting to the test set, so the error estimate is no longer unbiased","The test set is too small for reliable evaluation","Hyperparameters cannot be tuned after training"],
+    ans:1, exp:"Repeatedly evaluating on the test set causes you to adapt the model to that particular set — the test error is no longer a reliable estimate of real-world performance." },
+
+  { id:"lec2_21", lecture:"Lecture 2", topic:"Testing & Validation", type:"mc", label:"Multiple Choice",
+    q:"What is holdout validation?",
+    opts:["Holding out the test set until final evaluation","Holding out part of the training set as a validation set to compare and select models","Training the model on a random subset of data each epoch","Removing outliers from the training set before training"],
+    ans:1, exp:"Holdout validation holds out a portion of the training data as a validation set to evaluate and tune models, keeping the test set untouched until the very end." },
+
+  { id:"lec2_22", lecture:"Lecture 2", topic:"Testing & Validation", type:"ms", label:"Multi-Select",
+    q:"Which of the following correctly describe the role of the test set? Select all that apply.",
+    opts:["It is used to tune hyperparameters during model development","It is touched only once, at the very end of the process","It provides an unbiased estimate of real-world performance","It should be used repeatedly to guide model selection","Using it multiple times can cause overfitting to the test set"],
+    ans:[1,2,4], exp:"The test set is touched only once (B), gives an unbiased final estimate (C), and using it repeatedly causes overfitting to it (E). It should NOT be used for tuning (A and D are false)." },
+
+  { id:"lec2_23", lecture:"Lecture 2", topic:"Testing & Validation", type:"mc", label:"Multiple Choice",
+    q:"Which of the following correctly orders the three data splits and their purpose?",
+    opts:["Test set → tune hyperparameters; Validation set → final evaluation; Training set → learn patterns","Training set → learn patterns; Validation set → tune and compare models; Test set → final unbiased evaluation","Training set → learn patterns; Test set → tune hyperparameters; Validation set → final evaluation","Validation set → learn patterns; Training set → tune models; Test set → final evaluation"],
+    ans:1, exp:"Training set: learn from. Validation set: tune and compare during development. Test set: final unbiased evaluation, touched only once." },
+
+  { id:"lec2_24", lecture:"Lecture 2", topic:"ML Challenges", type:"mc", label:"Multiple Choice",
+    q:"According to research cited in your slides, what factor had the biggest impact on performance across very different ML algorithms on a complex NLP task?",
+    opts:["The choice of algorithm","The model architecture complexity","The quantity of training data","The regularization strength"],
+    ans:2, exp:"Microsoft researchers Banko & Brill (2001) showed that very different algorithms performed almost identically once given enough training data — quantity of data mattered most." },
+
+  { id:"lec2_25", lecture:"Lecture 2", topic:"ML Challenges", type:"ms", label:"Multi-Select",
+    q:"Which of the following are strategies for dealing with missing feature values in a dataset? Select all that apply.",
+    opts:["Ignore the attribute altogether","Ignore the instances with missing values","Fill in missing values with the median","Train two models: one with the feature and one without","Always remove the entire dataset and collect new data"],
+    ans:[0,1,2,3], exp:"Your slides list four valid strategies: ignore the attribute, ignore those instances, fill in missing values (e.g. with the median), or train separate models. Discarding the entire dataset is not listed." },
+
+  { id:"lec2_26", lecture:"Lecture 2", topic:"Instance vs Model Based", type:"ms", label:"Multi-Select",
+    q:"Which of the following are true about instance-based learning? Select all that apply.",
+    opts:["It learns by heart — memorizing training examples","It builds an explicit model with learned parameters","It generalizes to new cases using a similarity measure","k-Nearest Neighbors is a classic example","It requires learning a function before making predictions"],
+    ans:[0,2,3], exp:"Instance-based learning memorizes examples (A), generalizes using similarity (C), and k-NN is the classic example (D). It does NOT build an explicit parametric model (B false) and does not learn a function first (E false)." }
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const LETTERS = ['A','B','C','D','E','F'];
+let deck = [], idx = 0, score = 0, answered = 0;
+let shuffleQ = true, shuffleA = true;
+let selectedMulti = new Set();
+let currentAns = null;
+let currentType = '';
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function showTab(tab) {
+  document.getElementById('paneNotes').classList.toggle('active', tab === 'notes');
+  document.getElementById('paneQuiz').classList.toggle('active', tab === 'quiz');
+  document.getElementById('tabNotes').classList.toggle('active', tab === 'notes');
+  document.getElementById('tabQuiz').classList.toggle('active', tab === 'quiz');
+  document.getElementById('scoreWrap').style.display = tab === 'quiz' ? 'block' : 'none';
+}
+
+function toggleNote(id) { document.getElementById(id).classList.toggle('open'); }
+
+// ── Shuffle toggles ───────────────────────────────────────────────────────────
+function toggleShuffle(which) {
+  if (which === 'q') { shuffleQ = !shuffleQ; document.getElementById('toggleQ').classList.toggle('on', shuffleQ); }
+  else               { shuffleA = !shuffleA; document.getElementById('toggleA').classList.toggle('on', shuffleA); }
+}
+
+// ── Build deck ────────────────────────────────────────────────────────────────
+function buildDeck() {
+  deck = shuffleQ ? shuffle([...QUESTIONS]) : [...QUESTIONS];
+}
+
+// ── Render question ───────────────────────────────────────────────────────────
+function renderQ() {
+  const q = deck[idx];
+  selectedMulti = new Set();
+  currentType = q.type;
+
+  // Missed badge
+  document.getElementById('missedBadge').classList.toggle('show', !!getMissed()[q.id]);
+  document.getElementById('missedNotice').classList.remove('show');
+
+  // Type badge + hint
+  document.getElementById('qTypeBadge').textContent = q.label;
+  document.getElementById('qHint').style.display = q.type === 'ms' ? 'block' : 'none';
+
+  // Question text
+  document.getElementById('qText').textContent = q.q;
+
+  // Equation
+  const eqEl = document.getElementById('qEquation');
+  if (q.equation) { eqEl.textContent = q.equation; eqEl.style.display = 'block'; }
+  else             { eqEl.style.display = 'none'; }
+
+  // Reset explanation + buttons
+  document.getElementById('explanation').classList.remove('show');
+  document.getElementById('explanation').textContent = '';
+  document.getElementById('btnNext').classList.remove('show');
+  document.getElementById('btnSubmit').classList.remove('show');
+
+  // Shuffle answers if enabled
+  const { opts, ans } = shuffleA ? shuffleOpts(q) : { opts: q.opts, ans: q.ans };
+  currentAns = ans;
+
+  // Render options
+  const div = document.getElementById('optionsDiv');
+  div.innerHTML = '';
+  opts.forEach((o, i) => {
+    const el = document.createElement('div');
+    el.className = 'opt';
+
+    const ind = document.createElement('span');
+    ind.className = 'opt-indicator';
+    ind.textContent = q.type === 'ms' ? '☐' : LETTERS[i];
+
+    const txt = document.createElement('span');
+    txt.className = 'opt-text';
+    txt.textContent = o;
+
+    el.appendChild(ind);
+    el.appendChild(txt);
+
+    if (q.type === 'ms') {
+      el.onclick = () => {
+        if (el.classList.contains('disabled')) return;
+        if (selectedMulti.has(i)) { selectedMulti.delete(i); el.classList.remove('selected'); ind.textContent = '☐'; }
+        else                      { selectedMulti.add(i);    el.classList.add('selected');    ind.textContent = '☑'; }
+        document.getElementById('btnSubmit').classList.toggle('show', selectedMulti.size > 0);
+      };
+    } else {
+      el.onclick = () => resolveSingle(i);
+    }
+
+    div.appendChild(el);
+  });
+
+  // Counter + progress
+  document.getElementById('qCounter').textContent = 'Question ' + (idx + 1) + ' of ' + deck.length;
+  document.getElementById('progressFill').style.width = Math.round((idx / deck.length) * 100) + '%';
+  document.getElementById('scoreDisplay').textContent = score + ' / ' + answered;
+}
+
+// ── Single answer ─────────────────────────────────────────────────────────────
+function resolveSingle(chosen) {
+  const opts = document.getElementById('optionsDiv').children;
+  const correct = chosen === currentAns;
+  for (let i = 0; i < opts.length; i++) {
+    opts[i].classList.add('disabled');
+    opts[i].onclick = null;
+    const ind = opts[i].querySelector('.opt-indicator');
+    if (i === currentAns) { opts[i].classList.add(correct && i === chosen ? 'correct' : 'reveal-correct'); ind.textContent = '✓'; }
+    else if (i === chosen) { opts[i].classList.add('wrong'); ind.textContent = '✗'; }
+  }
+  finalize(correct);
+}
+
+// ── Multi-select answer ───────────────────────────────────────────────────────
+function submitMulti() {
+  const correctSet = new Set(Array.isArray(currentAns) ? currentAns : [currentAns]);
+  const correct = selectedMulti.size === correctSet.size && [...selectedMulti].every(i => correctSet.has(i));
+  const opts = document.getElementById('optionsDiv').children;
+  for (let i = 0; i < opts.length; i++) {
+    opts[i].classList.add('disabled');
+    opts[i].onclick = null;
+    const ind = opts[i].querySelector('.opt-indicator');
+    if (correctSet.has(i) && selectedMulti.has(i))       { opts[i].classList.add('correct');        ind.textContent = '✓'; }
+    else if (!correctSet.has(i) && selectedMulti.has(i)) { opts[i].classList.add('wrong');          ind.textContent = '✗'; }
+    else if (correctSet.has(i) && !selectedMulti.has(i)) { opts[i].classList.add('reveal-correct'); ind.textContent = '✓'; }
+  }
+  document.getElementById('btnSubmit').classList.remove('show');
+  finalize(correct);
+}
+
+// ── Finalize result ───────────────────────────────────────────────────────────
+function finalize(correct) {
+  const q = deck[idx];
+  if (correct) { score++; }
+  else         { recordMiss(q); document.getElementById('missedNotice').classList.add('show'); }
+  answered++;
+  document.getElementById('scoreDisplay').textContent = score + ' / ' + answered;
+
+  const exp = document.getElementById('explanation');
+  exp.textContent = (correct ? '✓ Correct. ' : '✗ Incorrect. ') + q.exp;
+  exp.classList.add('show');
+  document.getElementById('btnNext').classList.add('show');
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function nextQ() {
+  idx++;
+  if (idx >= deck.length) showSummary();
+  else renderQ();
+}
+
+function showSummary() {
+  document.getElementById('questionCard').style.display = 'none';
+  document.getElementById('btnNext').style.display = 'none';
+  document.getElementById('qCounter').style.display = 'none';
+  document.getElementById('progressFill').style.width = '100%';
+  const pct = Math.round((score / deck.length) * 100);
+  document.getElementById('summaryScore').textContent = pct + '%';
+  document.getElementById('summaryFrac').textContent = score + ' out of ' + deck.length + ' correct';
+  document.getElementById('summaryMsg').textContent =
+    pct >= 85 ? 'Excellent — you have this lecture locked in.' :
+    pct >= 65 ? 'Solid effort. Review the ones you missed, then try again.' :
+    'Keep at it — go back through the notes tab and restart the deck.';
+  const mc = getMissedCount();
+  if (mc > 0) {
+    document.getElementById('summaryMissedBox').style.display = 'block';
+    document.getElementById('summaryMissedBox').textContent = mc + ' question' + (mc !== 1 ? 's' : '') + ' in your missed deck across all lectures.';
+    document.getElementById('linkMissed').style.display = 'inline-block';
+  }
+  document.getElementById('summary').classList.add('show');
+}
+
+function restart() {
+  idx = 0; score = 0; answered = 0;
+  buildDeck();
+  document.getElementById('questionCard').style.display = 'block';
+  document.getElementById('btnNext').classList.remove('show');
+  document.getElementById('qCounter').style.display = 'block';
+  document.getElementById('summary').classList.remove('show');
+  renderQ();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildDeck();
+renderQ();
+</script>
+</body>
+</html>

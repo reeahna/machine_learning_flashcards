@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Flashcards — B455</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#f5f4f0;--surface:#ffffff;--surface2:#f0eeea;--border:#e2dfd8;--text:#1a1916;--muted:#8a8680;--accent:#5046e4;--accent-dim:rgba(80,70,228,0.08);--accent-border:rgba(80,70,228,0.2);--orange:#d97706;--orange-bg:#fff7ed;--orange-border:#fed7aa;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  header{padding:2rem 2.5rem 1.75rem;border-bottom:1px solid var(--border);background:var(--surface);}
+  .course-label{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem;}
+  h1{font-family:'DM Serif Display',serif;font-size:32px;color:var(--text);line-height:1.2;margin-bottom:0.4rem;}
+  .subtitle{font-size:14px;color:var(--muted);}
+  main{max-width:760px;margin:0 auto;padding:2.5rem 1.5rem;}
+  .missed-hero{display:flex;align-items:center;justify-content:space-between;background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1rem;text-decoration:none;gap:1rem;transition:box-shadow 0.15s;}
+  .missed-hero:hover{box-shadow:0 2px 12px rgba(217,119,6,0.15);}
+  .missed-hero.empty{opacity:0.5;pointer-events:none;}
+  .missed-hero-left{display:flex;align-items:center;gap:1rem;}
+  .missed-hero-icon{font-size:28px;flex-shrink:0;}
+  .missed-hero-title{font-size:15px;font-weight:600;color:var(--orange);margin-bottom:2px;}
+  .missed-hero-sub{font-size:13px;color:var(--muted);}
+  .missed-hero-count{font-family:'DM Serif Display',serif;font-size:36px;color:var(--orange);flex-shrink:0;line-height:1;}
+  .review-hero{display:flex;align-items:center;justify-content:space-between;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:2rem;text-decoration:none;gap:1rem;transition:box-shadow 0.15s;}
+  .review-hero:hover{box-shadow:0 2px 12px rgba(124,58,237,0.12);}
+  .review-hero-left{display:flex;align-items:center;gap:1rem;}
+  .review-hero-icon{font-size:28px;flex-shrink:0;}
+  .review-hero-title{font-size:15px;font-weight:600;color:#7c3aed;margin-bottom:2px;}
+  .review-hero-sub{font-size:13px;color:var(--muted);}
+  .review-hero-count{font-family:'DM Serif Display',serif;font-size:24px;color:#7c3aed;flex-shrink:0;line-height:1;text-align:right;}
+  .section-title{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;}
+  .deck-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:2.5rem;}
+  .deck-card{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.4rem;text-decoration:none;transition:border-color 0.15s,box-shadow 0.15s;gap:1rem;}
+  .deck-card:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(80,70,228,0.08);}
+  .deck-left{display:flex;align-items:center;gap:1rem;}
+  .deck-num{font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent);min-width:36px;}
+  .deck-name{font-size:15px;font-weight:500;color:var(--text);margin-bottom:2px;}
+  .deck-meta{font-size:12px;color:var(--muted);}
+  .deck-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .deck-badge{font-size:11px;font-weight:600;letter-spacing:0.06em;padding:3px 10px;border-radius:99px;}
+  .badge-ready{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+  .arrow{color:var(--muted);font-size:16px;}
+  .divider{height:1px;background:var(--border);margin:2rem 0;}
+  .info-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;font-size:13px;color:var(--muted);line-height:1.7;}
+  .info-box strong{color:var(--text);font-weight:500;}
+  footer{text-align:center;padding:2rem;font-size:12px;color:var(--muted);border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+<header>
+  <div class="course-label">B455 — Machine Learning</div>
+  <h1>Final Exam Flashcards</h1>
+  <p class="subtitle">Multiple choice, true/false &amp; multi-select practice — all lectures</p>
+</header>
+<main>
+  <a href="missed.html" class="missed-hero" id="missedHero">
+    <div class="missed-hero-left">
+      <div class="missed-hero-icon">⚠️</div>
+      <div>
+        <div class="missed-hero-title">Missed Questions Deck</div>
+        <div class="missed-hero-sub" id="missedHeroSub">Loading...</div>
+      </div>
+    </div>
+    <div class="missed-hero-count" id="missedHeroCount">—</div>
+  </a>
+  <a href="review.html" class="review-hero">
+    <div class="review-hero-left">
+      <div class="review-hero-icon">🔀</div>
+      <div>
+        <div class="review-hero-title">Full Review Deck</div>
+        <div class="review-hero-sub">20 random questions from all lectures each round. Misses still go to your missed deck.</div>
+      </div>
+    </div>
+    <div class="review-hero-count" id="reviewHeroCount">—<br><span style="font-size:11px;font-weight:500;color:#7c3aed;font-family:'DM Sans',sans-serif;" id="reviewSeenCount"></span></div>
+  </a>
+  <p class="section-title">Pre-Midterm Content — 35% of Final</p>
+  <div class="deck-grid">
+    <a href="lecture_flashcards/lecture_2.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">02</div><div><div class="deck-name">Intro to Machine Learning</div><div class="deck-meta">28 questions · Types of ML, challenges, overfitting, validation</div></div></div>
+      <div class="deck-right"><span class="deck-badge badge-ready">Ready</span><span class="arrow">→</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_3.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">03</div><div><div class="deck-name">ML Project Workflow</div><div class="deck-meta">28 questions · 8-step workflow, RMSE, MAE, feature scaling, cross-validation</div></div></div>
+      <div class="deck-right"><span class="deck-badge badge-ready">Ready</span><span class="arrow">→</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_4.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">04</div><div><div class="deck-name">Classification</div><div class="deck-meta">28 questions · MNIST, confusion matrix, precision, recall, F1, ROC, AUC, OvR vs OvO</div></div></div>
+      <div class="deck-right"><span class="deck-badge badge-ready">Ready</span><span class="arrow">→</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_5.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">05</div><div><div class="deck-name">Linear Regression</div><div class="deck-meta">28 questions · Normal equation, MSE, gradient descent, SGD, mini-batch</div></div></div>
+      <div class="deck-right"><span class="deck-badge badge-ready">Ready</span><span class="arrow">→</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_6.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">06</div><div><div class="deck-name">Regularization &amp; Polynomial Regression</div><div class="deck-meta">28 questions · Learning curves, Ridge, Lasso, Elastic Net, early stopping</div></div></div>
+      <div class="deck-right"><span class="deck-badge badge-ready">Ready</span><span class="arrow">→</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_7.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">07</div><div><div class="deck-name">Logistic Regression</div><div class="deck-meta">26 questions · Sigmoid, log-odds, log loss, decision boundary, MLE</div></div></div>
+      <div class="deck-right"><span class="deck-badge badge-ready">Ready</span><span class="arrow">→</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_8.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">08</div><div><div class="deck-name">Softmax Regression</div><div class="deck-meta">24 questions · Multinomial logistic regression, softmax function, cross-entropy</div></div></div>
+      <div class="deck-right"><span class="deck-badge badge-ready">Ready</span><span class="arrow">→</span></div>
+    </a>
+    <a href="lecture_flashcards/lecture_9.html" class="deck-card">
+      <div class="deck-left"><div class="deck-num">09</div><div><div class="deck-name">Support Vector Machines</div><div class="deck-meta">30 questions · Large margin, hard/soft margin, kernels, dual problem, SVM regression</div></div></div>
+      <div class="deck-right"><span class="deck-badge badge-ready">Ready</span><span class="arrow">→</span></div>
+    </a>
+  </div>
+  <div class="divider"></div>
+  <p class="section-title">Post-Midterm Content — 65% of Final</p>
+  <div class="deck-grid">
+    <div class="deck-card" style="opacity:0.45;cursor:not-allowed"><div class="deck-left"><div class="deck-num">—</div><div><div class="deck-name">Decision Trees</div><div class="deck-meta">Coming soon</div></div></div><div class="deck-right"><span class="deck-badge" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border);">Coming soon</span></div></div>
+    <div class="deck-card" style="opacity:0.45;cursor:not-allowed"><div class="deck-left"><div class="deck-num">—</div><div><div class="deck-name">Dimensionality Reduction</div><div class="deck-meta">Coming soon</div></div></div><div class="deck-right"><span class="deck-badge" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border);">Coming soon</span></div></div>
+    <div class="deck-card" style="opacity:0.45;cursor:not-allowed"><div class="deck-left"><div class="deck-num">—</div><div><div class="deck-name">Neural Networks &amp; Deep Learning</div><div class="deck-meta">Coming soon</div></div></div><div class="deck-right"><span class="deck-badge" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border);">Coming soon</span></div></div>
+  </div>
+  <div class="info-box">
+    <strong>How it works:</strong> Work through each lecture deck. Any question you miss is automatically added to your <strong>Missed Questions Deck</strong>. In that deck you need to get each question right <strong>3 times in a row</strong> to retire it. Your progress saves in your browser across sessions.
+  </div>
+</main>
+<footer>B455 Machine Learning · Indiana University</footer>
+<script>
+  const MISSED_KEY='ml_missed_questions';
+  function getMissedCount(){try{return Object.keys(JSON.parse(localStorage.getItem(MISSED_KEY)||'{}')).length;}catch{return 0;}}
+  const count=getMissedCount();
+  document.getElementById('missedHeroCount').textContent=count;
+  if(count===0){document.getElementById('missedHero').classList.add('empty');document.getElementById('missedHeroSub').textContent='No missed questions yet — keep working through the decks!';}
+  else{document.getElementById('missedHeroSub').textContent=count+' question'+(count!==1?'s':'')+' to drill. Get each right 3 times in a row to retire it.';}
+  try{
+    const seen=JSON.parse(localStorage.getItem('ml_review_seen')||'[]').length;
+    const total=220;
+    document.getElementById('reviewHeroCount').childNodes[0].textContent=Math.min(seen,total);
+    document.getElementById('reviewSeenCount').textContent='of '+total+' seen';
+  }catch(e){document.getElementById('reviewHeroCount').childNodes[0].textContent='0';document.getElementById('reviewSeenCount').textContent='of 220 seen';}
+</script>
+</body>
+</html>
