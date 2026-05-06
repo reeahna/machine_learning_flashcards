@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pre-Midterm Equations</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#f5f4f0;--surface:#ffffff;--surface2:#f0eeea;--border:#e2dfd8;--text:#1a1916;--muted:#8a8680;--accent:#5046e4;--accent-dim:rgba(80,70,228,0.08);--accent-border:rgba(80,70,228,0.2);--orange:#d97706;--orange-bg:#fff7ed;--orange-border:#fed7aa;--green:#16a34a;--green-bg:#f0fdf4;--green-border:#86efac;--red:#dc2626;--red-bg:#fef2f2;--red-border:#fca5a5;--purple:#7c3aed;--purple-bg:#f5f3ff;--purple-border:#ddd6fe;--reveal-bg:#fafaf9;--yellow-bg:#fefce8;--yellow-border:#fde68a;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+  .header-left{display:flex;align-items:center;gap:1rem;}
+  .back-link{font-size:13px;color:var(--muted);text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);}
+  .back-link:hover{border-color:var(--accent);color:var(--accent);}
+  .header-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text);}
+  .header-badge{font-size:11px;font-weight:600;letter-spacing:0.06em;padding:3px 10px;border-radius:99px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+  .score-display{font-size:13px;color:var(--muted);}
+  .progress-wrap{height:3px;background:var(--border);}
+  .progress-fill{height:100%;background:var(--accent);width:0%;transition:width 0.3s;}
+  main{max-width:680px;margin:0 auto;padding:2rem 1.5rem;width:100%;display:flex;flex-direction:column;flex:1;}
+  .seen-bar{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:1rem;}
+  .seen-progress{font-weight:600;color:var(--purple);}
+  .q-counter{font-size:13px;color:var(--muted);margin-bottom:1rem;}
+  .question-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;display:flex;flex-direction:column;gap:1rem;}
+  .meta-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .meta-tag{font-size:11px;font-weight:600;letter-spacing:0.06em;padding:2px 9px;border-radius:99px;}
+  .meta-lecture{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+  .meta-topic{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  .q-type-badge{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .q-hint{font-size:13px;color:var(--accent);font-weight:500;display:none;}
+  .q-text{font-size:16px;color:var(--text);line-height:1.65;font-weight:500;}
+  .q-equation{display:none;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:14px 18px;font-size:16px;font-family:'Georgia',serif;text-align:center;line-height:1.8;color:var(--text);}
+  .options{display:flex;flex-direction:column;gap:8px;}
+  .opt{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color 0.12s,background 0.12s;}
+  .opt:hover{border-color:var(--accent);background:var(--accent-dim);}
+  .opt.selected{border-color:var(--accent);background:var(--accent-dim);}
+  .opt-indicator{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;background:var(--surface);color:var(--muted);}
+  .opt-text{font-size:15px;color:var(--text);line-height:1.5;}
+  .opt-equation{display:block;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:6px;padding:8px 12px;font-size:14px;font-family:'Georgia',serif;text-align:center;line-height:1.8;color:var(--text);margin-top:4px;}
+  .opt.correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.wrong{border-color:var(--red-border);background:var(--red-bg);}
+  .opt.wrong .opt-indicator{background:var(--red);color:#fff;border-color:var(--red);}
+  .opt.reveal-correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.reveal-correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.disabled{cursor:default;}
+  .btn-submit{display:none;margin-top:1rem;background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-submit.show{display:block;}
+  .explanation{display:none;margin-top:1.25rem;padding:14px 16px;border-radius:10px;background:var(--reveal-bg);border-left:3px solid var(--purple);font-size:14px;color:var(--muted);line-height:1.7;}
+  .explanation.show{display:block;}
+  .missed-notice{display:none;margin-top:10px;padding:10px 14px;border-radius:8px;background:var(--orange-bg);border:1px solid var(--orange-border);font-size:13px;color:var(--orange);font-weight:500;}
+  .missed-notice.show{display:block;}
+  .btn-next{display:none;margin-top:1.5rem;align-self:flex-end;background:var(--purple);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-next.show{display:block;}
+  .summary{display:none;flex-direction:column;align-items:center;text-align:center;padding:3rem 2rem;width:100%;}
+  .summary.show{display:flex;}
+  .summary-score{font-family:'DM Serif Display',serif;font-size:72px;color:var(--purple);line-height:1;margin-bottom:0.5rem;}
+  .summary-label{font-size:14px;color:var(--muted);margin-bottom:0.25rem;}
+  .summary-msg{font-size:17px;color:var(--text);margin:1.25rem 0 0.75rem;line-height:1.6;max-width:420px;}
+  .summary-seen{font-size:14px;color:var(--purple);background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:10px;padding:10px 18px;margin-bottom:1.5rem;}
+  .summary-missed-box{font-size:14px;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:10px;padding:10px 18px;margin-bottom:1.5rem;display:none;}
+  .btn-group{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .btn-new-round{background:var(--purple);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .link-missed{font-size:14px;color:var(--orange);text-decoration:none;padding:10px 24px;border:1px solid var(--orange-border);border-radius:10px;background:var(--orange-bg);display:none;}
+  .link-home{font-size:14px;color:var(--muted);text-decoration:none;margin-top:0.25rem;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="header-title">Pre-Midterm Equations</span>
+    <span class="header-badge">Lectures 2–9 · All equations · 20 per round</span>
+  </div>
+  <div class="score-display">Score: <span id="scoreDisplay">0 / 0</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+<main>
+  <div class="seen-bar">
+    <span class="seen-label" id="seenLabel">Questions seen in this deck:</span>
+    <span class="seen-progress" id="seenProgress"></span>
+  </div>
+  <div class="q-counter" id="qCounter">Question 1 of 20</div>
+  <div class="question-card" id="questionCard">
+    <div class="meta-row"><span class="meta-tag meta-lecture" id="metaLecture"></span><span class="meta-tag meta-topic" id="metaTopic"></span></div>
+    <div class="q-type-badge" id="qTypeBadge"></div>
+    <div class="q-hint" id="qHint">Select all that apply, then click Submit.</div>
+    <p class="q-text" id="qText"></p>
+    <div class="q-equation" id="qEquation"></div>
+    <div class="options" id="optionsDiv"></div>
+    <button class="btn-submit" id="btnSubmit" onclick="submitMulti()">Submit answer</button>
+    <div class="explanation" id="explanation"></div>
+    <div class="missed-notice" id="missedNotice">⚠ Added to your missed questions deck.</div>
+  </div>
+  <button class="btn-next" id="btnNext" onclick="nextQ()">Next question →</button>
+  <div class="summary" id="summary">
+    <div class="summary-label">Round complete</div>
+    <div class="summary-score" id="summaryScore"></div>
+    <div class="summary-label" id="summaryFrac"></div>
+    <p class="summary-msg" id="summaryMsg"></p>
+    <div class="summary-seen" id="summarySeen"></div>
+    <div class="summary-missed-box" id="summaryMissedBox"></div>
+    <div class="btn-group">
+      <button class="btn-new-round" onclick="newRound()">Next round of 20 →</button>
+      <a href="missed.html" class="link-missed" id="linkMissed">Review missed questions →</a>
+      <a href="index.html" class="link-home">← Back</a>
+    </div>
+  </div>
+</main>
+<script>
+const SEEN_KEY='ml_eq_premidterm';
+const ALL_QUESTIONS=[
+  {id:"eq_pre_01a",lecture:"Lec 5",topic:"Linear Regression",type:"mc",label:"Equation: Name → Formula",q:"What is the MSE (Mean Squared Error) cost function for linear regression?",opts:["(1/m) Σ(θᵀx⁽ⁱ⁾ − y⁽ⁱ⁾)²","(1/m) Σ|θᵀx⁽ⁱ⁾ − y⁽ⁱ⁾|","−(1/m) Σ y log(p̂)","(1/2m) Σ(y⁽ⁱ⁾ − ŷ⁽ⁱ⁾)"],ans:0,exp:"MSE(θ) = (1/m) Σᵢ₌₁ᵐ (θᵀx⁽ⁱ⁾ − y⁽ⁱ⁾)². It measures the average squared difference between predictions and targets."},
+  {id:"eq_pre_01b",lecture:"Lec 5",topic:"Linear Regression",type:"mc",label:"Equation: Formula → Name",q:"What is this equation called?",equation:"MSE(θ) = (1/m) Σᵢ₌₁ᵐ (θᵀx⁽ⁱ⁾ − y⁽ⁱ⁾)²",opts:["Ridge cost function","Logistic regression log loss","MSE cost function for linear regression","Lasso cost function"],ans:2,exp:"This is the Mean Squared Error (MSE) cost function for linear regression — the average squared difference between predictions and actual targets."},
+  {id:"eq_pre_02a",lecture:"Lec 5",topic:"Linear Regression",type:"mc",label:"Equation: Name → Formula",q:"What is the Normal Equation (closed-form solution) for linear regression?",opts:["θ̂ = (XᵀX)⁻¹Xᵀy","θ̂ = Xᵀ(XXᵀ)⁻¹y","θ̂ = (XᵀX + αI)⁻¹Xᵀy","θ̂ = −η∇θ MSE(θ)"],ans:0,exp:"The Normal Equation: θ̂ = (XᵀX)⁻¹Xᵀy. This directly computes the parameter vector that minimizes MSE without iterative optimization."},
+  {id:"eq_pre_02b",lecture:"Lec 5",topic:"Linear Regression",type:"mc",label:"Equation: Formula → Name",q:"What is this equation and what does it compute?",equation:"θ̂ = (XᵀX)⁻¹ Xᵀ y",opts:["Ridge regression closed-form solution","The Normal Equation — directly computes optimal θ for linear regression","The gradient descent update rule","The logistic regression decision boundary"],ans:1,exp:"This is the Normal Equation — the closed-form solution for linear regression. It finds the θ that minimizes MSE directly without iterative gradient descent."},
+  {id:"eq_pre_03a",lecture:"Lec 5",topic:"Linear Regression",type:"mc",label:"Equation: Name → Formula",q:"What is the Gradient Descent weight update rule?",opts:["θ ← θ − η∇θ MSE(θ)","θ ← θ + η∇θ MSE(θ)","θ ← −η∇θ J(θ) / m","θ ← (XᵀX)⁻¹Xᵀy"],ans:0,exp:"Gradient Descent update: θ⁽ⁿᵉˣᵗ⁾ = θ − η∇θ MSE(θ). η is the learning rate; you subtract the gradient to move toward the minimum."},
+  {id:"eq_pre_03b",lecture:"Lec 5",topic:"Linear Regression",type:"mc",label:"Equation: Formula → Name",q:"What update rule is shown here, and what does η represent?",equation:"θ⁽ⁿᵉˣᵗ ˢᵗᵉᵖ⁾ = θ − η∇θ MSE(θ)",opts:["The Normal Equation; η is the regularization term","The Gradient Descent update rule; η is the learning rate","The Ridge regression update; η is the alpha parameter","The backpropagation update; η is the bias"],ans:1,exp:"This is the Gradient Descent update rule. η (eta) is the learning rate — the step size. We subtract the gradient because we want to move downhill on the cost surface."},
+  {id:"eq_pre_04a",lecture:"Lec 6",topic:"Regularization",type:"mc",label:"Equation: Name → Formula",q:"What is the Ridge Regression cost function?",opts:["J(θ) = MSE(θ) + α(1/2) Σθᵢ²","J(θ) = MSE(θ) + α Σ|θᵢ|","J(θ) = MSE(θ) + rα Σ|θᵢ| + ((1−r)/2)α Σθᵢ²","J(θ) = −(1/m) Σ[y log(p̂) + (1−y)log(1−p̂)]"],ans:0,exp:"Ridge: J(θ) = MSE(θ) + α(1/2)Σᵢ₌₁ⁿ θᵢ². The ℓ₂ regularization term penalizes large weights. α controls the regularization strength."},
+  {id:"eq_pre_04b",lecture:"Lec 6",topic:"Regularization",type:"mc",label:"Equation: Formula → Name",q:"Which regularization method does this cost function correspond to?",equation:"J(θ) = MSE(θ) + α · (1/2) · Σᵢ₌₁ⁿ θᵢ²",opts:["Lasso Regression","Elastic Net","Ridge Regression (ℓ₂ regularization)","Logistic Regression with regularization"],ans:2,exp:"This is Ridge Regression. The regularization term is half the sum of squared weights (ℓ₂ norm). It shrinks weights but rarely sets them exactly to zero."},
+  {id:"eq_pre_05a",lecture:"Lec 6",topic:"Regularization",type:"mc",label:"Equation: Name → Formula",q:"What is the Ridge Regression closed-form solution?",opts:["θ̂ = (XᵀX + αA)⁻¹Xᵀy","θ̂ = (XᵀX)⁻¹Xᵀy","θ̂ = (XᵀX + αI)⁻¹Xᵀy where A=I","θ̂ = Xᵀ(XXᵀ + αI)⁻¹y"],ans:2,exp:"Ridge closed-form: θ̂ = (XᵀX + αA)⁻¹Xᵀy where A is the identity matrix. Adding αI makes the matrix invertible even when XᵀX is singular."},
+  {id:"eq_pre_05b",lecture:"Lec 6",topic:"Regularization",type:"mc",label:"Equation: Formula → Name",q:"What is this closed-form solution for?",equation:"θ̂ = (XᵀX + αA)⁻¹ Xᵀ y",opts:["Normal equation for ordinary linear regression","Lasso regression solution","Ridge Regression closed-form (Tikhonov regularization)","Elastic Net closed-form"],ans:2,exp:"This is the Ridge Regression closed-form. The αA term (where A is the identity matrix) adds regularization and ensures invertibility of XᵀX."},
+  {id:"eq_pre_06a",lecture:"Lec 6",topic:"Regularization",type:"mc",label:"Equation: Name → Formula",q:"What is the Lasso Regression cost function?",opts:["J(θ) = MSE(θ) + α Σᵢ₌₁ⁿ |θᵢ|","J(θ) = MSE(θ) + α(1/2) Σθᵢ²","J(θ) = MSE(θ) + rα Σ|θᵢ|","J(θ) = MSE(θ) − α Σ|θᵢ|"],ans:0,exp:"Lasso: J(θ) = MSE(θ) + α Σᵢ₌₁ⁿ |θᵢ|. Uses the ℓ₁ norm — tends to produce sparse models by pushing some weights exactly to zero (automatic feature selection)."},
+  {id:"eq_pre_06b",lecture:"Lec 6",topic:"Regularization",type:"mc",label:"Equation: Formula → Name",q:"Which regularization method does this cost function represent?",equation:"J(θ) = MSE(θ) + α Σᵢ₌₁ⁿ |θᵢ|",opts:["Ridge Regression (ℓ₂)","Lasso Regression (ℓ₁)","Elastic Net","Tikhonov regularization"],ans:1,exp:"This is Lasso (Least Absolute Shrinkage and Selection Operator). The ℓ₁ norm (sum of |θᵢ|) tends to set unimportant feature weights to exactly zero."},
+  {id:"eq_pre_07a",lecture:"Lec 6",topic:"Regularization",type:"mc",label:"Equation: Name → Formula",q:"What is the Elastic Net cost function?",opts:["J(θ) = MSE(θ) + rα Σ|θᵢ| + ((1−r)/2)α Σθᵢ²","J(θ) = MSE(θ) + α Σ|θᵢ| + α Σθᵢ²","J(θ) = MSE(θ) + (r/2)α Σθᵢ² + (1−r)α Σ|θᵢ|","J(θ) = rMSE(θ) + α Σθᵢ²"],ans:0,exp:"Elastic Net: J(θ) = MSE(θ) + rα Σ|θᵢ| + ((1−r)/2)α Σθᵢ². Mixes Lasso (r=1) and Ridge (r=0) via mix ratio r."},
+  {id:"eq_pre_07b",lecture:"Lec 6",topic:"Regularization",type:"mc",label:"Equation: Formula → Name",q:"This cost function is a combination of two regularization methods. What is it called?",equation:"J(θ) = MSE(θ) + rα Σ|θᵢ| + ((1−r)/2)α Σθᵢ²",opts:["Double Ridge","Lasso with dropout","Elastic Net (mix of Lasso and Ridge)","Tikhonov Net"],ans:2,exp:"Elastic Net mixes Lasso (ℓ₁) and Ridge (ℓ₂). When r=0 it is Ridge; when r=1 it is Lasso. Preferred over Lasso alone when features are correlated."},
+  {id:"eq_pre_08a",lecture:"Lec 7",topic:"Logistic Regression",type:"mc",label:"Equation: Name → Formula",q:"What is the sigmoid (logistic) function?",opts:["σ(z) = 1 / (1 + exp(−z))","σ(z) = exp(z) / Σ exp(zⱼ)","σ(z) = max(0, z)","σ(z) = 2/(1+exp(−2z)) − 1"],ans:0,exp:"Sigmoid: σ(z) = 1/(1 + exp(−z)). Outputs values in (0,1), making it suitable for binary classification probability estimates."},
+  {id:"eq_pre_08b",lecture:"Lec 7",topic:"Logistic Regression",type:"mc",label:"Equation: Formula → Name",q:"What activation function is shown here, and what range does it output?",equation:"σ(z) = 1 / (1 + exp(−z))",opts:["Softmax function; outputs sum to 1 across classes","ReLU function; outputs (0, ∞)","Sigmoid (logistic) function; outputs in (0, 1)","Tanh function; outputs in (−1, 1)"],ans:2,exp:"This is the sigmoid (logistic) function. It maps any real input to (0,1), making it useful for outputting probabilities in binary classification."},
+  {id:"eq_pre_09a",lecture:"Lec 7",topic:"Logistic Regression",type:"mc",label:"Equation: Name → Formula",q:"What is the logistic regression cost function (log loss)?",opts:["J(θ) = −(1/m) Σ[y⁽ⁱ⁾ log(p̂⁽ⁱ⁾) + (1−y⁽ⁱ⁾)log(1−p̂⁽ⁱ⁾)]","J(θ) = (1/m) Σ(θᵀx⁽ⁱ⁾ − y⁽ⁱ⁾)²","J(θ) = MSE(θ) + α Σ|θᵢ|","J(θ) = −(1/m) Σ Σ yₖ log(p̂ₖ)"],ans:0,exp:"Logistic regression log loss: J(θ) = −(1/m) Σ[y log(p̂) + (1−y)log(1−p̂)]. This is the cross-entropy loss for binary classification."},
+  {id:"eq_pre_09b",lecture:"Lec 7",topic:"Logistic Regression",type:"mc",label:"Equation: Formula → Name",q:"What cost function is shown here?",equation:"J(θ) = −(1/m) Σᵢ₌₁ᵐ [y⁽ⁱ⁾ log(p̂⁽ⁱ⁾) + (1−y⁽ⁱ⁾) log(1−p̂⁽ⁱ⁾)]",opts:["MSE cost for linear regression","Softmax cross-entropy loss","Logistic regression log loss (binary cross-entropy)","Hinge loss for SVM"],ans:2,exp:"This is the logistic regression log loss (binary cross-entropy). It penalizes confident wrong predictions heavily. There is no closed-form solution — use gradient descent."},
+  {id:"eq_pre_10a",lecture:"Lec 8",topic:"Softmax Regression",type:"mc",label:"Equation: Name → Formula",q:"What is the softmax function used to estimate class probabilities?",opts:["p̂ₖ = exp(sₖ(x)) / Σⱼ exp(sⱼ(x))","p̂ₖ = sₖ(x) / Σⱼ sⱼ(x)","p̂ₖ = 1 / (1 + exp(−sₖ(x)))","p̂ₖ = exp(sₖ(x)) / K"],ans:0,exp:"Softmax: p̂ₖ = exp(sₖ(x)) / Σⱼ₌₁ᴷ exp(sⱼ(x)). It computes the exponential of each class score and normalizes, producing probabilities that sum to 1."},
+  {id:"eq_pre_10b",lecture:"Lec 8",topic:"Softmax Regression",type:"mc",label:"Equation: Formula → Name",q:"What function is shown here, and what is it used for?",equation:"p̂ₖ = exp(sₖ(x)) / Σⱼ₌₁ᴷ exp(sⱼ(x))",opts:["Sigmoid function for binary classification","Softmax function for multi-class probability estimation","ReLU activation function","Gini impurity measure"],ans:1,exp:"This is the softmax (normalized exponential) function. It converts K class scores into probabilities that sum to 1. Used in softmax regression and neural network output layers for multi-class classification."},
+  {id:"eq_pre_11a",lecture:"Lec 8",topic:"Softmax Regression",type:"mc",label:"Equation: Name → Formula",q:"What is the cross-entropy cost function for softmax regression?",opts:["J(Θ) = −(1/m) Σᵢ Σₖ yₖ⁽ⁱ⁾ log(p̂ₖ⁽ⁱ⁾)","J(Θ) = (1/m) Σ(θᵀx − y)²","J(Θ) = −(1/m) Σ[y log(p̂) + (1−y)log(1−p̂)]","J(Θ) = Σₖ |θₖ|²"],ans:0,exp:"Softmax cross-entropy: J(Θ) = −(1/m) Σᵢ₌₁ᵐ Σₖ₌₁ᴷ yₖ⁽ⁱ⁾ log(p̂ₖ⁽ⁱ⁾). yₖ⁽ⁱ⁾ is 1 only for the correct class k of instance i."},
+  {id:"eq_pre_11b",lecture:"Lec 8",topic:"Softmax Regression",type:"mc",label:"Equation: Formula → Name",q:"What cost function is shown here, and when is it used?",equation:"J(Θ) = −(1/m) Σᵢ₌₁ᵐ Σₖ₌₁ᴷ yₖ⁽ⁱ⁾ log(p̂ₖ⁽ⁱ⁾)",opts:["Binary cross-entropy for logistic regression","MSE for regression","Cross-entropy (log loss) for softmax / multi-class classification","Hinge loss for SVM"],ans:2,exp:"This is the cross-entropy cost for softmax regression. It generalizes binary log loss to K classes. Only the log probability of the correct class contributes to the loss."},
+  {id:"eq_pre_12a",lecture:"Lec 9",topic:"SVMs",type:"mc",label:"Equation: Name → Formula",q:"What is the SVM decision function used to classify an instance?",opts:["ŷ = 1 if wᵀx + b ≥ 0, else 0","ŷ = σ(wᵀx + b)","ŷ = argmax sₖ(x)","ŷ = wᵀx + b − 1"],ans:0,exp:"SVM decision function: predict class 1 if wᵀx + b ≥ 0, else predict class 0. The decision boundary is where wᵀx + b = 0; margins are at wᵀx + b = ±1."},
+  {id:"eq_pre_12b",lecture:"Lec 9",topic:"SVMs",type:"mc",label:"Equation: Formula → Name",q:"What classifier uses this decision function and what do the dashed lines wᵀx + b = ±1 represent?",equation:"ŷ = 0 if wᵀx + b < 0,  ŷ = 1 if wᵀx + b ≥ 0",opts:["Logistic regression; the confidence interval","SVM; the margin boundaries (support vectors lie on these lines)","Softmax regression; the per-class scores","Linear regression; the prediction bounds"],ans:1,exp:"This is the SVM decision function. The boundary is at wᵀx + b = 0. The dashed margin lines are at wᵀx + b = ±1. Support vectors are the instances exactly on these lines."},
+  {id:"eq_pre_13a",lecture:"Lec 9",topic:"SVMs",type:"mc",label:"Equation: Name → Formula",q:"What is the SVM hard margin primal optimization objective?",opts:["minimize (1/2)wᵀw  subject to t⁽ⁱ⁾(wᵀx⁽ⁱ⁾ + b) ≥ 1","minimize Σζ⁽ⁱ⁾  subject to wᵀw ≤ 1","minimize wᵀw + C Σζ⁽ⁱ⁾","maximize 1/‖w‖  subject to wᵀx + b = 0"],ans:0,exp:"Hard margin SVM: minimize (1/2)wᵀw subject to t⁽ⁱ⁾(wᵀx⁽ⁱ⁾+b) ≥ 1 for all i. Minimizing ‖w‖ maximizes the margin (margin width = 2/‖w‖)."},
+  {id:"eq_pre_13b",lecture:"Lec 9",topic:"SVMs",type:"mc",label:"Equation: Formula → Name",q:"What optimization problem is described here?",equation:"minimize (1/2)wᵀw  subject to: t⁽ⁱ⁾(wᵀx⁽ⁱ⁾ + b) ≥ 1  for i = 1,...,m",opts:["Soft margin SVM with slack variables","Hard margin SVM — maximize margin with no violations allowed","Ridge regression — minimize weights","Logistic regression decision boundary"],ans:1,exp:"This is the SVM hard margin primal. Minimizing (1/2)wᵀw is equivalent to maximizing the margin. The constraint enforces that all instances are correctly classified with margin ≥ 1."},
+  {id:"eq_pre_14a",lecture:"Lec 9",topic:"SVMs",type:"mc",label:"Equation: Name → Formula",q:"What is the SVM soft margin primal objective (with slack variables)?",opts:["minimize (1/2)wᵀw + C Σᵢζ⁽ⁱ⁾  s.t. t⁽ⁱ⁾(wᵀx⁽ⁱ⁾+b) ≥ 1−ζ⁽ⁱ⁾ and ζ⁽ⁱ⁾ ≥ 0","minimize wᵀw  s.t. t⁽ⁱ⁾(wᵀx⁽ⁱ⁾+b) ≥ 1","minimize (1/2)wᵀw  s.t. wᵀx + b = 0","minimize C Σζ⁽ⁱ⁾  s.t. ‖w‖ ≤ 1"],ans:0,exp:"Soft margin: minimize (1/2)wᵀw + C Σζ⁽ⁱ⁾ subject to t⁽ⁱ⁾(wᵀx⁽ⁱ⁾+b) ≥ 1−ζ⁽ⁱ⁾ and ζ⁽ⁱ⁾≥0. C controls the tradeoff between margin size and margin violations."},
+  {id:"eq_pre_14b",lecture:"Lec 9",topic:"SVMs",type:"mc",label:"Equation: Formula → Name",q:"What does this optimization problem represent, and what does C control?",equation:"minimize (1/2)wᵀw + C Σᵢ ζ⁽ⁱ⁾   s.t. t⁽ⁱ⁾(wᵀx⁽ⁱ⁾+b) ≥ 1−ζ⁽ⁱ⁾,  ζ⁽ⁱ⁾ ≥ 0",opts:["Hard margin SVM; C controls class weights","Soft margin SVM primal; C controls the tradeoff between margin size and margin violations","Ridge regression primal; C is the regularization strength","Lasso primal; ζ are the slack variables for sparsity"],ans:1,exp:"Soft margin SVM. Slack variables ζ⁽ⁱ⁾ allow margin violations. Large C = smaller margin, fewer violations (low bias, high variance). Small C = wider margin, more violations (higher bias, lower variance)."}
+];
+
+const LETTERS=['A','B','C','D','E','F','G','H','I','J'];
+function getMissed(){try{return JSON.parse(localStorage.getItem('ml_missed_questions')||'{}');}catch{return{};}}
+function saveMissed(d){localStorage.setItem('ml_missed_questions',JSON.stringify(d));}
+function getMissedCount(){return Object.keys(getMissed()).length;}
+function recordMiss(q){const m=getMissed(),s=JSON.parse(localStorage.getItem('ml_streak_data')||'{}');m[q.id]={id:q.id,lecture:q.lecture,topic:q.topic};s[q.id]=0;saveMissed(m);localStorage.setItem('ml_streak_data',JSON.stringify(s));}
+function getSeen(key){try{return JSON.parse(localStorage.getItem(key)||'[]');}catch{return[];}}
+function saveSeen(key,arr){localStorage.setItem(key,JSON.stringify(arr));}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function shuffleOpts(q){if(q.type==='tf')return{opts:q.opts,ans:q.ans};const idxs=shuffle(q.opts.map((_,i)=>i));const map={};idxs.forEach((old,n)=>{map[old]=n;});return{opts:idxs.map(i=>q.opts[i]),ans:Array.isArray(q.ans)?q.ans.map(i=>map[i]):map[q.ans]};}
+const TOTAL=ALL_QUESTIONS.length;const ROUND_SIZE=20;
+function getUnseenPool(){const seen=new Set(getSeen(SEEN_KEY));return ALL_QUESTIONS.map(q=>q.id).filter(id=>!seen.has(id));}
+function pickRound(){
+  let pool=getUnseenPool();
+  if(pool.length<=ROUND_SIZE){
+    const picked=shuffle(pool);saveSeen(SEEN_KEY,[]);
+    if(picked.length<ROUND_SIZE){const extras=shuffle(ALL_QUESTIONS.map(q=>q.id).filter(id=>!picked.includes(id)));picked.push(...extras.slice(0,ROUND_SIZE-picked.length));}
+    saveSeen(SEEN_KEY,picked);return picked.map(id=>ALL_QUESTIONS.find(q=>q.id===id)).filter(Boolean);
+  }else{const picked=shuffle(pool).slice(0,ROUND_SIZE);const seen=getSeen(SEEN_KEY);saveSeen(SEEN_KEY,[...seen,...picked]);return picked.map(id=>ALL_QUESTIONS.find(q=>q.id===id)).filter(Boolean);}
+}
+let deck=[],idx=0,score=0,answered=0,selectedMulti=new Set(),currentAns=null;
+function updateSeenBar(){const seen=getSeen(SEEN_KEY).length;document.getElementById('seenProgress').textContent=Math.min(seen,TOTAL)+' / '+TOTAL;}
+function init(){deck=pickRound();idx=0;score=0;answered=0;updateSeenBar();renderQ();}
+function renderQ(){
+  const q=deck[idx];selectedMulti=new Set();
+  document.getElementById('metaLecture').textContent=q.lecture;document.getElementById('metaTopic').textContent=q.topic;
+  document.getElementById('qTypeBadge').textContent=q.label;document.getElementById('qHint').style.display=q.type==='ms'?'block':'none';
+  document.getElementById('qText').textContent=q.q;
+  const eqEl=document.getElementById('qEquation');if(q.equation){eqEl.textContent=q.equation;eqEl.style.display='block';}else{eqEl.style.display='none';}
+  document.getElementById('explanation').classList.remove('show');document.getElementById('explanation').textContent='';
+  document.getElementById('missedNotice').classList.remove('show');document.getElementById('btnNext').classList.remove('show');document.getElementById('btnSubmit').classList.remove('show');
+  const{opts,ans}=shuffleOpts(q);currentAns=ans;
+  const div=document.getElementById('optionsDiv');div.innerHTML='';
+  opts.forEach((o,i)=>{
+    const el=document.createElement('div');el.className='opt';
+    const ind=document.createElement('span');ind.className='opt-indicator';ind.textContent=q.type==='ms'?'☐':LETTERS[i];
+    if(q.optEquations&&q.optEquations[i]){
+      const txt=document.createElement('div');txt.style.display='flex';txt.style.flexDirection='column';txt.style.gap='4px';
+      const label=document.createElement('span');label.className='opt-text';label.textContent=o;
+      txt.appendChild(label);
+      el.appendChild(ind);el.appendChild(txt);
+    }else{
+      const txt=document.createElement('span');txt.className='opt-text';txt.textContent=o;
+      el.appendChild(ind);el.appendChild(txt);
+    }
+    if(q.type==='ms'){el.onclick=()=>{if(el.classList.contains('disabled'))return;if(selectedMulti.has(i)){selectedMulti.delete(i);el.classList.remove('selected');ind.textContent='☐';}else{selectedMulti.add(i);el.classList.add('selected');ind.textContent='☑';}document.getElementById('btnSubmit').classList.toggle('show',selectedMulti.size>0);};}
+    else{el.onclick=()=>resolveSingle(i);}
+    div.appendChild(el);
+  });
+  document.getElementById('qCounter').textContent='Question '+(idx+1)+' of '+deck.length;
+  document.getElementById('progressFill').style.width=Math.round((idx/deck.length)*100)+'%';
+  document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+}
+function resolveSingle(chosen){
+  const correct=chosen===currentAns;const opts=document.getElementById('optionsDiv').children;
+  for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(i===currentAns){opts[i].classList.add(correct&&i===chosen?'correct':'reveal-correct');ind.textContent='✓';}else if(i===chosen){opts[i].classList.add('wrong');ind.textContent='✗';}}
+  finalize(correct);
+}
+function submitMulti(){
+  const correctSet=new Set(Array.isArray(currentAns)?currentAns:[currentAns]);const correct=selectedMulti.size===correctSet.size&&[...selectedMulti].every(i=>correctSet.has(i));
+  const opts=document.getElementById('optionsDiv').children;
+  for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('correct');ind.textContent='✓';}else if(!correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('wrong');ind.textContent='✗';}else if(correctSet.has(i)&&!selectedMulti.has(i)){opts[i].classList.add('reveal-correct');ind.textContent='✓';}}
+  document.getElementById('btnSubmit').classList.remove('show');finalize(correct);
+}
+function finalize(correct){
+  if(correct){score++;}else{recordMiss(deck[idx]);document.getElementById('missedNotice').classList.add('show');}
+  answered++;document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+  const exp=document.getElementById('explanation');exp.textContent=(correct?'✓ Correct. ':'✗ Incorrect. ')+deck[idx].exp;exp.classList.add('show');document.getElementById('btnNext').classList.add('show');
+}
+function nextQ(){idx++;if(idx>=deck.length)showSummary();else renderQ();}
+function showSummary(){
+  document.getElementById('questionCard').style.display='none';document.getElementById('btnNext').style.display='none';document.getElementById('qCounter').style.display='none';document.getElementById('progressFill').style.width='100%';
+  const pct=Math.round((score/deck.length)*100);document.getElementById('summaryScore').textContent=pct+'%';document.getElementById('summaryFrac').textContent=score+' out of '+deck.length+' correct';
+  document.getElementById('summaryMsg').textContent=pct>=85?'Strong round — keep going!':pct>=65?'Good effort. Review your misses, then do another round.':'Keep drilling — do the missed deck, then come back for another round.';
+  const seen=Math.min(getSeen(SEEN_KEY).length,TOTAL);document.getElementById('summarySeen').textContent='You have now seen '+seen+' of '+TOTAL+' total questions in this deck.';
+  const mc=getMissedCount();if(mc>0){document.getElementById('summaryMissedBox').style.display='block';document.getElementById('summaryMissedBox').textContent=mc+' question'+(mc!==1?'s':'')+' in your missed deck.';document.getElementById('linkMissed').style.display='inline-block';}
+  document.getElementById('summary').classList.add('show');
+}
+function newRound(){
+  idx=0;score=0;answered=0;deck=pickRound();
+  document.getElementById('questionCard').style.display='block';document.getElementById('btnNext').style.display='';document.getElementById('btnNext').classList.remove('show');document.getElementById('qCounter').style.display='block';
+  document.getElementById('summary').classList.remove('show');document.getElementById('summaryMissedBox').style.display='none';document.getElementById('linkMissed').style.display='none';
+  updateSeenBar();renderQ();
+}
+init();
+
+</script>
+</body>
+</html>

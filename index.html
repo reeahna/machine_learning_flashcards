@@ -45,6 +45,19 @@
   .info-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;font-size:13px;color:var(--muted);line-height:1.7;}
   .info-box strong{color:var(--text);font-weight:500;}
   footer{text-align:center;padding:2rem;font-size:12px;color:var(--muted);border-top:1px solid var(--border);}
+
+  .quick-nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:2rem;}
+  .nav-pill{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:99px;font-size:13px;font-weight:500;text-decoration:none;border:1.5px solid var(--border);background:var(--surface);color:var(--text);transition:border-color 0.15s,background 0.15s,color 0.15s;white-space:nowrap;}
+  .nav-pill:hover{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
+  .nav-pill.nav-pre{border-color:#0891b2;color:#0891b2;background:#f0f9ff;}
+  .nav-pill.nav-pre:hover{background:#e0f2fe;}
+  .nav-pill.nav-post{border-color:#7c3aed;color:#7c3aed;background:var(--purple-bg);}
+  .nav-pill.nav-post:hover{background:#ede9fe;}
+  .nav-pill.nav-eq-pre{border-color:#059669;color:#059669;background:#f0fdf4;}
+  .nav-pill.nav-eq-pre:hover{background:#dcfce7;}
+  .nav-pill.nav-eq-post{border-color:#d97706;color:#d97706;background:var(--orange-bg);}
+  .nav-pill.nav-eq-post:hover{background:#fef3c7;}
+  .nav-section-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:0;}
 </style>
 </head>
 <body>
@@ -54,6 +67,14 @@
   <p class="subtitle">Multiple choice, true/false &amp; multi-select practice — all lectures</p>
 </header>
 <main>
+  <p class="nav-section-label">Quick Access Decks</p>
+  <div class="quick-nav">
+    <a href="review.html" class="nav-pill">🔀 Full Review</a>
+    <a href="review_premidterm.html" class="nav-pill nav-pre">📘 Pre-Midterm Review</a>
+    <a href="review_postmidterm.html" class="nav-pill nav-post">📗 Post-Midterm Review</a>
+    <a href="equations_premidterm.html" class="nav-pill nav-eq-pre">∑ Pre-Midterm Equations</a>
+    <a href="equations_postmidterm.html" class="nav-pill nav-eq-post">∑ Post-Midterm Equations</a>
+  </div>
   <a href="missed.html" class="missed-hero" id="missedHero">
     <div class="missed-hero-left">
       <div class="missed-hero-icon">⚠️</div>

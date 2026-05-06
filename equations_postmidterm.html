@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post-Midterm Equations</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{--bg:#f5f4f0;--surface:#ffffff;--surface2:#f0eeea;--border:#e2dfd8;--text:#1a1916;--muted:#8a8680;--accent:#5046e4;--accent-dim:rgba(80,70,228,0.08);--accent-border:rgba(80,70,228,0.2);--orange:#d97706;--orange-bg:#fff7ed;--orange-border:#fed7aa;--green:#16a34a;--green-bg:#f0fdf4;--green-border:#86efac;--red:#dc2626;--red-bg:#fef2f2;--red-border:#fca5a5;--purple:#7c3aed;--purple-bg:#f5f3ff;--purple-border:#ddd6fe;--reveal-bg:#fafaf9;--yellow-bg:#fefce8;--yellow-border:#fde68a;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+  .header-left{display:flex;align-items:center;gap:1rem;}
+  .back-link{font-size:13px;color:var(--muted);text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);}
+  .back-link:hover{border-color:var(--accent);color:var(--accent);}
+  .header-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text);}
+  .header-badge{font-size:11px;font-weight:600;letter-spacing:0.06em;padding:3px 10px;border-radius:99px;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+  .score-display{font-size:13px;color:var(--muted);}
+  .progress-wrap{height:3px;background:var(--border);}
+  .progress-fill{height:100%;background:var(--accent);width:0%;transition:width 0.3s;}
+  main{max-width:680px;margin:0 auto;padding:2rem 1.5rem;width:100%;display:flex;flex-direction:column;flex:1;}
+  .seen-bar{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:1rem;}
+  .seen-progress{font-weight:600;color:var(--purple);}
+  .q-counter{font-size:13px;color:var(--muted);margin-bottom:1rem;}
+  .question-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;display:flex;flex-direction:column;gap:1rem;}
+  .meta-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .meta-tag{font-size:11px;font-weight:600;letter-spacing:0.06em;padding:2px 9px;border-radius:99px;}
+  .meta-lecture{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+  .meta-topic{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  .q-type-badge{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .q-hint{font-size:13px;color:var(--accent);font-weight:500;display:none;}
+  .q-text{font-size:16px;color:var(--text);line-height:1.65;font-weight:500;}
+  .q-equation{display:none;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:8px;padding:14px 18px;font-size:16px;font-family:'Georgia',serif;text-align:center;line-height:1.8;color:var(--text);}
+  .options{display:flex;flex-direction:column;gap:8px;}
+  .opt{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color 0.12s,background 0.12s;}
+  .opt:hover{border-color:var(--accent);background:var(--accent-dim);}
+  .opt.selected{border-color:var(--accent);background:var(--accent-dim);}
+  .opt-indicator{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;background:var(--surface);color:var(--muted);}
+  .opt-text{font-size:15px;color:var(--text);line-height:1.5;}
+  .opt-equation{display:block;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:6px;padding:8px 12px;font-size:14px;font-family:'Georgia',serif;text-align:center;line-height:1.8;color:var(--text);margin-top:4px;}
+  .opt.correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.wrong{border-color:var(--red-border);background:var(--red-bg);}
+  .opt.wrong .opt-indicator{background:var(--red);color:#fff;border-color:var(--red);}
+  .opt.reveal-correct{border-color:var(--green-border);background:var(--green-bg);}
+  .opt.reveal-correct .opt-indicator{background:var(--green);color:#fff;border-color:var(--green);}
+  .opt.disabled{cursor:default;}
+  .btn-submit{display:none;margin-top:1rem;background:var(--accent);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-submit.show{display:block;}
+  .explanation{display:none;margin-top:1.25rem;padding:14px 16px;border-radius:10px;background:var(--reveal-bg);border-left:3px solid var(--purple);font-size:14px;color:var(--muted);line-height:1.7;}
+  .explanation.show{display:block;}
+  .missed-notice{display:none;margin-top:10px;padding:10px 14px;border-radius:8px;background:var(--orange-bg);border:1px solid var(--orange-border);font-size:13px;color:var(--orange);font-weight:500;}
+  .missed-notice.show{display:block;}
+  .btn-next{display:none;margin-top:1.5rem;align-self:flex-end;background:var(--purple);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .btn-next.show{display:block;}
+  .summary{display:none;flex-direction:column;align-items:center;text-align:center;padding:3rem 2rem;width:100%;}
+  .summary.show{display:flex;}
+  .summary-score{font-family:'DM Serif Display',serif;font-size:72px;color:var(--purple);line-height:1;margin-bottom:0.5rem;}
+  .summary-label{font-size:14px;color:var(--muted);margin-bottom:0.25rem;}
+  .summary-msg{font-size:17px;color:var(--text);margin:1.25rem 0 0.75rem;line-height:1.6;max-width:420px;}
+  .summary-seen{font-size:14px;color:var(--purple);background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:10px;padding:10px 18px;margin-bottom:1.5rem;}
+  .summary-missed-box{font-size:14px;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:10px;padding:10px 18px;margin-bottom:1.5rem;display:none;}
+  .btn-group{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .btn-new-round{background:var(--purple);color:#fff;border:none;padding:11px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+  .link-missed{font-size:14px;color:var(--orange);text-decoration:none;padding:10px 24px;border:1px solid var(--orange-border);border-radius:10px;background:var(--orange-bg);display:none;}
+  .link-home{font-size:14px;color:var(--muted);text-decoration:none;margin-top:0.25rem;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="header-title">Post-Midterm Equations</span>
+    <span class="header-badge">Lectures 10–19 · All equations · 20 per round</span>
+  </div>
+  <div class="score-display">Score: <span id="scoreDisplay">0 / 0</span></div>
+</header>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+<main>
+  <div class="seen-bar">
+    <span class="seen-label" id="seenLabel">Questions seen in this deck:</span>
+    <span class="seen-progress" id="seenProgress"></span>
+  </div>
+  <div class="q-counter" id="qCounter">Question 1 of 20</div>
+  <div class="question-card" id="questionCard">
+    <div class="meta-row"><span class="meta-tag meta-lecture" id="metaLecture"></span><span class="meta-tag meta-topic" id="metaTopic"></span></div>
+    <div class="q-type-badge" id="qTypeBadge"></div>
+    <div class="q-hint" id="qHint">Select all that apply, then click Submit.</div>
+    <p class="q-text" id="qText"></p>
+    <div class="q-equation" id="qEquation"></div>
+    <div class="options" id="optionsDiv"></div>
+    <button class="btn-submit" id="btnSubmit" onclick="submitMulti()">Submit answer</button>
+    <div class="explanation" id="explanation"></div>
+    <div class="missed-notice" id="missedNotice">⚠ Added to your missed questions deck.</div>
+  </div>
+  <button class="btn-next" id="btnNext" onclick="nextQ()">Next question →</button>
+  <div class="summary" id="summary">
+    <div class="summary-label">Round complete</div>
+    <div class="summary-score" id="summaryScore"></div>
+    <div class="summary-label" id="summaryFrac"></div>
+    <p class="summary-msg" id="summaryMsg"></p>
+    <div class="summary-seen" id="summarySeen"></div>
+    <div class="summary-missed-box" id="summaryMissedBox"></div>
+    <div class="btn-group">
+      <button class="btn-new-round" onclick="newRound()">Next round of 20 →</button>
+      <a href="missed.html" class="link-missed" id="linkMissed">Review missed questions →</a>
+      <a href="index.html" class="link-home">← Back</a>
+    </div>
+  </div>
+</main>
+<script>
+const SEEN_KEY='ml_eq_postmidterm';
+const ALL_QUESTIONS=[
+  {id:"eq_post_01a",lecture:"Lec 10",topic:"Decision Trees",type:"mc",label:"Equation: Name → Formula",q:"What is the Gini impurity formula for a node i?",opts:["Gᵢ = 1 − Σₖ pᵢ,ₖ²","Gᵢ = −Σₖ pᵢ,ₖ log₂(pᵢ,ₖ)","Gᵢ = Σₖ pᵢ,ₖ(1−pᵢ,ₖ)","Gᵢ = 1 − max(pᵢ,ₖ)"],ans:0,exp:"Gini impurity: Gᵢ = 1 − Σₖ pᵢ,ₖ². pᵢ,ₖ is the ratio of class k instances in node i. Gini = 0 means the node is pure (all one class)."},
+  {id:"eq_post_01b",lecture:"Lec 10",topic:"Decision Trees",type:"mc",label:"Equation: Formula → Name",q:"What impurity measure is shown here, and what does a value of 0 indicate?",equation:"Gᵢ = 1 − Σₖ pᵢ,ₖ²",opts:["Entropy; value of 0 means maximum disorder","Gini impurity; value of 0 means the node is pure (all one class)","Mean squared error; 0 means perfect prediction","Cross-entropy loss; 0 means correct classification"],ans:1,exp:"Gini impurity. Gᵢ = 0 when all instances in the node belong to the same class (pure node). Maximum impurity is 0.5 for a binary problem with equal split."},
+  {id:"eq_post_02a",lecture:"Lec 10",topic:"Decision Trees",type:"mc",label:"Equation: Name → Formula",q:"What is the entropy formula used as an alternative splitting criterion in decision trees?",opts:["Hᵢ = −Σₖ pᵢ,ₖ log₂(pᵢ,ₖ)  (for pᵢ,ₖ > 0)","Hᵢ = 1 − Σₖ pᵢ,ₖ²","Hᵢ = Σₖ pᵢ,ₖ²","Hᵢ = Σₖ pᵢ,ₖ(1−pᵢ,ₖ)"],ans:0,exp:"Entropy: Hᵢ = −Σₖ pᵢ,ₖ log₂(pᵢ,ₖ) (summed only where pᵢ,ₖ > 0). Zero when the node contains only one class. Entropy is the alternative to Gini in CART."},
+  {id:"eq_post_02b",lecture:"Lec 10",topic:"Decision Trees",type:"mc",label:"Equation: Formula → Name",q:"What impurity measure is this, and how does it compare to Gini impurity?",equation:"Hᵢ = − Σₖ pᵢ,ₖ log₂(pᵢ,ₖ)   (only for pᵢ,ₖ ≠ 0)",opts:["Gini impurity; identical to Gini in all cases","Entropy; slightly slower to compute but tends to produce more balanced trees","Cross-entropy loss function for neural networks","Information gain; used to select the root node only"],ans:1,exp:"This is entropy. It is slower to compute than Gini but tends to produce slightly more balanced trees. Both criteria lead to similar results in practice."},
+  {id:"eq_post_03a",lecture:"Lec 10",topic:"Decision Trees",type:"mc",label:"Equation: Name → Formula",q:"What is the CART cost function for classification?",opts:["J(k,tₖ) = (m_left/m)·G_left + (m_right/m)·G_right","J(k,tₖ) = G_left + G_right","J(k,tₖ) = (m_left/m)·MSE_left + (m_right/m)·MSE_right","J(k,tₖ) = min(G_left, G_right)"],ans:0,exp:"CART classification cost: J(k,tₖ) = (m_left/m)·G_left + (m_right/m)·G_right. It finds the feature k and threshold tₖ that minimizes this weighted sum of impurities."},
+  {id:"eq_post_03b",lecture:"Lec 10",topic:"Decision Trees",type:"mc",label:"Equation: Formula → Name",q:"What does this cost function optimize, and which algorithm uses it?",equation:"J(k, tₖ) = (m_left/m) · G_left + (m_right/m) · G_right",opts:["MSE for linear regression splits","CART cost function for classification — minimized to choose the best split at each node","Entropy-based information gain","Silhouette score for clustering"],ans:1,exp:"CART classification cost. The algorithm searches for the (k, tₖ) pair that minimizes this weighted Gini impurity. m_left/m and m_right/m are the proportions going to each child."},
+  {id:"eq_post_04a",lecture:"Lec 10",topic:"Decision Trees",type:"mc",label:"Equation: Name → Formula",q:"What is the CART cost function for regression (DecisionTreeRegressor)?",opts:["J(k,tₖ) = (m_left/m)·MSE_left + (m_right/m)·MSE_right","J(k,tₖ) = (m_left/m)·G_left + (m_right/m)·G_right","J(k,tₖ) = MSE_left + MSE_right","J(k,tₖ) = (1/m) Σ(ŷ − y)²"],ans:0,exp:"CART regression cost: J(k,tₖ) = (m_left/m)·MSE_left + (m_right/m)·MSE_right. Same structure as classification but minimizes MSE instead of Gini impurity. Leaf nodes predict the mean target value."},
+  {id:"eq_post_04b",lecture:"Lec 10",topic:"Decision Trees",type:"mc",label:"Equation: Formula → Name",q:"What does this cost function do, and what does a leaf node predict?",equation:"J(k, tₖ) = (m_left/m) · MSE_left + (m_right/m) · MSE_right",opts:["CART regression cost — splits to minimize weighted MSE; leaf predicts mean target value","CART classification cost — splits to minimize Gini impurity","Random forest split criterion","Gradient boosting residual loss"],ans:0,exp:"CART regression cost. Each split is chosen to minimize the weighted average MSE of the two child nodes. Leaf nodes predict the mean target value of all instances reaching that leaf."},
+  {id:"eq_post_05a",lecture:"Lec 13",topic:"K-Means",type:"mc",label:"Equation: Name → Formula",q:"What is the silhouette coefficient formula for an instance?",opts:["(b − a) / max(a, b)","(a − b) / max(a, b)","(b − a) / (a + b)","a / (a + b)"],ans:0,exp:"Silhouette coefficient: (b−a)/max(a,b). a = mean intra-cluster distance (same cluster), b = mean nearest-cluster distance. Ranges from −1 (wrong cluster) to +1 (well placed)."},
+  {id:"eq_post_05b",lecture:"Lec 13",topic:"K-Means",type:"mc",label:"Equation: Formula → Name",q:"What metric does this formula compute, and what does a value near +1 mean?",equation:"silhouette = (b − a) / max(a, b)",opts:["Gini impurity; +1 means pure node","Silhouette coefficient; +1 means the instance is well inside its cluster and far from others","BIC score; +1 means optimal number of clusters","Inertia; +1 means tight clustering"],ans:1,exp:"Silhouette coefficient. a = mean distance to same-cluster instances, b = mean distance to the closest other cluster. Near +1 = well-placed. Near 0 = on boundary. Near −1 = likely wrong cluster."},
+  {id:"eq_post_06a",lecture:"Lec 14",topic:"Gaussian Mixtures",type:"mc",label:"Equation: Name → Formula",q:"What is the Bayesian Information Criterion (BIC) formula?",opts:["BIC = log(m)·p − 2·log(L̂)","BIC = 2p − 2·log(L̂)","BIC = p·log(m) + 2·log(L̂)","BIC = −2·log(L̂) / m"],ans:0,exp:"BIC = log(m)·p − 2·log(L̂). m = number of instances, p = number of model parameters, L̂ = maximized likelihood. Lower BIC is better. BIC penalizes complexity more than AIC."},
+  {id:"eq_post_06b",lecture:"Lec 14",topic:"Gaussian Mixtures",type:"mc",label:"Equation: Formula → Name",q:"What criterion is shown here, and are lower or higher values preferred?",equation:"BIC = log(m) · p − 2 · log(L̂)",opts:["AIC (Akaike Information Criterion); higher is better","BIC (Bayesian Information Criterion); lower is better","Log-likelihood; higher is better","Inertia for K-Means; lower is better"],ans:1,exp:"BIC (Bayesian Information Criterion). Lower BIC = better model. It balances fit (log-likelihood) against complexity (number of parameters p). BIC penalizes complexity more than AIC because it uses log(m) vs 2 as the multiplier."},
+  {id:"eq_post_07a",lecture:"Lec 14",topic:"Gaussian Mixtures",type:"mc",label:"Equation: Name → Formula",q:"What is the Akaike Information Criterion (AIC) formula?",opts:["AIC = 2p − 2·log(L̂)","AIC = log(m)·p − 2·log(L̂)","AIC = −2·log(L̂) + 2p/m","AIC = 2·log(L̂) − p"],ans:0,exp:"AIC = 2p − 2·log(L̂). p = number of parameters, L̂ = maximized likelihood. Lower AIC is better. AIC penalizes complexity less than BIC (uses coefficient 2 vs log(m))."},
+  {id:"eq_post_07b",lecture:"Lec 14",topic:"Gaussian Mixtures",type:"mc",label:"Equation: Formula → Name",q:"What is this criterion, and how does it differ from BIC?",equation:"AIC = 2p − 2 · log(L̂)",opts:["BIC; more lenient about complexity than AIC","AIC (Akaike Information Criterion); penalizes complexity less than BIC (coefficient 2 vs log(m))","Log-likelihood ratio test statistic","Cross-entropy loss for GMMs"],ans:1,exp:"AIC (Akaike Information Criterion). Lower = better. AIC uses coefficient 2 for the penalty term; BIC uses log(m). So AIC is more lenient about complex models, tending to select models with more parameters."},
+  {id:"eq_post_08a",lecture:"Lec 15",topic:"Neural Networks",type:"mc",label:"Equation: Name → Formula",q:"What is the sigmoid activation function as used in neural networks?",opts:["σ(z) = 1 / (1 + exp(−z))","σ(z) = max(0, z)","σ(z) = 2/(1+exp(−2z)) − 1","σ(z) = exp(z) / Σ exp(zⱼ)"],ans:0,exp:"Sigmoid: σ(z) = 1/(1+exp(−z)). Outputs in (0,1). Used in output layers for binary classification. As a hidden layer activation it can suffer from vanishing gradients."},
+  {id:"eq_post_08b",lecture:"Lec 15",topic:"Neural Networks",type:"mc",label:"Equation: Formula → Name",q:"This activation function is used in neural networks. What is it and what is a known limitation?",equation:"σ(z) = 1 / (1 + exp(−z))",opts:["ReLU; can produce dying neurons","Tanh; outputs are not centered at zero","Sigmoid; can suffer from vanishing gradients in deep networks","Softmax; does not normalize outputs"],ans:2,exp:"Sigmoid outputs (0,1). In deep networks, repeated sigmoid activations can cause vanishing gradients (gradients become very small), slowing training. ReLU is generally preferred for hidden layers."},
+  {id:"eq_post_09a",lecture:"Lec 15",topic:"Neural Networks",type:"mc",label:"Equation: Name → Formula",q:"What is the tanh activation function, expressed in terms of the sigmoid?",opts:["tanh(z) = 2σ(2z) − 1","tanh(z) = 2σ(z) − 1","tanh(z) = σ(2z)","tanh(z) = (σ(z) − 0.5) × 2"],ans:0,exp:"tanh(z) = 2σ(2z) − 1. Outputs in (−1, 1), centered around 0. This centering often helps speed up convergence compared to sigmoid."},
+  {id:"eq_post_09b",lecture:"Lec 15",topic:"Neural Networks",type:"mc",label:"Equation: Formula → Name",q:"What activation function is described here, and why is it preferred over sigmoid for hidden layers?",equation:"tanh(z) = 2σ(2z) − 1,   output range: (−1, 1)",opts:["Sigmoid; output range is (0,1) which is better for probabilities","ReLU; output range (0,∞) avoids vanishing gradients","Tanh; outputs are zero-centered, which often speeds up convergence","Softmax; outputs sum to 1 across all neurons"],ans:2,exp:"Tanh outputs are centered around 0 (range −1 to 1). Zero-centered outputs mean each layer starts with inputs near 0, which typically speeds up gradient descent convergence vs sigmoid."},
+  {id:"eq_post_10a",lecture:"Lec 15",topic:"Neural Networks",type:"mc",label:"Equation: Name → Formula",q:"What is the ReLU (Rectified Linear Unit) activation function?",opts:["ReLU(z) = max(0, z)","ReLU(z) = max(−0.1z, z)","ReLU(z) = z if z > 0 else −z","ReLU(z) = 1/(1+exp(−z))"],ans:0,exp:"ReLU(z) = max(0, z). Outputs 0 for negative inputs and z for positive inputs. Has no maximum, which helps reduce vanishing gradients. The default activation for hidden layers in modern DNNs."},
+  {id:"eq_post_10b",lecture:"Lec 15",topic:"Neural Networks",type:"mc",label:"Equation: Formula → Name",q:"What activation function is shown here, and why is it the default for DNN hidden layers?",equation:"ReLU(z) = max(0, z)",opts:["Sigmoid; widely used because it outputs probabilities","Tanh; preferred because it is zero-centered","ReLU; no maximum output value helps reduce vanishing gradients, and it is computationally efficient","Softmax; converts scores to probabilities"],ans:2,exp:"ReLU (Rectified Linear Unit). No maximum output reduces vanishing gradients compared to sigmoid/tanh. Computationally simple (just a threshold). Default for hidden layers in most modern neural networks."},
+  {id:"eq_post_11a",lecture:"Lec 19",topic:"CNNs",type:"mc",label:"Equation: Name → Formula",q:"What is the formula for the number of parameters in a convolutional layer?",opts:["(f_h × f_w × channels_in + 1) × n_filters","f_h × f_w × n_filters","(f_h × f_w × channels_in) × n_filters","f_h × f_w × channels_in × channels_out + 1"],ans:0,exp:"CNN layer parameters = (filter_height × filter_width × input_channels + 1) × n_filters. The +1 is the bias term per feature map. Example: 5×5 filters, 3 channels, 200 maps → (5×5×3+1)×200 = 15,200 params."},
+  {id:"eq_post_11b",lecture:"Lec 19",topic:"CNNs",type:"mc",label:"Equation: Formula → Name",q:"What does this formula calculate for a convolutional layer, and why is the +1 there?",equation:"params = (f_h × f_w × channels_in + 1) × n_filters",opts:["Number of multiplications per forward pass; +1 accounts for stride","Number of parameters (weights + biases) in a conv layer; +1 is the bias term per feature map","Memory usage in bytes; +1 is a rounding factor","Output spatial size; +1 accounts for padding"],ans:1,exp:"This counts total parameters in a convolutional layer. Each filter has (f_h × f_w × channels_in) weights plus 1 bias term. Multiplied by the number of filters (feature maps). Example: 5×5 filters, RGB input (3ch), 200 filters → (75+1)×200 = 15,200 params."},
+  {id:"eq_post_12a",lecture:"Lec 15",topic:"Neural Networks",type:"mc",label:"Equation: Name → Formula",q:"What is the gradient descent weight update rule as applied in backpropagation?",opts:["θ⁽ⁿᵉˣᵗ⁾ = θ − η∇θ MSE(θ)","θ⁽ⁿᵉˣᵗ⁾ = θ + η∇θ J(θ)","θ⁽ⁿᵉˣᵗ⁾ = −η∇θ J(θ)","θ⁽ⁿᵉˣᵗ⁾ = θ − ∇θ J(θ)"],ans:0,exp:"Backpropagation applies gradient descent: θ⁽ⁿᵉˣᵗ⁾ = θ − η∇θ MSE(θ). After the backward pass computes gradients via the chain rule, this update moves each weight in the direction that reduces the loss."},
+  {id:"eq_post_12b",lecture:"Lec 15",topic:"Neural Networks",type:"mc",label:"Equation: Formula → Name",q:"This equation is the core weight update step in training neural networks. What algorithm uses it and what does η represent?",equation:"θ⁽ⁿᵉˣᵗ ˢᵗᵉᵖ⁾ = θ − η∇θ MSE(θ)",opts:["The Normal Equation; η is the regularization term","The Gradient Descent update used in backpropagation; η is the learning rate","Ridge regression update; η is the alpha parameter","K-Means centroid update; η is the cluster step size"],ans:1,exp:"Backpropagation applies this gradient descent update after computing each weight's gradient via the chain rule. η is the learning rate — too small = slow convergence, too large = divergence."}
+];
+
+const LETTERS=['A','B','C','D','E','F','G','H','I','J'];
+function getMissed(){try{return JSON.parse(localStorage.getItem('ml_missed_questions')||'{}');}catch{return{};}}
+function saveMissed(d){localStorage.setItem('ml_missed_questions',JSON.stringify(d));}
+function getMissedCount(){return Object.keys(getMissed()).length;}
+function recordMiss(q){const m=getMissed(),s=JSON.parse(localStorage.getItem('ml_streak_data')||'{}');m[q.id]={id:q.id,lecture:q.lecture,topic:q.topic};s[q.id]=0;saveMissed(m);localStorage.setItem('ml_streak_data',JSON.stringify(s));}
+function getSeen(key){try{return JSON.parse(localStorage.getItem(key)||'[]');}catch{return[];}}
+function saveSeen(key,arr){localStorage.setItem(key,JSON.stringify(arr));}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function shuffleOpts(q){if(q.type==='tf')return{opts:q.opts,ans:q.ans};const idxs=shuffle(q.opts.map((_,i)=>i));const map={};idxs.forEach((old,n)=>{map[old]=n;});return{opts:idxs.map(i=>q.opts[i]),ans:Array.isArray(q.ans)?q.ans.map(i=>map[i]):map[q.ans]};}
+const TOTAL=ALL_QUESTIONS.length;const ROUND_SIZE=20;
+function getUnseenPool(){const seen=new Set(getSeen(SEEN_KEY));return ALL_QUESTIONS.map(q=>q.id).filter(id=>!seen.has(id));}
+function pickRound(){
+  let pool=getUnseenPool();
+  if(pool.length<=ROUND_SIZE){
+    const picked=shuffle(pool);saveSeen(SEEN_KEY,[]);
+    if(picked.length<ROUND_SIZE){const extras=shuffle(ALL_QUESTIONS.map(q=>q.id).filter(id=>!picked.includes(id)));picked.push(...extras.slice(0,ROUND_SIZE-picked.length));}
+    saveSeen(SEEN_KEY,picked);return picked.map(id=>ALL_QUESTIONS.find(q=>q.id===id)).filter(Boolean);
+  }else{const picked=shuffle(pool).slice(0,ROUND_SIZE);const seen=getSeen(SEEN_KEY);saveSeen(SEEN_KEY,[...seen,...picked]);return picked.map(id=>ALL_QUESTIONS.find(q=>q.id===id)).filter(Boolean);}
+}
+let deck=[],idx=0,score=0,answered=0,selectedMulti=new Set(),currentAns=null;
+function updateSeenBar(){const seen=getSeen(SEEN_KEY).length;document.getElementById('seenProgress').textContent=Math.min(seen,TOTAL)+' / '+TOTAL;}
+function init(){deck=pickRound();idx=0;score=0;answered=0;updateSeenBar();renderQ();}
+function renderQ(){
+  const q=deck[idx];selectedMulti=new Set();
+  document.getElementById('metaLecture').textContent=q.lecture;document.getElementById('metaTopic').textContent=q.topic;
+  document.getElementById('qTypeBadge').textContent=q.label;document.getElementById('qHint').style.display=q.type==='ms'?'block':'none';
+  document.getElementById('qText').textContent=q.q;
+  const eqEl=document.getElementById('qEquation');if(q.equation){eqEl.textContent=q.equation;eqEl.style.display='block';}else{eqEl.style.display='none';}
+  document.getElementById('explanation').classList.remove('show');document.getElementById('explanation').textContent='';
+  document.getElementById('missedNotice').classList.remove('show');document.getElementById('btnNext').classList.remove('show');document.getElementById('btnSubmit').classList.remove('show');
+  const{opts,ans}=shuffleOpts(q);currentAns=ans;
+  const div=document.getElementById('optionsDiv');div.innerHTML='';
+  opts.forEach((o,i)=>{
+    const el=document.createElement('div');el.className='opt';
+    const ind=document.createElement('span');ind.className='opt-indicator';ind.textContent=q.type==='ms'?'☐':LETTERS[i];
+    if(q.optEquations&&q.optEquations[i]){
+      const txt=document.createElement('div');txt.style.display='flex';txt.style.flexDirection='column';txt.style.gap='4px';
+      const label=document.createElement('span');label.className='opt-text';label.textContent=o;
+      txt.appendChild(label);
+      el.appendChild(ind);el.appendChild(txt);
+    }else{
+      const txt=document.createElement('span');txt.className='opt-text';txt.textContent=o;
+      el.appendChild(ind);el.appendChild(txt);
+    }
+    if(q.type==='ms'){el.onclick=()=>{if(el.classList.contains('disabled'))return;if(selectedMulti.has(i)){selectedMulti.delete(i);el.classList.remove('selected');ind.textContent='☐';}else{selectedMulti.add(i);el.classList.add('selected');ind.textContent='☑';}document.getElementById('btnSubmit').classList.toggle('show',selectedMulti.size>0);};}
+    else{el.onclick=()=>resolveSingle(i);}
+    div.appendChild(el);
+  });
+  document.getElementById('qCounter').textContent='Question '+(idx+1)+' of '+deck.length;
+  document.getElementById('progressFill').style.width=Math.round((idx/deck.length)*100)+'%';
+  document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+}
+function resolveSingle(chosen){
+  const correct=chosen===currentAns;const opts=document.getElementById('optionsDiv').children;
+  for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(i===currentAns){opts[i].classList.add(correct&&i===chosen?'correct':'reveal-correct');ind.textContent='✓';}else if(i===chosen){opts[i].classList.add('wrong');ind.textContent='✗';}}
+  finalize(correct);
+}
+function submitMulti(){
+  const correctSet=new Set(Array.isArray(currentAns)?currentAns:[currentAns]);const correct=selectedMulti.size===correctSet.size&&[...selectedMulti].every(i=>correctSet.has(i));
+  const opts=document.getElementById('optionsDiv').children;
+  for(let i=0;i<opts.length;i++){opts[i].classList.add('disabled');opts[i].onclick=null;const ind=opts[i].querySelector('.opt-indicator');if(correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('correct');ind.textContent='✓';}else if(!correctSet.has(i)&&selectedMulti.has(i)){opts[i].classList.add('wrong');ind.textContent='✗';}else if(correctSet.has(i)&&!selectedMulti.has(i)){opts[i].classList.add('reveal-correct');ind.textContent='✓';}}
+  document.getElementById('btnSubmit').classList.remove('show');finalize(correct);
+}
+function finalize(correct){
+  if(correct){score++;}else{recordMiss(deck[idx]);document.getElementById('missedNotice').classList.add('show');}
+  answered++;document.getElementById('scoreDisplay').textContent=score+' / '+answered;
+  const exp=document.getElementById('explanation');exp.textContent=(correct?'✓ Correct. ':'✗ Incorrect. ')+deck[idx].exp;exp.classList.add('show');document.getElementById('btnNext').classList.add('show');
+}
+function nextQ(){idx++;if(idx>=deck.length)showSummary();else renderQ();}
+function showSummary(){
+  document.getElementById('questionCard').style.display='none';document.getElementById('btnNext').style.display='none';document.getElementById('qCounter').style.display='none';document.getElementById('progressFill').style.width='100%';
+  const pct=Math.round((score/deck.length)*100);document.getElementById('summaryScore').textContent=pct+'%';document.getElementById('summaryFrac').textContent=score+' out of '+deck.length+' correct';
+  document.getElementById('summaryMsg').textContent=pct>=85?'Strong round — keep going!':pct>=65?'Good effort. Review your misses, then do another round.':'Keep drilling — do the missed deck, then come back for another round.';
+  const seen=Math.min(getSeen(SEEN_KEY).length,TOTAL);document.getElementById('summarySeen').textContent='You have now seen '+seen+' of '+TOTAL+' total questions in this deck.';
+  const mc=getMissedCount();if(mc>0){document.getElementById('summaryMissedBox').style.display='block';document.getElementById('summaryMissedBox').textContent=mc+' question'+(mc!==1?'s':'')+' in your missed deck.';document.getElementById('linkMissed').style.display='inline-block';}
+  document.getElementById('summary').classList.add('show');
+}
+function newRound(){
+  idx=0;score=0;answered=0;deck=pickRound();
+  document.getElementById('questionCard').style.display='block';document.getElementById('btnNext').style.display='';document.getElementById('btnNext').classList.remove('show');document.getElementById('qCounter').style.display='block';
+  document.getElementById('summary').classList.remove('show');document.getElementById('summaryMissedBox').style.display='none';document.getElementById('linkMissed').style.display='none';
+  updateSeenBar();renderQ();
+}
+init();
+
+</script>
+</body>
+</html>
