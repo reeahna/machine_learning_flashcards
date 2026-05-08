@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>B455 Practice Exam 6</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#0f0f0f;--surface:#181818;--s2:#202020;--b:#2a2a2a;--t:#edeae4;--m:#777;--a:#e8c547;--a2:#c8a832;--g:#4ade80;--gb:rgba(74,222,128,.07);--gbb:rgba(74,222,128,.35);--r:#f87171;--rb:rgba(248,113,113,.07);--rbb:rgba(248,113,113,.35);}
+body{font-family:'Crimson Pro',Georgia,serif;background:var(--bg);color:var(--t);min-height:100vh;}
+header{background:var(--surface);border-bottom:1px solid var(--b);padding:1.4rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.etitle{font-size:20px;font-weight:700;color:var(--a);}.esub{font-size:12px;color:var(--m);margin-top:2px;}.emeta{font-size:12px;color:var(--m);text-align:right;}
+main{max-width:760px;margin:0 auto;padding:2rem 1.5rem 5rem;}
+.sp{display:none;background:var(--surface);border:1px solid var(--b);border-radius:12px;padding:2.5rem 2rem;text-align:center;margin-bottom:2.5rem;}
+.sp.show{display:block;}.sbig{font-size:76px;font-weight:700;color:var(--a);line-height:1;}.sfrac{font-size:15px;color:var(--m);margin:6px 0 1.5rem;}
+.sg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.5rem;}
+.sc{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:12px 8px;}.sv{font-size:22px;font-weight:700;}.sl{font-size:11px;color:var(--m);margin-top:2px;}
+.sm{font-size:15px;line-height:1.7;margin-bottom:1.5rem;}
+.br{background:transparent;border:1.5px solid var(--b);color:var(--m);padding:8px 20px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;}
+.br:hover{border-color:var(--a);color:var(--a);}
+.inst{background:var(--surface);border:1px solid var(--b);border-left:3px solid var(--a);border-radius:10px;padding:1.1rem 1.4rem;margin-bottom:2rem;font-size:13.5px;color:var(--m);line-height:1.7;}
+.inst strong{color:var(--t);}
+.sh{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--a);border-bottom:1px solid var(--b);padding-bottom:7px;margin:2.5rem 0 1.2rem;}
+.qb{background:var(--surface);border:1px solid var(--b);border-radius:10px;padding:1.4rem;margin-bottom:.9rem;}
+.qb.ok{border-color:var(--gbb);background:var(--gb);}.qb.bad{border-color:var(--rbb);background:var(--rb);}
+.qt{display:flex;align-items:center;gap:10px;margin-bottom:.85rem;flex-wrap:wrap;}
+.qn{font-size:11px;font-weight:700;color:var(--a);letter-spacing:.06em;}
+.qtag{font-size:10px;color:var(--m);background:var(--s2);border:1px solid var(--b);border-radius:99px;padding:2px 8px;}
+.qi{margin-left:auto;font-size:16px;display:none;}.qi.show{display:inline;}
+.qq{font-size:15px;line-height:1.65;margin-bottom:.9rem;}
+.mh{font-size:12px;color:#60a5fa;margin-bottom:7px;}
+.opts{display:flex;flex-direction:column;gap:5px;}
+.opt{display:flex;align-items:flex-start;gap:9px;padding:8px 11px;border:1.5px solid var(--b);border-radius:8px;cursor:pointer;transition:border-color .12s,background .12s;}
+.opt:hover:not(.dis){border-color:var(--a);background:rgba(232,197,71,.05);}
+.opt.sel{border-color:var(--a);background:rgba(232,197,71,.07);}
+.opt.correct{border-color:var(--gbb)!important;background:var(--gb)!important;}
+.opt.wrong{border-color:var(--rbb)!important;background:var(--rb)!important;}
+.opt.rev{border-color:var(--gbb)!important;background:var(--gb)!important;}
+.opt.dis{pointer-events:none;}
+.ol{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--b);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--m);}
+.opt.sel .ol{border-color:var(--a);color:var(--a);}
+.opt.correct .ol,.opt.rev .ol{border-color:var(--g);color:var(--g);}
+.opt.wrong .ol{border-color:var(--r);color:var(--r);}
+.ot{font-size:13.5px;line-height:1.5;padding-top:1px;}
+.msb{display:none;margin-top:8px;background:var(--a);color:#0f0f0f;border:none;padding:7px 18px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+.msb.show{display:inline-block;}
+.exp{display:none;margin-top:10px;padding:9px 13px;border-radius:7px;background:rgba(255,255,255,.03);border-left:2px solid var(--b);font-size:13px;color:var(--m);line-height:1.65;}
+.exp.show{display:block;}
+.ef{margin-top:2.5rem;display:flex;flex-direction:column;align-items:center;gap:1rem;}
+.bsub{background:var(--a);color:#0f0f0f;border:none;padding:12px 38px;border-radius:10px;font-size:15px;font-family:inherit;font-weight:700;cursor:pointer;}
+.bsub:hover{background:var(--a2);}
+</style></head><body>
+<header>
+<div><div class="etitle">B455 Machine Learning &mdash; Practice Exam 6 of 6</div><div class="esub">Final Exam Preparation &middot; Indiana University</div></div>
+<div class="emeta"><span>40 questions</span><span>14 pre-midterm &nbsp;&middot;&nbsp; 26 post-midterm</span></div>
+</header>
+<main>
+<div id="sPanel" class="sp">
+<div class="sbig" id="sBig"></div><div class="sfrac" id="sFrac"></div>
+<div class="sg">
+<div class="sc"><div class="sv" id="sPre"></div><div class="sl">Pre-Midterm</div></div>
+<div class="sc"><div class="sv" id="sPost"></div><div class="sl">Post-Midterm</div></div>
+<div class="sc"><div class="sv">40</div><div class="sl">Questions</div></div>
+</div>
+<div class="sm" id="sMsg"></div>
+<button class="br" onclick="review()">Review answers &darr;</button>
+</div>
+<div class="inst"><strong>Instructions:</strong> 40 questions &mdash; 14 from Lectures 2&ndash;9 and 26 from Lectures 10&ndash;19, matching the 35/65 final exam split. Answer all questions then click <strong>Grade Exam</strong>. Explanations appear after grading.</div>
+<div class="sh">Section A &mdash; Pre-Midterm Material (Lectures 2&ndash;9)</div>
+<div class="qb" data-qid="p41" data-type="ms" data-ans="[1,2,3]" data-sec="pre">
+<div class="qt"><span class="qn">Q1</span><span class="qtag">Logistic Regression</span><span class="qtag">Multi-Select</span><span class="qi"></span></div>
+<div class="qq">Which statements about logistic regression are correct? (Select all that apply)</div>
+<div class="mh">Select all that apply, then click Submit.</div><div class="opts"><div class="opt" onclick="pick('p41',0,'ms')"><span class="ol">A</span><span class="ot">It has a closed-form solution like the Normal Equation</span></div><div class="opt" onclick="pick('p41',1,'ms')"><span class="ol">B</span><span class="ot">It can be extended to multi-class via the softmax function</span></div><div class="opt" onclick="pick('p41',2,'ms')"><span class="ol">C</span><span class="ot">Its log loss function is convex</span></div><div class="opt" onclick="pick('p41',3,'ms')"><span class="ol">D</span><span class="ot">Its decision boundary is always linear in the input features</span></div></div><button class="msb" id="msb-p41" onclick="document.getElementById('msb-p41').classList.remove('show');submitMS('p41')">Submit</button><div class="exp">Log loss is convex. The boundary is linear. Softmax extends it to K classes. There is no closed-form solution — gradient descent must be used.</div></div>
+<div class="qb" data-qid="p27" data-type="mc" data-ans="1" data-sec="pre">
+<div class="qt"><span class="qn">Q2</span><span class="qtag">Logistic Regression</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">Why is there no closed-form solution for logistic regression?</div>
+<div class="opts"><div class="opt" onclick="pick('p27',0,'mc')"><span class="ol">A</span><span class="ot">The sigmoid is not differentiable, preventing exact gradient computation</span></div><div class="opt" onclick="pick('p27',1,'mc')"><span class="ol">B</span><span class="ot">The log loss contains sigmoid functions that make the gradient transcendental — not solvable algebraically</span></div><div class="opt" onclick="pick('p27',2,'mc')"><span class="ol">C</span><span class="ot">The decision boundary must be computed iteratively</span></div><div class="opt" onclick="pick('p27',3,'mc')"><span class="ol">D</span><span class="ot">The log loss is non-convex, preventing analytical minimization</span></div></div><div class="exp">Unlike MSE for linear regression, the logistic log loss gradient cannot be set to zero and solved in closed form. The sigmoid makes it transcendental. Iterative optimization (gradient descent) is required.</div></div>
+<div class="qb" data-qid="p23" data-type="mc" data-ans="1" data-sec="pre">
+<div class="qt"><span class="qn">Q3</span><span class="qtag">Learning Curves</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">A learning curve showing high training error and similar high validation error indicates:</div>
+<div class="opts"><div class="opt" onclick="pick('p23',0,'mc')"><span class="ol">A</span><span class="ot">Overfitting — the model is too complex</span></div><div class="opt" onclick="pick('p23',1,'mc')"><span class="ol">B</span><span class="ot">Underfitting — the model lacks capacity to capture the data patterns</span></div><div class="opt" onclick="pick('p23',2,'mc')"><span class="ol">C</span><span class="ot">Good generalization — train and validation errors are close</span></div><div class="opt" onclick="pick('p23',3,'mc')"><span class="ol">D</span><span class="ot">High variance — adding more data will not help</span></div></div><div class="exp">When both errors are high and similar, the model underfits. Adding more data will not help. The fix is to increase model capacity.</div></div>
+<div class="qb" data-qid="p25" data-type="mc" data-ans="2" data-sec="pre">
+<div class="qt"><span class="qn">Q4</span><span class="qtag">Logistic Regression</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">When would you add polynomial features to logistic regression?</div>
+<div class="opts"><div class="opt" onclick="pick('p25',0,'mc')"><span class="ol">A</span><span class="ot">When the dataset has more features than instances</span></div><div class="opt" onclick="pick('p25',1,'mc')"><span class="ol">B</span><span class="ot">When classes are linearly separable — polynomial features improve the margin</span></div><div class="opt" onclick="pick('p25',2,'mc')"><span class="ol">C</span><span class="ot">When the true decision boundary is nonlinear — polynomial features allow curved boundaries</span></div><div class="opt" onclick="pick('p25',3,'mc')"><span class="ol">D</span><span class="ot">When L2 regularization linearizes the boundary</span></div></div><div class="exp">Logistic regression has a linear boundary in input features. For nonlinear boundaries you manually add polynomial features (x₁², x₁x₂, etc.) to let the model fit more complex shapes.</div></div>
+<div class="qb" data-qid="p37" data-type="mc" data-ans="0" data-sec="pre">
+<div class="qt"><span class="qn">Q5</span><span class="qtag">Performance Measures</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">Precision = TP / (TP + FP). A precision of 0.80 means:</div>
+<div class="opts"><div class="opt" onclick="pick('p37',0,'mc')"><span class="ol">A</span><span class="ot">When the model predicts positive, it is correct 80% of the time</span></div><div class="opt" onclick="pick('p37',1,'mc')"><span class="ol">B</span><span class="ot">The model correctly classifies 80% of all instances</span></div><div class="opt" onclick="pick('p37',2,'mc')"><span class="ol">C</span><span class="ot">80% of actual positives were correctly identified</span></div><div class="opt" onclick="pick('p37',3,'mc')"><span class="ol">D</span><span class="ot">The model misses 20% of actual positives</span></div></div><div class="exp">Of all instances predicted positive, 80% were truly positive (TP) and 20% were false alarms (FP). This is precision — not to be confused with recall which measures coverage of actual positives.</div></div>
+<div class="qb" data-qid="p15" data-type="mc" data-ans="2" data-sec="pre">
+<div class="qt"><span class="qn">Q6</span><span class="qtag">ROC Curve</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">The ROC curve for a random classifier looks like:</div>
+<div class="opts"><div class="opt" onclick="pick('p15',0,'mc')"><span class="ol">A</span><span class="ot">A step function jumping at the decision threshold</span></div><div class="opt" onclick="pick('p15',1,'mc')"><span class="ol">B</span><span class="ot">A vertical line at FPR=0</span></div><div class="opt" onclick="pick('p15',2,'mc')"><span class="ol">C</span><span class="ot">The diagonal line from (0,0) to (1,1) with AUC=0.5</span></div><div class="opt" onclick="pick('p15',3,'mc')"><span class="ol">D</span><span class="ot">A horizontal line at TPR=1.0</span></div></div><div class="exp">A random classifier has TPR=FPR at all thresholds, tracing the diagonal. AUC=0.5. A perfect classifier hugs the top-left corner with AUC=1.0.</div></div>
+<div class="qb" data-qid="p11" data-type="mc" data-ans="3" data-sec="pre">
+<div class="qt"><span class="qn">Q7</span><span class="qtag">Cross-Validation</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">In 10-fold cross-validation, each fold uses what percentage of the data for validation?</div>
+<div class="opts"><div class="opt" onclick="pick('p11',0,'mc')"><span class="ol">A</span><span class="ot">50%</span></div><div class="opt" onclick="pick('p11',1,'mc')"><span class="ol">B</span><span class="ot">90%</span></div><div class="opt" onclick="pick('p11',2,'mc')"><span class="ol">C</span><span class="ot">1%</span></div><div class="opt" onclick="pick('p11',3,'mc')"><span class="ol">D</span><span class="ot">10%</span></div></div><div class="exp">With 10 folds, 1/10 = 10% is held out for validation in each fold; 90% is used for training. This repeats 10 times with different validation folds.</div></div>
+<div class="qb" data-qid="p21" data-type="mc" data-ans="2" data-sec="pre">
+<div class="qt"><span class="qn">Q8</span><span class="qtag">Gradient Descent</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">Mini-batch gradient descent (batch size 32-256) offers what main advantage over full-batch GD on large datasets?</div>
+<div class="opts"><div class="opt" onclick="pick('p21',0,'mc')"><span class="ol">A</span><span class="ot">It has perfectly accurate gradient estimates using the full dataset</span></div><div class="opt" onclick="pick('p21',1,'mc')"><span class="ol">B</span><span class="ot">It eliminates the need for a learning rate schedule</span></div><div class="opt" onclick="pick('p21',2,'mc')"><span class="ol">C</span><span class="ot">It provides reasonably accurate gradients efficiently, making better use of GPU hardware</span></div><div class="opt" onclick="pick('p21',3,'mc')"><span class="ol">D</span><span class="ot">It always converges to a better solution</span></div></div><div class="exp">Full batch is slow on large datasets. SGD (batch=1) is noisy. Mini-batches balance accuracy and efficiency, and GPU hardware is optimized for vectorized mini-batch operations.</div></div>
+<div class="qb" data-qid="p39" data-type="mc" data-ans="0" data-sec="pre">
+<div class="qt"><span class="qn">Q9</span><span class="qtag">SVMs</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">Maximizing the margin in SVMs (minimizing ||w||) produces models that:</div>
+<div class="opts"><div class="opt" onclick="pick('p39',0,'mc')"><span class="ol">A</span><span class="ot">Are less sensitive to small perturbations in training data, reducing variance</span></div><div class="opt" onclick="pick('p39',1,'mc')"><span class="ol">B</span><span class="ot">Maximize ||w|| — giving more weight to important features</span></div><div class="opt" onclick="pick('p39',2,'mc')"><span class="ol">C</span><span class="ot">Set ||w|| = 1 as a normalization constraint</span></div><div class="opt" onclick="pick('p39',3,'mc')"><span class="ol">D</span><span class="ot">Compute ||w|| as a function of support vector coordinates</span></div></div><div class="exp">A large margin means the boundary is far from all training instances. The classifier is robust to small perturbations — a new instance needs to be far from training data to be misclassified.</div></div>
+<div class="qb" data-qid="p10" data-type="mc" data-ans="2" data-sec="pre">
+<div class="qt"><span class="qn">Q10</span><span class="qtag">Data Preparation</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">Feature scaling is required for which algorithm?</div>
+<div class="opts"><div class="opt" onclick="pick('p10',0,'mc')"><span class="ol">A</span><span class="ot">Naive Bayes</span></div><div class="opt" onclick="pick('p10',1,'mc')"><span class="ol">B</span><span class="ot">Random Forests</span></div><div class="opt" onclick="pick('p10',2,'mc')"><span class="ol">C</span><span class="ot">SVM with RBF kernel</span></div><div class="opt" onclick="pick('p10',3,'mc')"><span class="ol">D</span><span class="ot">Decision Trees</span></div></div><div class="exp">SVM with RBF kernel uses distances — sensitive to feature scale. Decision Trees, Random Forests, and most Naive Bayes variants are scale-invariant.</div></div>
+<div class="qb" data-qid="p07" data-type="mc" data-ans="0" data-sec="pre">
+<div class="qt"><span class="qn">Q11</span><span class="qtag">Instance-Based Learning</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">k-Nearest Neighbors classifies a new instance using:</div>
+<div class="opts"><div class="opt" onclick="pick('p07',0,'mc')"><span class="ol">A</span><span class="ot">The majority class among the k most similar training instances</span></div><div class="opt" onclick="pick('p07',1,'mc')"><span class="ol">B</span><span class="ot">A learned decision boundary defined by weight parameters</span></div><div class="opt" onclick="pick('p07',2,'mc')"><span class="ol">C</span><span class="ot">The centroid of the cluster the instance falls into</span></div><div class="opt" onclick="pick('p07',3,'mc')"><span class="ol">D</span><span class="ot">A probabilistic model of the class-conditional distribution</span></div></div><div class="exp">k-NN is instance-based: it stores all training data and classifies by majority vote among the k nearest neighbors. No explicit model is learned.</div></div>
+<div class="qb" data-qid="p05" data-type="mc" data-ans="1" data-sec="pre">
+<div class="qt"><span class="qn">Q12</span><span class="qtag">Challenges of ML</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">Collecting more training data most directly addresses which ML challenge?</div>
+<div class="opts"><div class="opt" onclick="pick('p05',0,'mc')"><span class="ol">A</span><span class="ot">Underfitting from an overly simple model</span></div><div class="opt" onclick="pick('p05',1,'mc')"><span class="ol">B</span><span class="ot">Overfitting due to insufficient training data</span></div><div class="opt" onclick="pick('p05',2,'mc')"><span class="ol">C</span><span class="ot">Non-representative sampling bias</span></div><div class="opt" onclick="pick('p05',3,'mc')"><span class="ol">D</span><span class="ot">Irrelevant features reducing signal-to-noise ratio</span></div></div><div class="exp">More data helps the model generalize rather than memorize, directly combating overfitting. It does not fix underfitting, biased sampling, or noisy features.</div></div>
+<div class="qb" data-qid="p18" data-type="mc" data-ans="2" data-sec="pre">
+<div class="qt"><span class="qn">Q13</span><span class="qtag">Multi-Class Classification</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">OvO (One vs. One) strategy trains how many classifiers for K classes?</div>
+<div class="opts"><div class="opt" onclick="pick('p18',0,'mc')"><span class="ol">A</span><span class="ot">K-1</span></div><div class="opt" onclick="pick('p18',1,'mc')"><span class="ol">B</span><span class="ot">K²</span></div><div class="opt" onclick="pick('p18',2,'mc')"><span class="ol">C</span><span class="ot">K(K-1)/2</span></div><div class="opt" onclick="pick('p18',3,'mc')"><span class="ol">D</span><span class="ot">K</span></div></div><div class="exp">OvO trains one classifier per pair. For K classes: K(K-1)/2 classifiers. For 10 classes: 45 classifiers. OvR trains K classifiers.</div></div>
+<div class="qb" data-qid="p42" data-type="tf" data-ans="0" data-sec="pre">
+<div class="qt"><span class="qn">Q14</span><span class="qtag">Softmax Regression</span><span class="qtag">True / False</span><span class="qi"></span></div>
+<div class="qq">Softmax regression assumes each instance belongs to exactly one class (mutual exclusivity).</div>
+<div class="opts"><div class="opt" onclick="pick('p42',0,'tf')"><span class="ol">A</span><span class="ot">True</span></div><div class="opt" onclick="pick('p42',1,'tf')"><span class="ol">B</span><span class="ot">False</span></div></div><div class="exp">Softmax outputs sum to 1, enforcing mutual exclusivity. For multi-label problems (multiple classes per instance), use multiple independent binary classifiers with sigmoid outputs instead.</div></div>
+<div class="sh">Section B &mdash; Post-Midterm Material (Lectures 10&ndash;19)</div>
+<div class="qb" data-qid="q37" data-type="mc" data-ans="2" data-sec="post">
+<div class="qt"><span class="qn">Q15</span><span class="qtag">Neural Networks</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">For multi-class classification, the standard output layer is:</div>
+<div class="opts"><div class="opt" onclick="pick('q37',0,'mc')"><span class="ol">A</span><span class="ot">Sigmoid with binary cross-entropy</span></div><div class="opt" onclick="pick('q37',1,'mc')"><span class="ol">B</span><span class="ot">Tanh with hinge loss</span></div><div class="opt" onclick="pick('q37',2,'mc')"><span class="ol">C</span><span class="ot">Softmax with categorical cross-entropy</span></div><div class="opt" onclick="pick('q37',3,'mc')"><span class="ol">D</span><span class="ot">ReLU with MSE loss</span></div></div><div class="exp">Softmax produces a probability distribution over K classes summing to 1. Categorical cross-entropy measures divergence from the one-hot true label. This combination is standard for multi-class classification.</div></div>
+<div class="qb" data-qid="q39" data-type="mc" data-ans="2" data-sec="post">
+<div class="qt"><span class="qn">Q16</span><span class="qtag">Neural Networks</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">The Universal Approximation Theorem says a 1-hidden-layer MLP can approximate any continuous function. What it does NOT address:</div>
+<div class="opts"><div class="opt" onclick="pick('q39',0,'mc')"><span class="ol">A</span><span class="ot">Whether approximation holds for functions with multiple inputs</span></div><div class="opt" onclick="pick('q39',1,'mc')"><span class="ol">B</span><span class="ot">Whether ReLU is insufficient for approximation</span></div><div class="opt" onclick="pick('q39',2,'mc')"><span class="ol">C</span><span class="ot">Whether gradient descent will find the approximating weights, or how large the network needs to be</span></div><div class="opt" onclick="pick('q39',3,'mc')"><span class="ol">D</span><span class="ot">Whether sigmoid activations are sufficient for approximation</span></div></div><div class="exp">The theorem proves the existence of approximating weights, but says nothing about whether training will find them, how many neurons are needed in practice, or training time.</div></div>
+<div class="qb" data-qid="q34" data-type="mc" data-ans="0" data-sec="post">
+<div class="qt"><span class="qn">Q17</span><span class="qtag">GMM</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">BIC penalizes model complexity more than AIC. For large datasets, this means BIC tends to select:</div>
+<div class="opts"><div class="opt" onclick="pick('q34',0,'mc')"><span class="ol">A</span><span class="ot">Fewer components (simpler models) than AIC</span></div><div class="opt" onclick="pick('q34',1,'mc')"><span class="ol">B</span><span class="ot">More components than AIC</span></div><div class="opt" onclick="pick('q34',2,'mc')"><span class="ol">C</span><span class="ot">Components with higher log-likelihood regardless of count</span></div><div class="opt" onclick="pick('q34',3,'mc')"><span class="ol">D</span><span class="ot">The same number of components as AIC</span></div></div><div class="exp">BIC uses log(m) as penalty coefficient; AIC uses 2. For large m, log(m) > 2 so BIC penalizes each extra parameter more heavily, pushing toward simpler models.</div></div>
+<div class="qb" data-qid="q24" data-type="mc" data-ans="1" data-sec="post">
+<div class="qt"><span class="qn">Q18</span><span class="qtag">K-Means</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">K-Means converges when:</div>
+<div class="opts"><div class="opt" onclick="pick('q24',0,'mc')"><span class="ol">A</span><span class="ot">Inertia reaches exactly zero</span></div><div class="opt" onclick="pick('q24',1,'mc')"><span class="ol">B</span><span class="ot">Cluster assignments no longer change between iterations</span></div><div class="opt" onclick="pick('q24',2,'mc')"><span class="ol">C</span><span class="ot">All instances are within one standard deviation of their centroid</span></div><div class="opt" onclick="pick('q24',3,'mc')"><span class="ol">D</span><span class="ot">Centroids have been updated a fixed number of times</span></div></div><div class="exp">K-Means iterates until cluster assignments stop changing. At this point centroids no longer move. Inertia may not reach zero in practice.</div></div>
+<div class="qb" data-qid="q62" data-type="ms" data-ans="[0,1,3]" data-sec="post">
+<div class="qt"><span class="qn">Q19</span><span class="qtag">Neural Networks</span><span class="qtag">Multi-Select</span><span class="qi"></span></div>
+<div class="qq">Which statements about ReLU are correct? (Select all that apply)</div>
+<div class="mh">Select all that apply, then click Submit.</div><div class="opts"><div class="opt" onclick="pick('q62',0,'ms')"><span class="ol">A</span><span class="ot">ReLU can produce dead neurons that always output zero</span></div><div class="opt" onclick="pick('q62',1,'ms')"><span class="ol">B</span><span class="ot">ReLU is the default activation for hidden layers in modern DNNs</span></div><div class="opt" onclick="pick('q62',2,'ms')"><span class="ol">C</span><span class="ot">ReLU outputs are zero-centered</span></div><div class="opt" onclick="pick('q62',3,'ms')"><span class="ol">D</span><span class="ot">ReLU has no vanishing gradient for positive inputs</span></div></div><button class="msb" id="msb-q62" onclick="document.getElementById('msb-q62').classList.remove('show');submitMS('q62')">Submit</button><div class="exp">ReLU derivative=1 for z>0 (no vanishing gradient) and can produce dead neurons (z≤0, gradient=0). It is the standard hidden layer activation. Outputs are NOT zero-centered (range: 0 to ∞).</div></div>
+<div class="qb" data-qid="q19" data-type="mc" data-ans="0" data-sec="post">
+<div class="qt"><span class="qn">Q20</span><span class="qtag">PCA</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">Using PCA's inverse_transform to reconstruct data produces:</div>
+<div class="opts"><div class="opt" onclick="pick('q19',0,'mc')"><span class="ol">A</span><span class="ot">A lossy approximation — discarded components represent lost information</span></div><div class="opt" onclick="pick('q19',1,'mc')"><span class="ol">B</span><span class="ot">Data with more dimensions than the original</span></div><div class="opt" onclick="pick('q19',2,'mc')"><span class="ol">C</span><span class="ot">Exact reconstruction — PCA is lossless</span></div><div class="opt" onclick="pick('q19',3,'mc')"><span class="ol">D</span><span class="ot">Reconstruction valid only for training instances</span></div></div><div class="exp">PCA discards low-variance components so reconstruction is approximate. The reconstruction error is the mean squared distance between original and reconstructed instances.</div></div>
+<div class="qb" data-qid="q03" data-type="mc" data-ans="1" data-sec="post">
+<div class="qt"><span class="qn">Q21</span><span class="qtag">Decision Trees</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">A Decision Tree leaf predicts class probabilities by:</div>
+<div class="opts"><div class="opt" onclick="pick('q03',0,'mc')"><span class="ol">A</span><span class="ot">Applying softmax to scores stored in the leaf</span></div><div class="opt" onclick="pick('q03',1,'mc')"><span class="ol">B</span><span class="ot">Returning the proportion of each class among training instances in that leaf</span></div><div class="opt" onclick="pick('q03',2,'mc')"><span class="ol">C</span><span class="ot">Averaging Gini scores from all ancestor nodes</span></div><div class="opt" onclick="pick('q03',3,'mc')"><span class="ol">D</span><span class="ot">Running logistic regression on instances in the leaf</span></div></div><div class="exp">The leaf stores the class distribution from training. The fraction of each class is the estimated probability. The predicted class is the majority class.</div></div>
+<div class="qb" data-qid="q51" data-type="mc" data-ans="3" data-sec="post">
+<div class="qt"><span class="qn">Q22</span><span class="qtag">CNNs</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">AlexNet's two key innovations enabling its 2012 ImageNet win were:</div>
+<div class="opts"><div class="opt" onclick="pick('q51',0,'mc')"><span class="ol">A</span><span class="ot">Depthwise separable convolutions and skip connections</span></div><div class="opt" onclick="pick('q51',1,'mc')"><span class="ol">B</span><span class="ot">Inception modules with parallel filter banks and global average pooling</span></div><div class="opt" onclick="pick('q51',2,'mc')"><span class="ol">C</span><span class="ot">Batch normalization and residual connections</span></div><div class="opt" onclick="pick('q51',3,'mc')"><span class="ol">D</span><span class="ot">ReLU activations and dropout regularization, trained on GPUs</span></div></div><div class="exp">AlexNet used ReLU (much faster training, no vanishing gradients) and dropout (prevented overfitting in large FC layers). GPU training allowed a much larger network than prior work.</div></div>
+<div class="qb" data-qid="q47" data-type="mc" data-ans="1" data-sec="post">
+<div class="qt"><span class="qn">Q23</span><span class="qtag">Keras</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">The History object returned by model.fit() contains:</div>
+<div class="opts"><div class="opt" onclick="pick('q47',0,'mc')"><span class="ol">A</span><span class="ot">A summary of model architecture and parameter counts</span></div><div class="opt" onclick="pick('q47',1,'mc')"><span class="ol">B</span><span class="ot">Training and validation loss and metric values recorded each epoch</span></div><div class="opt" onclick="pick('q47',2,'mc')"><span class="ol">C</span><span class="ot">Gradient magnitudes at each layer during the final epoch</span></div><div class="opt" onclick="pick('q47',3,'mc')"><span class="ol">D</span><span class="ot">Final model weights in serialized format</span></div></div><div class="exp">history.history is a dict with keys like "loss", "val_loss", "accuracy", "val_accuracy". Each maps to a list of per-epoch values, used to plot learning curves and detect overfitting.</div></div>
+<div class="qb" data-qid="q59" data-type="mc" data-ans="1" data-sec="post">
+<div class="qt"><span class="qn">Q24</span><span class="qtag">Keras</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">ModelCheckpoint with save_best_only=True saves the model:</div>
+<div class="opts"><div class="opt" onclick="pick('q59',0,'mc')"><span class="ol">A</span><span class="ot">Before each learning rate reduction</span></div><div class="opt" onclick="pick('q59',1,'mc')"><span class="ol">B</span><span class="ot">Only when the monitored metric improves — keeping the best-performing version</span></div><div class="opt" onclick="pick('q59',2,'mc')"><span class="ol">C</span><span class="ot">Only after all training is complete</span></div><div class="opt" onclick="pick('q59',3,'mc')"><span class="ol">D</span><span class="ot">After every epoch regardless of performance</span></div></div><div class="exp">With save_best_only=True, the model is saved only when val_loss (or monitored metric) improves. This preserves the best weights even if training continues and overfitting begins.</div></div>
+<div class="qb" data-qid="q65" data-type="mc" data-ans="2" data-sec="post">
+<div class="qt"><span class="qn">Q25</span><span class="qtag">GMM</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">If two GMM components have identical means at initialization, EM will:</div>
+<div class="opts"><div class="opt" onclick="pick('q65',0,'mc')"><span class="ol">A</span><span class="ot">Break symmetry in the M-step by assigning different covariances</span></div><div class="opt" onclick="pick('q65',1,'mc')"><span class="ol">B</span><span class="ot">Immediately remove the duplicate component</span></div><div class="opt" onclick="pick('q65',2,'mc')"><span class="ol">C</span><span class="ot">Assign both identical responsibilities and update them identically — symmetry is never broken</span></div><div class="opt" onclick="pick('q65',3,'mc')"><span class="ol">D</span><span class="ot">Raise a singular matrix error and fail to converge</span></div></div><div class="exp">Identical initial means → identical E-step responsibilities → identical M-step updates → components stay identical forever. K-Means++ initialization or random perturbation is needed to break this symmetry.</div></div>
+<div class="qb" data-qid="q06" data-type="mc" data-ans="2" data-sec="post">
+<div class="qt"><span class="qn">Q26</span><span class="qtag">Decision Trees</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">Why is finding the globally optimal Decision Tree NP-hard?</div>
+<div class="opts"><div class="opt" onclick="pick('q06',0,'mc')"><span class="ol">A</span><span class="ot">Gini impurity is not differentiable so gradient descent fails</span></div><div class="opt" onclick="pick('q06',1,'mc')"><span class="ol">B</span><span class="ot">The optimal depth depends on the test set</span></div><div class="opt" onclick="pick('q06',2,'mc')"><span class="ol">C</span><span class="ot">The number of possible trees grows exponentially — exact search is infeasible</span></div><div class="opt" onclick="pick('q06',3,'mc')"><span class="ol">D</span><span class="ot">Decision boundaries must stay axis-aligned, limiting search space</span></div></div><div class="exp">The space of all possible trees is exponential in features and instances. CART uses greedy local optimization — best split at each node — which is fast but not guaranteed to be globally optimal.</div></div>
+<div class="qb" data-qid="q30" data-type="mc" data-ans="2" data-sec="post">
+<div class="qt"><span class="qn">Q27</span><span class="qtag">GMM</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">In a GMM, the mixing weight φₖ represents:</div>
+<div class="opts"><div class="opt" onclick="pick('q30',0,'mc')"><span class="ol">A</span><span class="ot">The count of instances assigned to component k</span></div><div class="opt" onclick="pick('q30',1,'mc')"><span class="ol">B</span><span class="ot">The mean of the k-th Gaussian component</span></div><div class="opt" onclick="pick('q30',2,'mc')"><span class="ol">C</span><span class="ot">The prior probability that a random instance was generated by component k</span></div><div class="opt" onclick="pick('q30',3,'mc')"><span class="ol">D</span><span class="ot">The inverse of the covariance of component k</span></div></div><div class="exp">φₖ is the prior probability of being from component k. All mixing weights sum to 1. After observing an instance, the posterior (responsibility) is computed via Bayes' theorem.</div></div>
+<div class="qb" data-qid="q04" data-type="tf" data-ans="1" data-sec="post">
+<div class="qt"><span class="qn">Q28</span><span class="qtag">Decision Trees</span><span class="qtag">True / False</span><span class="qi"></span></div>
+<div class="qq">Decision Trees are sensitive to small changes in training data — removing a few instances can significantly alter the learned tree.</div>
+<div class="opts"><div class="opt" onclick="pick('q04',0,'tf')"><span class="ol">A</span><span class="ot">False</span></div><div class="opt" onclick="pick('q04',1,'tf')"><span class="ol">B</span><span class="ot">True</span></div></div><div class="exp">Decision Trees have high variance. A slight change in training data can produce a completely different tree. This instability motivates Random Forests, which average many trees.</div></div>
+<div class="qb" data-qid="q64" data-type="tf" data-ans="1" data-sec="post">
+<div class="qt"><span class="qn">Q29</span><span class="qtag">K-Means</span><span class="qtag">True / False</span><span class="qi"></span></div>
+<div class="qq">K-Means always produces the same clustering result when run multiple times on the same data.</div>
+<div class="opts"><div class="opt" onclick="pick('q64',0,'tf')"><span class="ol">A</span><span class="ot">True</span></div><div class="opt" onclick="pick('q64',1,'tf')"><span class="ol">B</span><span class="ot">False</span></div></div><div class="exp">K-Means is sensitive to initialization. Different seeds can produce different local minima. Scikit-Learn runs n_init=10 times by default and keeps the result with lowest inertia.</div></div>
+<div class="qb" data-qid="q63" data-type="tf" data-ans="0" data-sec="post">
+<div class="qt"><span class="qn">Q30</span><span class="qtag">Random Forests</span><span class="qtag">True / False</span><span class="qi"></span></div>
+<div class="qq">Random Forests are more prone to overfitting than a single deep Decision Tree because they combine many complex models.</div>
+<div class="opts"><div class="opt" onclick="pick('q63',0,'tf')"><span class="ol">A</span><span class="ot">False</span></div><div class="opt" onclick="pick('q63',1,'tf')"><span class="ol">B</span><span class="ot">True</span></div></div><div class="exp">False. Averaging many diverse trees reduces variance without much bias increase. Random Forests are generally more robust to overfitting than a single deep decision tree.</div></div>
+<div class="qb" data-qid="q52" data-type="mc" data-ans="2" data-sec="post">
+<div class="qt"><span class="qn">Q31</span><span class="qtag">Transfer Learning</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">When fine-tuning a pretrained CNN with limited labeled data, you should:</div>
+<div class="opts"><div class="opt" onclick="pick('q52',0,'mc')"><span class="ol">A</span><span class="ot">Unfreeze all layers immediately and train with a large learning rate</span></div><div class="opt" onclick="pick('q52',1,'mc')"><span class="ol">B</span><span class="ot">Only fine-tune the first convolutional layer</span></div><div class="opt" onclick="pick('q52',2,'mc')"><span class="ol">C</span><span class="ot">Freeze early layers (which encode general features), train only the new task-specific output layers first, then optionally unfreeze deeper layers with a small learning rate</span></div><div class="opt" onclick="pick('q52',3,'mc')"><span class="ol">D</span><span class="ot">Randomly reinitialize pretrained weights before fine-tuning</span></div></div><div class="exp">Early CNN layers encode universal features (edges, textures) useful across image tasks. Freezing them preserves these representations. Train only the new head first, then fine-tune deeper layers carefully.</div></div>
+<div class="qb" data-qid="q12" data-type="mc" data-ans="0" data-sec="post">
+<div class="qt"><span class="qn">Q32</span><span class="qtag">Ensemble Methods</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">In stacking, the blender (meta-learner) is trained on:</div>
+<div class="opts"><div class="opt" onclick="pick('q12',0,'mc')"><span class="ol">A</span><span class="ot">Out-of-fold predictions from the base predictors — not the raw inputs</span></div><div class="opt" onclick="pick('q12',1,'mc')"><span class="ol">B</span><span class="ot">The original training features using all base predictors simultaneously</span></div><div class="opt" onclick="pick('q12',2,'mc')"><span class="ol">C</span><span class="ot">A random subset of base predictor outputs selected by cross-validation</span></div><div class="opt" onclick="pick('q12',3,'mc')"><span class="ol">D</span><span class="ot">Test set predictions after all base predictors are fully trained</span></div></div><div class="exp">The blender trains on what base predictors output for data they did not train on (out-of-fold). This prevents the blender from overfitting to memorized training outputs.</div></div>
+<div class="qb" data-qid="q29" data-type="mc" data-ans="3" data-sec="post">
+<div class="qt"><span class="qn">Q33</span><span class="qtag">K-Means</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">When K-Means is used as a preprocessing step for classification, the best k is selected by:</div>
+<div class="opts"><div class="opt" onclick="pick('q29',0,'mc')"><span class="ol">A</span><span class="ot">The elbow method on a held-out validation set</span></div><div class="opt" onclick="pick('q29',1,'mc')"><span class="ol">B</span><span class="ot">Minimizing inertia on the training set</span></div><div class="opt" onclick="pick('q29',2,'mc')"><span class="ol">C</span><span class="ot">Maximizing silhouette score on the training set</span></div><div class="opt" onclick="pick('q29',3,'mc')"><span class="ol">D</span><span class="ot">Cross-validated downstream classification performance</span></div></div><div class="exp">When K-Means is a feature transformation, the downstream classification performance on a validation set is the correct guide for k. No separate silhouette or elbow analysis is needed.</div></div>
+<div class="qb" data-qid="q53" data-type="mc" data-ans="2" data-sec="post">
+<div class="qt"><span class="qn">Q34</span><span class="qtag">CNNs</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">"Same" padding ensures:</div>
+<div class="opts"><div class="opt" onclick="pick('q53',0,'mc')"><span class="ol">A</span><span class="ot">Padding value matches the input feature map mean</span></div><div class="opt" onclick="pick('q53',1,'mc')"><span class="ol">B</span><span class="ot">The filter size equals the input size</span></div><div class="opt" onclick="pick('q53',2,'mc')"><span class="ol">C</span><span class="ot">Output spatial dimensions equal input dimensions when stride=1</span></div><div class="opt" onclick="pick('q53',3,'mc')"><span class="ol">D</span><span class="ot">The same weights are used for all filter positions</span></div></div><div class="exp">"Same" padding adds zeros so output height and width match input (for stride=1). "Valid" padding adds no padding, shrinking output by filter_size - 1 in each dimension.</div></div>
+<div class="qb" data-qid="q33" data-type="mc" data-ans="0" data-sec="post">
+<div class="qt"><span class="qn">Q35</span><span class="qtag">GMM</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">EM for GMMs is guaranteed to converge, but to:</div>
+<div class="opts"><div class="opt" onclick="pick('q33',0,'mc')"><span class="ol">A</span><span class="ot">A local maximum — the result depends on initialization</span></div><div class="opt" onclick="pick('q33',1,'mc')"><span class="ol">B</span><span class="ot">The minimum AIC solution among all Gaussian mixtures</span></div><div class="opt" onclick="pick('q33',2,'mc')"><span class="ol">C</span><span class="ot">The global maximum of the log-likelihood</span></div><div class="opt" onclick="pick('q33',3,'mc')"><span class="ol">D</span><span class="ot">Exactly k clusters with equal covariance matrices</span></div></div><div class="exp">EM strictly increases log-likelihood each iteration (guaranteed convergence). But the GMM log-likelihood surface has many local maxima — EM finds one near the initialization.</div></div>
+<div class="qb" data-qid="q27" data-type="mc" data-ans="3" data-sec="post">
+<div class="qt"><span class="qn">Q36</span><span class="qtag">K-Means</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">The silhouette coefficient near -1 for an instance indicates:</div>
+<div class="opts"><div class="opt" onclick="pick('q27',0,'mc')"><span class="ol">A</span><span class="ot">The cluster has much higher inertia than others</span></div><div class="opt" onclick="pick('q27',1,'mc')"><span class="ol">B</span><span class="ot">The instance is very close to its cluster centroid</span></div><div class="opt" onclick="pick('q27',2,'mc')"><span class="ol">C</span><span class="ot">The instance is on the boundary between clusters</span></div><div class="opt" onclick="pick('q27',3,'mc')"><span class="ol">D</span><span class="ot">The instance is closer to another cluster than its own — possibly misassigned</span></div></div><div class="exp">s=(b-a)/max(a,b). When b << a (much closer to a neighboring cluster than its own), s approaches -1, suggesting possible misassignment.</div></div>
+<div class="qb" data-qid="q54" data-type="mc" data-ans="2" data-sec="post">
+<div class="qt"><span class="qn">Q37</span><span class="qtag">CNNs</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">1×1 convolutions in GoogLeNet (Inception) modules are used to:</div>
+<div class="opts"><div class="opt" onclick="pick('q54',0,'mc')"><span class="ol">A</span><span class="ot">Apply batch normalization across spatial positions</span></div><div class="opt" onclick="pick('q54',1,'mc')"><span class="ol">B</span><span class="ot">Detect single-pixel features larger filters miss</span></div><div class="opt" onclick="pick('q54',2,'mc')"><span class="ol">C</span><span class="ot">Reduce the channel count before expensive 3×3 and 5×5 convolutions, cutting computation dramatically</span></div><div class="opt" onclick="pick('q54',3,'mc')"><span class="ol">D</span><span class="ot">Replace max pooling layers for spatial downsampling</span></div></div><div class="exp">1×1 convolutions perform channel-wise weighted sums — a learned bottleneck. Reducing 192 channels to 32 before a 5×5 conv cuts computation by ~6×. This is the key GoogLeNet efficiency trick.</div></div>
+<div class="qb" data-qid="q43" data-type="mc" data-ans="3" data-sec="post">
+<div class="qt"><span class="qn">Q38</span><span class="qtag">Keras</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">model.compile() configures:</div>
+<div class="opts"><div class="opt" onclick="pick('q43',0,'mc')"><span class="ol">A</span><span class="ot">Batch size, epochs, and validation split</span></div><div class="opt" onclick="pick('q43',1,'mc')"><span class="ol">B</span><span class="ot">Weight initialization scheme and random seed</span></div><div class="opt" onclick="pick('q43',2,'mc')"><span class="ol">C</span><span class="ot">The number of layers and units per layer</span></div><div class="opt" onclick="pick('q43',3,'mc')"><span class="ol">D</span><span class="ot">The optimizer, loss function, and evaluation metrics for training</span></div></div><div class="exp">compile() sets the optimizer (update rule), loss (what to minimize), and metrics (tracked but not optimized). Architecture is defined before compile(); batch size and epochs go in fit().</div></div>
+<div class="qb" data-qid="q42" data-type="mc" data-ans="2" data-sec="post">
+<div class="qt"><span class="qn">Q39</span><span class="qtag">Keras</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">The Functional API in Keras is needed when:</div>
+<div class="opts"><div class="opt" onclick="pick('q42',0,'mc')"><span class="ol">A</span><span class="ot">The model uses dropout or batch normalization</span></div><div class="opt" onclick="pick('q42',1,'mc')"><span class="ol">B</span><span class="ot">The model needs to be serialized to disk</span></div><div class="opt" onclick="pick('q42',2,'mc')"><span class="ol">C</span><span class="ot">The model has multiple inputs, multiple outputs, or shared layers</span></div><div class="opt" onclick="pick('q42',3,'mc')"><span class="ol">D</span><span class="ot">The model has more than 5 layers</span></div></div><div class="exp">Sequential handles only linear stacks. Functional API supports arbitrary graphs: branching, merging, shared layers, multiple inputs (Wide & Deep), multiple outputs, skip connections.</div></div>
+<div class="qb" data-qid="q58" data-type="mc" data-ans="2" data-sec="post">
+<div class="qt"><span class="qn">Q40</span><span class="qtag">Neural Networks</span><span class="qtag">Multiple Choice</span><span class="qi"></span></div>
+<div class="qq">For a regression problem with a single continuous target, the output layer should use:</div>
+<div class="opts"><div class="opt" onclick="pick('q58',0,'mc')"><span class="ol">A</span><span class="ot">ReLU to ensure non-negative predictions in all cases</span></div><div class="opt" onclick="pick('q58',1,'mc')"><span class="ol">B</span><span class="ot">Softmax activation with one neuron per possible value</span></div><div class="opt" onclick="pick('q58',2,'mc')"><span class="ol">C</span><span class="ot">Linear (no) activation with one output neuron, trained with MSE</span></div><div class="opt" onclick="pick('q58',3,'mc')"><span class="ol">D</span><span class="ot">Sigmoid activation to bound predictions between 0 and 1</span></div></div><div class="exp">Regression needs unbounded output. Linear activation allows any real value. ReLU prevents negative predictions. Softmax and sigmoid are for classification outputs.</div></div>
+<div class="ef"><button class="bsub" id="btnSub" onclick="grade()">Grade Exam</button></div>
+</main>
+<script>
+let done=false;const sel={};const ms={};
+function pick(qid,i,t){
+  if(done)return;
+  if(t==='ms'){
+    if(!ms[qid])ms[qid]=new Set();
+    const o=document.querySelectorAll('[data-qid="'+qid+'"] .opt');
+    if(ms[qid].has(i)){ms[qid].delete(i);o[i].classList.remove('sel');}
+    else{ms[qid].add(i);o[i].classList.add('sel');}
+    document.getElementById('msb-'+qid).classList.toggle('show',ms[qid].size>0);
+  }else{
+    document.querySelectorAll('[data-qid="'+qid+'"] .opt').forEach(o=>o.classList.remove('sel'));
+    document.querySelectorAll('[data-qid="'+qid+'"] .opt')[i].classList.add('sel');
+    sel[qid]=i;
+  }
+}
+function grade(){
+  if(done)return;done=true;
+  document.getElementById('btnSub').style.display='none';
+  let ok=0,tot=0,pok=0,ptot=0,qok=0,qtot=0;
+  document.querySelectorAll('.qb').forEach(b=>{
+    const qid=b.dataset.qid,t=b.dataset.type,sec=b.dataset.sec;
+    const ans=JSON.parse(b.dataset.ans);
+    const opts=b.querySelectorAll('.opt');
+    const exp=b.querySelector('.exp');
+    const icon=b.querySelector('.qi');
+    tot++;if(sec==='pre')ptot++;else qtot++;
+    let right=false;
+    if(t==='ms'){
+      if(!ms[qid])ms[qid]=new Set();
+      const cs=new Set(Array.isArray(ans)?ans:[ans]);
+      const us=ms[qid];
+      right=us.size===cs.size&&[...us].every(i=>cs.has(i));
+      opts.forEach((o,i)=>{o.classList.add('dis');
+        if(cs.has(i)&&us.has(i))o.classList.add('correct');
+        else if(!cs.has(i)&&us.has(i))o.classList.add('wrong');
+        else if(cs.has(i))o.classList.add('rev');});
+    }else{
+      const ch=sel[qid];
+      opts.forEach((o,i)=>{o.classList.add('dis');
+        if(i===ans&&ch===ans)o.classList.add('correct');
+        else if(i===ch&&ch!==ans)o.classList.add('wrong');
+        else if(i===ans)o.classList.add('rev');});
+      right=ch===ans;
+    }
+    if(right){ok++;b.classList.add('ok');icon.textContent='✓';if(sec==='pre')pok++;else qok++;}
+    else{b.classList.add('bad');icon.textContent='✗';}
+    icon.classList.add('show');if(exp)exp.classList.add('show');
+  });
+  const pct=Math.round(ok/tot*100);
+  document.getElementById('sBig').textContent=pct+'%';
+  document.getElementById('sFrac').textContent=ok+' out of '+tot+' correct';
+  document.getElementById('sPre').textContent=pok+'/'+ptot;
+  document.getElementById('sPost').textContent=qok+'/'+qtot;
+  const msg=pct>=90?'Outstanding. Exam ready.':pct>=80?'Strong result. Review your misses.':pct>=70?'Solid effort. Drill the weak spots.':pct>=60?'Passing, but more review needed.':'Return to the flashcard decks and retry.';
+  document.getElementById('sMsg').textContent=msg;
+  document.getElementById('sPanel').classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function review(){document.getElementById('sPanel').classList.remove('show');window.scrollTo({top:document.querySelector('main').offsetTop,behavior:'smooth'});}
+</script>
+</body></html>
